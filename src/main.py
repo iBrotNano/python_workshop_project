@@ -1,4 +1,6 @@
-import keyboard
+import logging
+import input.input_handler as input_handler
+import config.logger as logger_config
 
 # import nutrition_api.repository as nutrition_repo
 
@@ -6,11 +8,22 @@ import keyboard
 try:
     # nutritionRepo = nutrition_repo.NutritionRepository()
     # nutritionRepo.search("apple")
-    print("Type Ctrl+C to exit.")
+    logger_config.configure()  # First step in the app to make logging available everywhere.
+    inputHandler = input_handler.InputHandler()
+    log = logging.getLogger(__name__)
+
+    print("Type 'exit' to exit the application.")
 
     while True:
-        if keyboard.is_pressed("ctrl+c"):
-            print("Exiting the application.")
-            break
+        try:
+            command = inputHandler.handle_input()
+
+            if command == inputHandler.EXIT_COMMAND:
+                print("Exiting the application.")
+                break
+        except Exception as e:
+            log.exception(f"An error of type {type(e)} occurred. Message: {e}")
+
+# Catch any unexpected errors at the top level during app initialization.
 except Exception as e:
-    print(f"An error of type {type(e)} occurred. Message: {e}")
+    log.critical(f"An error of type {type(e)} occurred. Message: {e}", exc_info=True)

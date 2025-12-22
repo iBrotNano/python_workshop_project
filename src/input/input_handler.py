@@ -1,3 +1,8 @@
+import logging
+
+log = logging.getLogger(__name__)
+
+
 class InputHandler:
     EXIT_COMMAND = "EXIT"
 
@@ -9,7 +14,6 @@ class InputHandler:
         :return: The command entered by the user.
         """
         input_value = input()
-
         if self._is_exit_command(input_value):
             return self.EXIT_COMMAND
 
