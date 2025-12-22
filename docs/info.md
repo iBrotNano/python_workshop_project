@@ -79,7 +79,11 @@ The app will be a CLI tool developed in Python. It will use requests to interact
 
 ### Error handling
 
-Error handling will be implemented to ensure that all errors are logged and displayed appropriately. Errors will be logged to a file with timestamps for debugging purposes and displayed in the console for user awareness.
+Error handling will be implemented to ensure that all errors are logged and displayed appropriately. Errors will be logged into files with timestamps for debugging purposes and displayed in the console for user awareness. All exceptions will be caught and handled gracefully to prevent the app from crashing.
+
+### Input and output handling
+
+There are some helpful libraries to handle input in CLI apps. They can handle selections and other stuff i will need. I will use [questionary](https://github.com/tmbo/questionary) to handle input from the user. Output will be displayed enriched in the console using [rich](https://github.com/Textualize/rich).
 
 ### Nutritional information API
 
@@ -89,7 +93,7 @@ An existing API will be queried to get nutritional information. The app will han
 
 | Integration test | 1                                                                                                                            |
 | ---------------- | ---------------------------------------------------------------------------------------------------------------------------- |
-| Action           | I will exit the app by typing "exit" (case insensitive, ignoring leading/trailing spaces).                                   |
+| Action           | I will exit the app by typing "exit" (case insensitive, ignoring leading/trailing spaces) where a text prompt appears.       |
 | Test cases       | `exit`, ` EXIT `, `ExIt`                                                                                                     |
 | Expected result  | The app should terminate gracefully without errors. The command is always recognized, no matter in what state the app is in. |
 
@@ -103,15 +107,44 @@ An existing API will be queried to get nutritional information. The app will han
 | Action           | I will provoke an error by not configuring something important.                                                                     |
 | Expected result  | A logfile is created with detailed error information for debugging purposes. The error details include timestamps and stack traces. |
 
+| Integration test | 4                                                   |
+| ---------------- | --------------------------------------------------- |
+| Action           | I will exit the app via the main menu.              |
+| Expected result  | The app should terminate gracefully without errors. |
+
+| Integration test | 5                                                                 |
+| ---------------- | ----------------------------------------------------------------- |
+| Action           | I will navigate to the nutrition information search via the menu. |
+| Expected result  | The navigation works                                              |
+
+| Integration test | 6                                                   |
+| ---------------- | --------------------------------------------------- |
+| Action           | I will exit the app via CTRL+C in the main menu.    |
+| Expected result  | The app should terminate gracefully without errors. |  |
+
+| Integration test | 7                                                                                                       |
+| ---------------- | ------------------------------------------------------------------------------------------------------- |
+| Action           | I will check if the confirmation before exit is triggered and performs and prevents the exit correctly. |
+| Expected result  | The confirmation before exit should be recognized.                                                      |
+
 ## :hammer_and_wrench: Development
 
 ### :clipboard: TODOs
 
 - [x] Exit the app when the user types "exit" (case insensitive, ignoring leading/trailing spaces)
-- [ ] Handle all errors gracefully with appropriate messages in the console
-- [ ] Timestamp for error logging in the console
-- [ ] Log all errors into a log file with timestamps for debugging purposes
+- [x] Handle all errors gracefully with appropriate messages in the console
+- [x] Timestamp for error logging in the console
+- [x] Log all errors into a log file with timestamps for debugging purposes
+- [x] Use Lib for input to make app handling easier
+- [x] Add menue to select between the main functions and exit
+- [x] Ask for confirmation before exiting the app
 - [ ] Development of a simple CLI tool to query nutritional information from an API (https://publicapis.io/open-food-facts-api, https://platform.fatsecret.com/platform-api). Search for foods and display nutrition facts.
+  - [x] Make the name of my app configurable
+  - [x] Make the version of my app configurable
+  - [ ] Check the API [world.openfoodfacts.org/data](https://world.openfoodfacts.org/data)
+    - [x] Inspect the returned data structure
+    - [ ] Implement the test code from `main.py` into the repository class
+    - [ ] Delete `api_call.py`
   - [ ] Configuration settings for API access and user preferences.
   - [ ] Search criteria are name and manufacturer.
   - [ ] Search results from the API displayed in the console.
@@ -147,6 +180,7 @@ An existing API will be queried to get nutritional information. The app will han
 - [ ] Check-in the changes and push them to the server
 - [ ] Does the build on the buildserver succeed?
 - [ ] Create a PR
+- [ ] Maybe i will fill the form [openfoodfacts-python/REUSE.md at develop · openfoodfacts/openfoodfacts-python](https://github.com/openfoodfacts/openfoodfacts-python/blob/develop/REUSE.md) later
 
 ### :eyes: Review
 
@@ -175,7 +209,18 @@ An existing API will be queried to get nutritional information. The app will han
 
 ### :spiral_notepad: Notes
 
-Notes about the development of the issue.
+> [!NOTE] API
+> I will use [world.openfoodfacts.org/data](https://world.openfoodfacts.org/data) as the nutritional information API. It provides free access to a large database of food products and their nutritional information. Also for european products.
+
+[Usage - openfoodfacts-python](https://openfoodfacts.github.io/openfoodfacts-python/usage/) documents how to use the API.
+
+With `api.product.text_search(query, page=page, page_size=page_size)` I can search for products by text. It returns a dictionary with the search results and paging information.
+
+```python
+{'count': 1956, 'page': 1, 'page_count': 1, 'page_size': 1, 'products': [...] , 'skip': 0}
+```
+
+With this information i can page through the results if needed.
 
 > [!NOTE]
 > This is a note
@@ -215,7 +260,16 @@ Notes about the development of the issue.
 Link to related PIA
 
 ### :link: Links
-- Any other documentation should be linked here. Intern and extern.
+
+#### Libs
+- [questionary](https://github.com/tmbo/questionary)
+- [Questionary — Questionary 2.0.1 documentation](https://questionary.readthedocs.io/en/stable/index.html)
+- [rich](https://github.com/Textualize/rich)
+
+#### APIs
+- [The Largest Global Nutrition Database, Recipe and Food API | fatsecret Platform](https://platform.fatsecret.com/platform-api)
+- [world.openfoodfacts.org/data](https://world.openfoodfacts.org/data)
+- [Usage - openfoodfacts-python](https://openfoodfacts.github.io/openfoodfacts-python/usage/)
 
 ## :clapper: Demo
 

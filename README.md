@@ -32,8 +32,7 @@ conda activate python_workshop_project
 Both files need to be updated whenever new packages are added to the project or existing ones are updated.
 
 ```powershell
-conda list --export > requirements.txt
-conda env export > environment.yml
+conda list --export > requirements.txt & conda env export > environment.yml
 ```
 
 An existing environment can be updated with:
