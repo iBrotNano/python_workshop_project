@@ -1,44 +1,23 @@
 import logging
 import sys
-import input.input_handler as input_handler
-import config.logger as logger_config
-import nutrition_api.repository as nutrition_repository
-
-# import nutrition_api.repository as nutrition_repo
+import main_menu.menu as menu
+import config.config as conf
+import nutrition.command_line_handler as nutrition_cli
 
 # Encapsulates the whole application logic and displays any errors encountered.
 try:
-    # nutritionRepo = nutrition_repo.NutritionRepository()
-    # nutritionRepo.search("apple")
-    logger_config.configure()  # First step in the app to make logging available everywhere.
-    inputHandler = input_handler.InputHandler()
+    conf.configure()  # First step configures the app (e.g., logging).
     log = logging.getLogger(__name__)
-
-    print("You can type 'exit' everywhere to exit the application.")
+    main_menu = menu.Menu()
 
     while True:
         try:
-            ### TEST CODE ###
-            test = nutrition_repository.NutritionRepository().search_foods("Ja Skyr")
-            # print(test)
-            # test = test["products"][0]
-            # print(type(test))
-            # print(len(test))
-            # print(test)
+            command = main_menu.show()
 
-            for product in test["products"]:
-                print(f"ID: {product.get('id', 'N/A')}")
-                print(f"Product: {product.get('product_name', 'N/A')}")
-                print(f"  Brands: {product.get('brands', 'N/A')}")
-                print(f"  Quantity: {product.get('quantity', 'N/A')}")
-                for key, value in product["nutriments"].items():
-                    print(f"    {key}: {value}")
-                print("")
+            if command == main_menu.SEARCH_NUTRITION_COMMAND:
+                nutrition_cli.CommandLineHandler().show()
 
-            ### TEST CODE ###
-            command = inputHandler.handle_input()
-
-            if command == inputHandler.EXIT_COMMAND:
+            if command == main_menu.EXIT_COMMAND:
                 print("Exiting the application.")
                 sys.exit(0)
 

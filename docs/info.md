@@ -57,7 +57,7 @@ Command line input from the user. Selections and search terms. With the search t
 Are there any?
 
 ## :heavy_check_mark: Acceptance tests
-- [ ] I will test that the app exits when I type "exit". Spaces before and after "exit" should be ignored, and the command should be case-insensitive.
+- [ ] I will test that the app can exits gracefully.
 - [ ] All errors are handled gracefully with appropriate messages in the console.
 - [ ] All errors are written into a log file with timestamps for debugging purposes.
 - [ ] I will test searching for foods by name and manufacturer and verify that the correct nutritional information is displayed.
@@ -85,17 +85,18 @@ Error handling will be implemented to ensure that all errors are logged and disp
 
 There are some helpful libraries to handle input in CLI apps. They can handle selections and other stuff i will need. I will use [questionary](https://github.com/tmbo/questionary) to handle input from the user. Output will be displayed enriched in the console using [rich](https://github.com/Textualize/rich).
 
+Every feature of the app will have its own input and output handling functions to keep the code organized and maintainable.
+
 ### Nutritional information API
 
 An existing API will be queried to get nutritional information. The app will handle user input via the command line and display output in the console.
 
 ## :microscope: Dissection
 
-| Integration test | 1                                                                                                                            |
-| ---------------- | ---------------------------------------------------------------------------------------------------------------------------- |
-| Action           | I will exit the app by typing "exit" (case insensitive, ignoring leading/trailing spaces) where a text prompt appears.       |
-| Test cases       | `exit`, ` EXIT `, `ExIt`                                                                                                     |
-| Expected result  | The app should terminate gracefully without errors. The command is always recognized, no matter in what state the app is in. |
+| Integration test | 1                                                                        |
+| ---------------- | ------------------------------------------------------------------------ |
+| Action           | I will exit the app selecting "Exit the application" from the main menu. |
+| Expected result  | The app should terminate gracefully without errors.                      |
 
 | Integration test | 2                                                                                                    |
 | ---------------- | ---------------------------------------------------------------------------------------------------- |
@@ -107,10 +108,10 @@ An existing API will be queried to get nutritional information. The app will han
 | Action           | I will provoke an error by not configuring something important.                                                                     |
 | Expected result  | A logfile is created with detailed error information for debugging purposes. The error details include timestamps and stack traces. |
 
-| Integration test | 4                                                   |
-| ---------------- | --------------------------------------------------- |
-| Action           | I will exit the app via the main menu.              |
-| Expected result  | The app should terminate gracefully without errors. |
+| Integration test | 4                                                               |
+| ---------------- | --------------------------------------------------------------- |
+| Action           | I will exit the app via the main menu by confirming the prompt. |
+| Expected result  | The app should terminate gracefully without errors.             |
 
 | Integration test | 5                                                                 |
 | ---------------- | ----------------------------------------------------------------- |
@@ -127,6 +128,21 @@ An existing API will be queried to get nutritional information. The app will han
 | Action           | I will check if the confirmation before exit is triggered and performs and prevents the exit correctly. |
 | Expected result  | The confirmation before exit should be recognized.                                                      |
 
+| Integration test | 8                                                             |
+| ---------------- | ------------------------------------------------------------- |
+| Action           | I will enter en empty string as a search term.                |
+| Expected result  | The app returns to the main menu without performing a search. |
+
+| Integration test | 9                                                             |
+| ---------------- | ------------------------------------------------------------- |
+| Action           | I will press CTRL+C in the search term question.              |
+| Expected result  | The app returns to the main menu without performing a search. |
+
+| Integration test | 10                                                            |
+| ---------------- | ------------------------------------------------------------- |
+| Action           | I will search for a non-existent product.                     |
+| Expected result  | The app displays a message indicating no products were found. |
+
 ## :hammer_and_wrench: Development
 
 ### :clipboard: TODOs
@@ -141,13 +157,22 @@ An existing API will be queried to get nutritional information. The app will han
 - [ ] Development of a simple CLI tool to query nutritional information from an API (https://publicapis.io/open-food-facts-api, https://platform.fatsecret.com/platform-api). Search for foods and display nutrition facts.
   - [x] Make the name of my app configurable
   - [x] Make the version of my app configurable
-  - [ ] Check the API [world.openfoodfacts.org/data](https://world.openfoodfacts.org/data)
+  - [x] Check the API [world.openfoodfacts.org/data](https://world.openfoodfacts.org/data)
     - [x] Inspect the returned data structure
-    - [ ] Implement the test code from `main.py` into the repository class
-    - [ ] Delete `api_call.py`
-  - [ ] Configuration settings for API access and user preferences.
-  - [ ] Search criteria are name and manufacturer.
-  - [ ] Search results from the API displayed in the console.
+    - [x] Remove the hint to enter 'exit'
+    - [x] Implement the test code from `main.py` into the repository class
+    - [x] Delete `api_call.py`
+    - [x] Output the search results in a user friendly way
+    - [x] ~~Can the search be made more performant? I also want only results with at least the macronutrients filled.~~
+  - [x] Configuration settings for API access and user preferences.
+  - [x] Search criteria are name and manufacturer.
+  - [x] Configuration for the logger in `config.py`
+  - [x] Extract console handling into own feature modules
+  - [x] Use number from result and paging information
+  - [x] Search results from the API displayed in the console as a new selection.
+  - [x] Make the Items in the selection more user friendly
+  - [ ] Display nutrition without table style
+  - [ ] Paging for the selection if there are many results.
   - [ ] Nutritional values of recipes displayed in the console.
 - [ ] Create recipes with nutrition calculation.
   - [ ] Users can enter recipes, and the tool calculates the overall nutritional values based on the ingredients.
@@ -221,6 +246,44 @@ With `api.product.text_search(query, page=page, page_size=page_size)` I can sear
 ```
 
 With this information i can page through the results if needed.
+
+The data of the products are stored in `products` in a list of dictionaries. Each dictionary contains all information about a product.
+
+```python
+{
+  "_id": "4000405002377",
+  "brands": "Rügenwalder,Rügenwalder Mühle",
+  "product_name": "Vegane Pommersche Apfel und Zwieben",
+  "quantity": "125 g",
+  "nutriments": {
+                "alcohol_modifier": "-",
+                "carbohydrates": 8.9,
+                "carbohydrates_100g": 8.9,
+                "carbohydrates_unit": "g",
+                "carbohydrates_value": 8.9,
+                "energy": 908,
+                ...
+}
+```
+
+Here is some sample data:
+
+```
+Skyr Natur - Huber, Ja!, Rewe - 1pcs - Nutrients: carbohydrates: 4, carbohydrates_100g: 4, carbohydrates_serving: 6, carbohydrates_unit: g, carbohydrates_value: 4, energy: 270, energy-kcal: 64, energy-kcal_100g: 64, energy-kcal_serving: 96, energy-kcal_unit: kcal, energy-kcal_value: 64, energy-kcal_value_computed: 61.8, energy-kj: 270, energy-kj_100g: 270, energy-kj_serving: 405, energy-kj_unit: kJ, energy-kj_value: 270, energy-kj_value_computed: 262.4, energy_100g: 270, energy_serving: 405, energy_unit: kJ, energy_value: 270, fat: 0.2, fat_100g: 0.2, fat_serving: 0.3, fat_unit: g, fat_value: 0.2, fruits-vegetables-legumes-estimate-from-ingredients_100g: 0, fruits-vegetables-legumes-estimate-from-ingredients_serving: 0, fruits-vegetables-nuts-estimate-from-ingredients_100g: 0, fruits-vegetables-nuts-estimate-from-ingredients_serving: 0, nova-group: 1, nova-group_100g: 1, nova-group_serving: 1, nutrition-score-fr: -3, nutrition-score-fr_100g: -3, proteins: 11, proteins_100g: 11, proteins_serving: 16.5, proteins_unit: g, proteins_value: 11, salt: 0.08, salt_100g: 0.08, salt_serving: 0.12, salt_unit: g, salt_value: 0.08, saturated-fat: 0.1, saturated-fat_100g: 0.1, saturated-fat_serving: 0.15, saturated-fat_unit: g, saturated-fat_value: 0.1, sodium: 0.032, sodium_100g: 0.032, sodium_serving: 0.048, sodium_unit: g, sodium_value: 0.032, sugars: 4, sugars_100g: 4, sugars_serving: 6, sugars_unit: g, sugars_value: 4
+```
+
+During pagination of the nutritional information search results, I can use the `page` parameter to specify which page of results to retrieve. The `page_size` parameter allows me to define how many results should be returned per page. By adjusting these parameters, I can efficiently navigate through large sets of search results.
+
+In the result i get the following paging information:
+
+- `count`: Total number of products matching the search query.
+- `page`: Current page number.
+- `page_count`: Number of items on the current page.
+- `page_size`: Number of results per page.
+- `skip`: Number of results skipped (used for pagination).
+
+> [!TIP] Paging
+> I just have to name the page until `skip` + `page_count` = `count`.
 
 > [!NOTE]
 > This is a note
