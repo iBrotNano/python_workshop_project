@@ -1,6 +1,7 @@
 import logging
 import questionary
 import nutrition.repository as nutrition_repository
+from prompt_toolkit.formatted_text import FormattedText
 
 log = logging.getLogger(__name__)
 
@@ -20,7 +21,8 @@ class CommandLineHandler:
             return  # User chose to cancel; return to main menu.
 
         if command == self.NUTRITION_SEARCH_TERM_COMMAND:
-            self._execute_search(search_term)
+            if self._execute_search(search_term) == self.CANCEL_COMMAND:
+                return  # User chose to cancel during search; return to main menu.
 
     def _get_nutrition_search_term(self):
         """
@@ -57,16 +59,39 @@ class CommandLineHandler:
                 f"Found {products['count']} products for search term: '{search_term}'"
             )
 
-            choices = []
+            choices = [
+                questionary.Choice(
+                    title=FormattedText(
+                        [
+                            (
+                                "bold fg:ansired ",
+                                "Cancel",
+                            )
+                        ]
+                    ),
+                    value=self.CANCEL_COMMAND,
+                )
+            ]
 
             for product in products["products"]:
                 choices.append(
                     questionary.Choice(
-                        title=f"{product['product']}",  # TODO: enhance with more details
+                        title=FormattedText(
+                            [
+                                (
+                                    "bold fg:ansiyellow ",
+                                    f"{product['brands']} {product['product']} {product['quantity']}",
+                                ),
+                                (
+                                    "fg:ansibrightblack ",
+                                    f" | {product['energy-kcal_100g']} kcal / {product['energy-kj_100g']} kj | {product['carbohydrates_100g']} g carbs | {product['proteins_100g']} g proteins | {product['fat_100g']} g fat | {product['sugars_100g']} g sugars | {product['salt_100g']} g salt",
+                                ),
+                            ]
+                        ),
                         value=product,
                     )
                 )
 
-            questionary.select(
+            return questionary.select(
                 "Select a product to view details:", choices=choices, use_shortcuts=True
             ).ask()
