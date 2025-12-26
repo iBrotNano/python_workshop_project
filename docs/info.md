@@ -171,7 +171,9 @@ An existing API will be queried to get nutritional information. The app will han
   - [x] Use number from result and paging information
   - [x] Search results from the API displayed in the console as a new selection.
   - [x] Make the Items in the selection more user friendly
-  - [ ] Display nutrition without table style
+  - [x] Display nutrition without table style
+  - [x] Handle zero results gracefully with 'Ja kyr'
+  - [x] Cancel the search via menu
   - [ ] Paging for the selection if there are many results.
   - [ ] Nutritional values of recipes displayed in the console.
 - [ ] Create recipes with nutrition calculation.
