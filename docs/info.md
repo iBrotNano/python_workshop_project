@@ -174,7 +174,14 @@ An existing API will be queried to get nutritional information. The app will han
   - [x] Display nutrition without table style
   - [x] Handle zero results gracefully with 'Ja kyr'
   - [x] Cancel the search via menu
-  - [ ] Paging for the selection if there are many results.
+  - [x] Fixes missing shortcuts
+  - [x] Paging for the selection if there are many results.
+    - [x] Show 7 items per page.
+    - [x] Coloring the buttons 'Next' and 'Previous' to make them more visible.
+    - [x] Show 'Next' if more results are available.
+    - [x] Show 'Previous' if not on the first page.
+    - [x] Show the current shown items and the total number of items.
+    - [x] Show disabled 'Next' and 'Previous' buttons gray when not available.
   - [ ] Nutritional values of recipes displayed in the console.
 - [ ] Create recipes with nutrition calculation.
   - [ ] Users can enter recipes, and the tool calculates the overall nutritional values based on the ingredients.

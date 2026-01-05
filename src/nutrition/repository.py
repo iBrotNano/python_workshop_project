@@ -35,13 +35,14 @@ class NutritionRepository:
         )
 
         # Build the result dictionary with pagination info.
+        # Sometimes the API returns these values as strings, so we convert them to integers.
         result = {
             "query": query,
-            "count": search_result.get("count", 0),
-            "page": search_result.get("page", 1),
-            "page_count": search_result.get("page_count", 0),
-            "page_size": search_result.get("page_size", 0),
-            "skip": search_result.get("skip", 0),
+            "count": int(search_result.get("count", 0)),
+            "page": int(search_result.get("page", 1)),
+            "page_count": int(search_result.get("page_count", 0)),
+            "page_size": int(search_result.get("page_size", 0)),
+            "skip": int(search_result.get("skip", 0)),
         }
 
         products = []
