@@ -3,6 +3,7 @@ import questionary
 import nutrition.repository as nutrition_repository
 from prompt_toolkit.formatted_text import FormattedText
 from config.console import console, print_info, print_rule_separated
+from rich.table import Table
 
 log = logging.getLogger(__name__)
 
@@ -29,7 +30,7 @@ class CommandLineHandler:
             if result is None or result == self.CANCEL_COMMAND:
                 return  # User chose to cancel during search; return to main menu.
             else:
-                console.print(result)  # Display the selected product details.
+                self._print_nutrition_info(result)
 
     def _get_nutrition_search_term(self):
         """
@@ -189,3 +190,79 @@ class CommandLineHandler:
                     shortcut_key=str(index),  # Assign shortcut key based on index
                 )
             )
+
+    def _print_nutrition_info(self, product: dict):
+        """
+        Prints the nutritional information of the product in a table format.
+
+        :param product: The product details.
+        """
+
+        def _print_nutrition_table(
+            nutrients: dict[str, str],
+            column1_title: str,
+            column2_title: str,
+        ):
+            """
+            Display nutritional information in a formatted table.
+            Creates and prints a Rich table containing nutrient names and their
+            amounts per 100g of product. The table uses colored columns for
+            better readability in console output.
+
+            :param nutrients: A dictionary mapping nutrient names (str) to their amounts (str).
+            :param column1_title: The title for the first column.
+            :param column2_title: The title for the second column.
+            """
+
+            table = Table()
+            table.add_column(column1_title, style="cyan", no_wrap=True)
+            table.add_column(column2_title, style="magenta")
+
+            for nutrient, amount in nutrients.items():
+                table.add_row(nutrient, str(amount))
+
+            console.print(table)
+
+        print_rule_separated(
+            f"[link={product['url']}]{product['brands']} {product['product']} {product['quantity']}[/link]"
+        )
+
+        # Print essential nutrients table
+        _print_nutrition_table(
+            {
+                "Energy": f"{product['energy-kcal_100g']} kcal / {product['energy-kj_100g']} kj",
+                "Carbohydrates": f"{product['carbohydrates_100g']} {product['carbohydrates_unit']}",
+                "Proteins": f"{product['proteins_100g']} {product['proteins_unit']}",
+                "Fat": f"{product['fat_100g']} {product['fat_unit']}",
+                "Sugars": f"{product['sugars_100g']} {product['sugars_unit']}",
+                "Salt": f"{product['salt_100g']} {product['salt_unit']}",
+            },
+            column1_title="Nutrient",
+            column2_title="Amount per 100g",
+        )
+
+        # Print additional nutrients table
+        # Get all data from structure like this:
+        # 'vitamin-k_100g': 0, used as key
+        # 'vitamin-k_unit': 'mcg' used to get unit
+        _print_nutrition_table(
+            {
+                nutrient.replace("_100g", "")
+                .replace("-", " ")
+                .title(): f"{value} {product.get(nutrient.replace('_100g', '_unit'), '')}"
+                for nutrient, value in product.items()
+                if nutrient.endswith("_100g")
+                and nutrient
+                not in [
+                    "energy-kcal_100g",
+                    "energy-kj_100g",
+                    "carbohydrates_100g",
+                    "proteins_100g",
+                    "fat_100g",
+                    "sugars_100g",
+                    "salt_100g",
+                ]
+            },
+            column1_title="Info",
+            column2_title="Unit per 100g",
+        )

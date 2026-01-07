@@ -154,7 +154,7 @@ An existing API will be queried to get nutritional information. The app will han
 - [x] Use Lib for input to make app handling easier
 - [x] Add menue to select between the main functions and exit
 - [x] Ask for confirmation before exiting the app
-- [ ] Development of a simple CLI tool to query nutritional information from an API (https://publicapis.io/open-food-facts-api, https://platform.fatsecret.com/platform-api). Search for foods and display nutrition facts.
+- [x] Development of a simple CLI tool to query nutritional information from an API (https://publicapis.io/open-food-facts-api, https://platform.fatsecret.com/platform-api). Search for foods and display nutrition facts.
   - [x] Make the name of my app configurable
   - [x] Make the version of my app configurable
   - [x] Check the API [world.openfoodfacts.org/data](https://world.openfoodfacts.org/data)
@@ -184,8 +184,11 @@ An existing API will be queried to get nutritional information. The app will han
     - [x] Show 'Previous' if not on the first page.
     - [x] Show the current shown items and the total number of items.
     - [x] Show disabled 'Next' and 'Previous' buttons gray when not available.
-  - [ ] Nutritional values displayed in the console as a table with [Tables — Rich 14.1.0 documentation](https://rich.readthedocs.io/en/stable/tables.html) or [Layout — Rich 14.1.0 documentation](https://rich.readthedocs.io/en/stable/layout.html).
-    - [ ] What data should be displayed?
+  - [x] Nutritional values displayed in the console as a table with [Tables — Rich 14.1.0 documentation](https://rich.readthedocs.io/en/stable/tables.html) or [Layout — Rich 14.1.0 documentation](https://rich.readthedocs.io/en/stable/layout.html).
+    - [x] What data should be displayed?
+    - [x] Are the results normalized?
+    - [x] What possible values are there for the nutrients?
+    - [x] Link to the search item on openfoodfacts.org as header for result
 - [ ] Create recipes with nutrition calculation.
   - [ ] Users can enter recipes, and the tool calculates the overall nutritional values based on the ingredients.
   - [ ] Ingredients are selected via product search. Ingredient quantities in the recipe must be specified, optionally with the number of people the recipe is intended for.
@@ -295,6 +298,185 @@ In the result i get the following paging information:
 - `page_size`: Number of results per page.
 - `skip`: Number of results skipped (used for pagination).
 
+Here is an example of a product in the search result:
+
+```python
+{
+    'id': '4337256571074',
+    'product': 'Skyr Natur',
+    'brands': 'ja!',
+    'quantity': '500 g',
+    'energy-kcal_100g': '63.3333333333333',
+    'energy-kj_100g': 270,
+    'carbohydrates_100g': 4,
+    'proteins_100g': 11,
+    'fat_100g': '0.2',
+    'sugars_100g': 4,
+    'salt_100g': 0,
+    'added-sugars': 0,
+    'added-sugars_100g': 0,
+    'added-sugars_unit': 'g',
+    'added-sugars_value': 0,
+    'alcohol': 0,
+    'alcohol_100g': 0,
+    'alcohol_serving': 0,
+    'alcohol_unit': '% vol',
+    'alcohol_value': 0,
+    'caffeine': 0,
+    'caffeine_100g': 0,
+    'caffeine_unit': 'mg',
+    'caffeine_value': 0,
+    'calcium': 0,
+    'calcium_100g': 0,
+    'calcium_unit': 'mg',
+    'calcium_value': 0,
+    'carbohydrates': 4,
+    'carbohydrates_unit': 'g',
+    'carbohydrates_value': 4,
+    'cholesterol': 0,
+    'cholesterol_100g': 0,
+    'cholesterol_unit': 'mg',
+    'cholesterol_value': 0,
+    'choline': 0,
+    'choline_100g': 0,
+    'choline_unit': 'mg',
+    'choline_value': 0,
+    'copper': 0,
+    'copper_100g': 0,
+    'copper_unit': 'mg',
+    'copper_value': 0,
+    'energy': 270,
+    'energy-kcal': '63.3333333333333',
+    'energy-kcal_unit': 'kcal',
+    'energy-kcal_value': '63.3333333333333',
+    'energy-kcal_value_computed': '61.8',
+    'energy-kj': 270,
+    'energy-kj_unit': 'kJ',
+    'energy-kj_value': 270,
+    'energy-kj_value_computed': '262.4',
+    'energy_100g': 270,
+    'energy_unit': 'kJ',
+    'energy_value': 270,
+    'fat': '0.2',
+    'fat_unit': 'g',
+    'fat_value': '0.2',
+    'fiber': 0,
+    'fiber_100g': 0,
+    'fiber_unit': 'g',
+    'fiber_value': 0,
+    'fruits-vegetables-legumes-estimate-from-ingredients_100g': 0,
+    'fruits-vegetables-legumes-estimate-from-ingredients_serving': 0,
+    'fruits-vegetables-nuts-estimate-from-ingredients_100g': 0,
+    'fruits-vegetables-nuts-estimate-from-ingredients_serving': 0,
+    'iron': 0,
+    'iron_100g': 0,
+    'iron_unit': 'mg',
+    'iron_value': 0,
+    'magnesium': 0,
+    'magnesium_100g': 0,
+    'magnesium_unit': 'mg',
+    'magnesium_value': 0,
+    'manganese': 0,
+    'manganese_100g': 0,
+    'manganese_unit': 'mg',
+    'manganese_value': 0,
+    'monounsaturated-fat': 0,
+    'monounsaturated-fat_100g': 0,
+    'monounsaturated-fat_unit': 'g',
+    'monounsaturated-fat_value': 0,
+    'nova-group': 1,
+    'nova-group_100g': 1,
+    'nova-group_serving': 1,
+    'nutrition-score-fr': -3,
+    'nutrition-score-fr_100g': -3,
+    'phosphorus': 0,
+    'phosphorus_100g': 0,
+    'phosphorus_unit': 'mg',
+    'phosphorus_value': 0,
+    'polyunsaturated-fat': 0,
+    'polyunsaturated-fat_100g': 0,
+    'polyunsaturated-fat_unit': 'g',
+    'polyunsaturated-fat_value': 0,
+    'potassium': 0,
+    'potassium_100g': 0,
+    'potassium_unit': 'mg',
+    'potassium_value': 0,
+    'proteins': 11,
+    'proteins_unit': 'g',
+    'proteins_value': 11,
+    'salt': 0,
+    'salt_unit': 'mg',
+    'salt_value': 0,
+    'saturated-fat': '0.133333333333333',
+    'saturated-fat_100g': '0.133333333333333',
+    'saturated-fat_unit': 'g',
+    'saturated-fat_value': '0.133333333333333',
+    'selenium': 0,
+    'selenium_100g': 0,
+    'selenium_unit': 'mcg',
+    'selenium_value': 0,
+    'sodium': 0,
+    'sodium_100g': 0,
+    'sodium_unit': 'mg',
+    'sodium_value': 0,
+    'starch': 0,
+    'starch_100g': 0,
+    'starch_unit': 'g',
+    'starch_value': 0,
+    'sugars': 4,
+    'sugars_unit': 'g',
+    'sugars_value': 4,
+    'trans-fat': 0,
+    'trans-fat_100g': 0,
+    'trans-fat_unit': 'g',
+    'trans-fat_value': 0,
+    'vitamin-a': 0,
+    'vitamin-a_100g': 0,
+    'vitamin-a_unit': 'mcg',
+    'vitamin-a_value': 0,
+    'vitamin-b1': 0,
+    'vitamin-b12': 0,
+    'vitamin-b12_100g': 0,
+    'vitamin-b12_unit': 'mcg',
+    'vitamin-b12_value': 0,
+    'vitamin-b1_100g': 0,
+    'vitamin-b1_unit': 'mg',
+    'vitamin-b1_value': 0,
+    'vitamin-b2': 0,
+    'vitamin-b2_100g': 0,
+    'vitamin-b2_unit': 'mg',
+    'vitamin-b2_value': 0,
+    'vitamin-b6': 0,
+    'vitamin-b6_100g': 0,
+    'vitamin-b6_unit': 'mg',
+    'vitamin-b6_value': 0,
+    'vitamin-b9': 0,
+    'vitamin-b9_100g': 0,
+    'vitamin-b9_unit': 'mcg',
+    'vitamin-b9_value': 0,
+    'vitamin-c': 0,
+    'vitamin-c_100g': 0,
+    'vitamin-c_unit': 'mg',
+    'vitamin-c_value': 0,
+    'vitamin-d': 0,
+    'vitamin-d_100g': 0,
+    'vitamin-d_unit': 'mcg',
+    'vitamin-d_value': 0,
+    'vitamin-e': 0,
+    'vitamin-e_100g': 0,
+    'vitamin-e_unit': 'mg',
+    'vitamin-e_value': 0,
+    'vitamin-k': 0,
+    'vitamin-k_100g': 0,
+    'vitamin-k_unit': 'mcg',
+    'vitamin-k_value': 0,
+    'zinc': 0,
+    'zinc_100g': 0,
+    'zinc_unit': 'mg',
+    'zinc_value': 0
+}
+```
+
 > [!TIP] Paging
 > I just have to name the page until `skip` + `page_count` = `count`.
 
@@ -348,6 +530,7 @@ Link to related PIA
 - [The Largest Global Nutrition Database, Recipe and Food API | fatsecret Platform](https://platform.fatsecret.com/platform-api)
 - [world.openfoodfacts.org/data](https://world.openfoodfacts.org/data)
 - [Usage - openfoodfacts-python](https://openfoodfacts.github.io/openfoodfacts-python/usage/)
+- [openfoodfacts.github.io/openfoodfacts-server/api/ref-v3/](https://openfoodfacts.github.io/openfoodfacts-server/api/ref-v3/)
 
 ## :clapper: Demo
 

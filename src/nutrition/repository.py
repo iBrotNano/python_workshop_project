@@ -52,6 +52,7 @@ class NutritionRepository:
         for product in search_result["products"]:
             product_data = {
                 "id": product.get("id", "N/A"),
+                "url": product.get("url", "N/A"),
                 "product": product.get("product_name", "N/A"),
                 "brands": product.get("brands", "N/A"),
                 "quantity": product.get("quantity", "N/A"),
