@@ -29,7 +29,8 @@ conda env create -f environment.yml -n python_workshop_project
 conda activate python_workshop_project
 ```
 
-Both files need to be updated whenever new packages are added to the project or existing ones are updated.
+> [!IMPORTANT] DEPENDENCIES
+> Both files need to be updated whenever new packages are added to the project or existing ones are updated.
 
 ```powershell
 conda list --export > requirements.txt & conda env export > environment.yml

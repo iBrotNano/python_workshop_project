@@ -176,18 +176,22 @@ An existing API will be queried to get nutritional information. The app will han
   - [x] Cancel the search via menu
   - [x] Fixes missing shortcuts
   - [x] Paging for the selection if there are many results.
+  - [x] Make output more user friendly with `rich`
+    - [x] Initialize the console via `config/console.py`
     - [x] Show 7 items per page.
     - [x] Coloring the buttons 'Next' and 'Previous' to make them more visible.
     - [x] Show 'Next' if more results are available.
     - [x] Show 'Previous' if not on the first page.
     - [x] Show the current shown items and the total number of items.
     - [x] Show disabled 'Next' and 'Previous' buttons gray when not available.
-  - [ ] Nutritional values of recipes displayed in the console.
+  - [ ] Nutritional values displayed in the console as a table with [Tables — Rich 14.1.0 documentation](https://rich.readthedocs.io/en/stable/tables.html) or [Layout — Rich 14.1.0 documentation](https://rich.readthedocs.io/en/stable/layout.html).
+    - [ ] What data should be displayed?
 - [ ] Create recipes with nutrition calculation.
   - [ ] Users can enter recipes, and the tool calculates the overall nutritional values based on the ingredients.
   - [ ] Ingredients are selected via product search. Ingredient quantities in the recipe must be specified, optionally with the number of people the recipe is intended for.
   - [ ] Recipes are saved as a JSON file and can be loaded again later. (Maybe YAML?) How to input recipe instuctions?
   - [ ] Quantity information is persisted per person.
+  - [ ] Check if i can handle recipes with markdown files. I could use [Markdown — Rich 14.1.0 documentation](https://rich.readthedocs.io/en/stable/markdown.html) to display them nicely in the console.
 - [ ] Create a weekly meal plan from the recipes.
   - [ ] Generate a weekly meal plan randonmly from existing recipes.
   - [ ] Users can assign recipes to a day of the week.
@@ -337,6 +341,8 @@ Link to related PIA
 - [questionary](https://github.com/tmbo/questionary)
 - [Questionary — Questionary 2.0.1 documentation](https://questionary.readthedocs.io/en/stable/index.html)
 - [rich](https://github.com/Textualize/rich)
+- [Tables — Rich 14.1.0 documentation](https://rich.readthedocs.io/en/stable/tables.html)
+- [Layout — Rich 14.1.0 documentation](https://rich.readthedocs.io/en/stable/layout.html)
 
 #### APIs
 - [The Largest Global Nutrition Database, Recipe and Food API | fatsecret Platform](https://platform.fatsecret.com/platform-api)

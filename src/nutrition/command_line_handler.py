@@ -2,6 +2,7 @@ import logging
 import questionary
 import nutrition.repository as nutrition_repository
 from prompt_toolkit.formatted_text import FormattedText
+from config.console import console, print_info, print_rule_separated
 
 log = logging.getLogger(__name__)
 
@@ -28,7 +29,7 @@ class CommandLineHandler:
             if result is None or result == self.CANCEL_COMMAND:
                 return  # User chose to cancel during search; return to main menu.
             else:
-                print(result)  # Display the selected product details.
+                console.print(result)  # Display the selected product details.
 
     def _get_nutrition_search_term(self):
         """
@@ -56,32 +57,33 @@ class CommandLineHandler:
         :return: The selected product, next/previous command, or cancel command.
         """
 
-        # Don't change the page_size to more than 7. The index is used for shortcut
-        # keys and more than 9 items would break it.
-        products = nutrition_repository.NutritionRepository().search_products(
-            search_term, page=page, page_size=7
-        )
+        with console.status("Searching...", spinner="earth"):
+            # Don't change the page_size to more than 7. The index is used for shortcut
+            # keys and more than 9 items would break it.
+            search_result = nutrition_repository.NutritionRepository().search_products(
+                search_term, page=page, page_size=7
+            )
 
-        if not products:
-            print(f"No products found for search term: '{search_term}'")
+        product_count = search_result["count"]
+
+        if product_count == 0:
+            print_info(
+                f"No products found for search term: '[yellow]{search_term}[/yellow]'"
+            )
         else:
-            product_count = products["count"]
-
-            print(
-                f"Showing {products['skip'] + 1} to {products['skip'] + products['page_count']} of {product_count} products for search term: '{search_term}'"
+            print_rule_separated(
+                f"Showing {search_result['skip'] + 1} to {search_result['skip'] + search_result['page_count']} of {product_count} products for search term: '{search_term}'"
             )
 
             choices = []
-            self._add_navigation_choices_to_menu(choices, products, product_count)
-            self._add_item_choices_to_menu(choices, products)
+            self._add_navigation_choices_to_menu(choices, search_result, product_count)
+            self._add_item_choices_to_menu(choices, search_result)
 
             selection = questionary.select(
                 "Select a product to view details:",
                 choices=choices,
                 use_shortcuts=True,
             ).ask()
-
-            print(f"{selection=}")
 
             if selection == self.PREVIOUS_COMMAND:
                 return self._execute_search(search_term, page=page - 1)

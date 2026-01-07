@@ -3,10 +3,11 @@ import sys
 import main_menu.menu as menu
 import config.config as conf
 import nutrition.command_line_handler as nutrition_cli
+from config.console import console
 
 # Encapsulates the whole application logic and displays any errors encountered.
 try:
-    conf.configure()  # First step configures the app (e.g., logging).
+    conf.configure()  # First step configures the app (e.g., logging, console).
     log = logging.getLogger(__name__)
     main_menu = menu.Menu()
 
@@ -18,7 +19,7 @@ try:
                 nutrition_cli.CommandLineHandler().show()
 
             if command == main_menu.EXIT_COMMAND:
-                print("Exiting the application.")
+                console.print("Goodbye! 👋")
                 sys.exit(0)
 
         except Exception as e:
