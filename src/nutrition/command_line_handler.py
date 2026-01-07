@@ -25,7 +25,7 @@ class CommandLineHandler:
         if command == self.NUTRITION_SEARCH_TERM_COMMAND:
             result = self._execute_search(search_term)
 
-            if result == self.CANCEL_COMMAND:
+            if result is None or result == self.CANCEL_COMMAND:
                 return  # User chose to cancel during search; return to main menu.
             else:
                 print(result)  # Display the selected product details.
@@ -66,9 +66,11 @@ class CommandLineHandler:
             print(f"No products found for search term: '{search_term}'")
         else:
             product_count = products["count"]
+
             print(
                 f"Showing {products['skip'] + 1} to {products['skip'] + products['page_count']} of {product_count} products for search term: '{search_term}'"
             )
+
             choices = []
             self._add_navigation_choices_to_menu(choices, products, product_count)
             self._add_item_choices_to_menu(choices, products)
@@ -78,6 +80,8 @@ class CommandLineHandler:
                 choices=choices,
                 use_shortcuts=True,
             ).ask()
+
+            print(f"{selection=}")
 
             if selection == self.PREVIOUS_COMMAND:
                 return self._execute_search(search_term, page=page - 1)
