@@ -9,10 +9,10 @@ log = logging.getLogger(__name__)
 
 
 class CommandLineHandler:
-    NUTRITION_SEARCH_TERM_COMMAND = "NUTRITION_SEARCH_TERM_COMMAND"
-    CANCEL_COMMAND = "CANCEL_COMMAND"
-    PREVIOUS_COMMAND = "PREVIOUS_COMMAND"
-    NEXT_COMMAND = "NEXT_COMMAND"
+    NUTRITION_SEARCH_TERM_COMMAND = "NUTRITION_SEARCH_TERM"
+    CANCEL_COMMAND = "CANCEL"
+    PREVIOUS_COMMAND = "PREVIOUS"
+    NEXT_COMMAND = "NEXT"
 
     def show(self):
         """
@@ -31,6 +31,7 @@ class CommandLineHandler:
                 return  # User chose to cancel during search; return to main menu.
             else:
                 self._print_nutrition_info(result)
+                return result
 
     def _get_nutrition_search_term(self):
         """
@@ -44,7 +45,7 @@ class CommandLineHandler:
         ).ask()
 
         if search_term is None or search_term.strip() == "":
-            log.warning("No search term entered. Returning to main menu.")
+            log.warning("No search term entered.")
             return (self.CANCEL_COMMAND, None)
 
         return (self.NUTRITION_SEARCH_TERM_COMMAND, search_term.strip())

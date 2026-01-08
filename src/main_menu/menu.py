@@ -7,6 +7,7 @@ log = logging.getLogger(__name__)
 class Menu:
     EXIT_COMMAND = "EXIT"
     SEARCH_NUTRITION_COMMAND = "SEARCH_NUTRITION"
+    MANAGE_RECIPES_COMMAND = "MANAGE_RECIPES"
 
     def show(self):
         """
@@ -35,6 +36,7 @@ class Menu:
                 "Search for nutritional information",
                 value=self.SEARCH_NUTRITION_COMMAND,
             ),
+            questionary.Choice("Manage recipes", value=self.MANAGE_RECIPES_COMMAND),
             questionary.Choice(
                 "Exit the application",
                 value=self.EXIT_COMMAND,

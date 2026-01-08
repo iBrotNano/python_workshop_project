@@ -143,6 +143,111 @@ An existing API will be queried to get nutritional information. The app will han
 | Action           | I will search for a non-existent product.                     |
 | Expected result  | The app displays a message indicating no products were found. |
 
+| Integration test | 11                                                                                                          |
+| ---------------- | ----------------------------------------------------------------------------------------------------------- |
+| Action           | I will search for a existent product.                                                                       |
+| Expected result  | The app displays all found products and i can select one. The selected product is displayed with it's data. |
+
+| Integration test | 12                                                                                 |
+| ---------------- | ---------------------------------------------------------------------------------- |
+| Action           | I will search for a existent product and navigate through the pages of the result. |
+| Expected result  | I can navigate through the pages of the search results. Forward and backward.      |
+
+| Integration test | 13                                                                    |
+| ---------------- | --------------------------------------------------------------------- |
+| Action           | I will search for a existent product and cancel the process via menu. |
+| Expected result  | The app returns to the main menu without displaying a search result.  |
+
+| Integration test | 14                                                                        |
+| ---------------- | ------------------------------------------------------------------------- |
+| Action           | I will search for a existent product and cancel the process via `CTRL+C`. |
+| Expected result  | The app returns to the main menu without displaying a search result.      |
+
+| Integration test | 15                                                               |
+| ---------------- | ---------------------------------------------------------------- |
+| Action           | I will navigate to the feature 'Manage Recipes'.                 |
+| Expected result  | I will see a selection of features related to recipe management. |
+
+| Integration test | 16                                                                                                                                                                              |
+| ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Action           | I will add a new recipe and cancel it.                                                                                                                                          |
+| Expected result  | I will be prompted to enter a name for the recipe. If i cancel it with `CTRL+C`, the process is aborted and I return to the recipe management menu. A logging message is shown. |
+
+| Integration test | 17                                                                                                                                 |
+| ---------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| Action           | I will add a new recipe and enter an empty string as name.                                                                         |
+| Expected result  | If I enter an empty string as name, the process is aborted and I return to the recipe management menu. A logging message is shown. |
+
+| Integration test | 18                                          |
+| ---------------- | ------------------------------------------- |
+| Action           | I will exit `Manage recipes` with `CTRL+C`. |
+| Expected result  | I navigate back to the main menu.           |
+
+| Integration test | 19                                                                                                                                                            |
+| ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Action           | I will add a new recipe with a duplicate name.                                                                                                                |
+| Expected result  | A warning message is shown indicating that a recipe with the same name already exists. The user is prompted for a different name as long as they want to try. |
+
+| Integration test | 20                                                                                                                                                                                                                          |
+| ---------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Action           | I will add a new ingredient to the recipe.                                                                                                                                                                                  |
+| Expected result  | The ingredient is stored with the recipe instance. After I have selected a ingredient a prompt forces me to enter an amount in grams per person. After I entered the amount the ingredient and amount are shown in a table. |
+
+| Integration test | 21                                                                                                                        |
+| ---------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| Action           | I will cancel the addition of an ingredient by pressing `CTRL+C`.                                                         |
+| Expected result  | A prompt is shown asking if I want to add another ingredient. If I choose not to, I return to the recipe management menu. |
+
+| Integration test | 22                                                                                                                        |
+| ---------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| Action           | I will cancel the addition of an ingredient by selecting `Cancel` in the found products.                                  |
+| Expected result  | A prompt is shown asking if I want to add another ingredient. If I choose not to, I return to the recipe management menu. |
+
+| Integration test | 23                                                                                                                        |
+| ---------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| Action           | I will cancel the addition of an ingredient by pressing `CTRL+C` in the amount prompt.                                    |
+| Expected result  | A prompt is shown asking if I want to add another ingredient. If I choose not to, I return to the recipe management menu. |
+
+| Integration test | 24                                                    |
+| ---------------- | ----------------------------------------------------- |
+| Action           | I will enter multiline instructions to the recipe.    |
+| Expected result  | The instructions are stored with the recipe instance. |
+
+| Integration test | 25                                                  |
+| ---------------- | --------------------------------------------------- |
+| Action           | I will cancel entering instructions for the recipe. |
+| Expected result  | I return to the recipe management menu.             |
+
+| Integration test | 26                                                           |
+| ---------------- | ------------------------------------------------------------ |
+| Action           | I will enter an empty string as instructions for the recipe. |
+| Expected result  | I return to the recipe management menu.                      |
+
+| Integration test | 27                                                                                                                                              |
+| ---------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| Action           | I will cancel the saving of the recipe during the save prompt.                                                                                  |
+| Expected result  | A confirmation prompt is shown asking if I really want to cancel saving the recipe. If I choose not to, I return to the recipe management menu. |
+
+| Integration test | 28                                                                                                                                              |
+| ---------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| Action           | I will deny saving the recipe during the save prompt.                                                                                           |
+| Expected result  | A confirmation prompt is shown asking if I really want to cancel saving the recipe. If I choose not to, I return to the recipe management menu. |
+
+| Integration test | 29                                         |
+| ---------------- | ------------------------------------------ |
+| Action           | I will save 2 recipes.                     |
+| Expected result  | Both recipes are stored in a file as json. |
+
+| Integration test | 30                                                                        |
+| ---------------- | ------------------------------------------------------------------------- |
+| Action           | I will try to add an existing recipe after restarting the app.            |
+| Expected result  | The name is already present in the repository and no new recipe is added. |
+
+| Integration test | 31                                                                |
+| ---------------- | ----------------------------------------------------------------- |
+| Action           | I will open `Manage recipes` with not present `data/recipes.json` |
+| Expected result  | The app works and I can add the first recipe.                     |
+
 ## :hammer_and_wrench: Development
 
 ### :clipboard: TODOs
@@ -190,11 +295,34 @@ An existing API will be queried to get nutritional information. The app will han
     - [x] What possible values are there for the nutrients?
     - [x] Link to the search item on openfoodfacts.org as header for result
 - [ ] Create recipes with nutrition calculation.
+  - [x] Main menu entry for recipe management
+  - [x] Cancel the recipe management via menu
+  - [x] Add recipe as selection
+  - [x] User can enter a name for a recipe.
+  - [x] Add ingredients to the recipe via product search.
+  - [x] What happens when the addition of ingredients is cancelled?
+  - [x] Add multiple ingredients to the recipe.
+  - [x] Specify ingredient quantities in the recipe.
+    - [x] Cancellation should navigate to the recipe management menu.
+  - [x] Show the added ingredients and amount as a table.
+  - [x] No table if no ingredients are added yet.
+  - [x] Add instructions to the recipe.
+    - [x] Handle cancellation
+    - [x] Handle empty instructions
+  - [x] Recipes can be stored to disk.
+    - [x] Names must be unique.
+    - [x] Show the complete recipe before asking to persist it to disk.
+    - [x] Show ingredients as links
+    - [x] Confirm before cancelling the saving of the recipe.
+    - [x] Configure the path where recipes are stored.
+    - [x] Load recipes from disk.
+  - [ ] Error during search with missing `*_unit` keys.
   - [ ] Users can enter recipes, and the tool calculates the overall nutritional values based on the ingredients.
   - [ ] Ingredients are selected via product search. Ingredient quantities in the recipe must be specified, optionally with the number of people the recipe is intended for.
   - [ ] Recipes are saved as a JSON file and can be loaded again later. (Maybe YAML?) How to input recipe instuctions?
   - [ ] Quantity information is persisted per person.
   - [ ] Check if i can handle recipes with markdown files. I could use [Markdown — Rich 14.1.0 documentation](https://rich.readthedocs.io/en/stable/markdown.html) to display them nicely in the console.
+- [ ] Is it possible to show the names of the ingredients as links in the nutritional search result?
 - [ ] Create a weekly meal plan from the recipes.
   - [ ] Generate a weekly meal plan randonmly from existing recipes.
   - [ ] Users can assign recipes to a day of the week.

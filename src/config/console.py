@@ -1,6 +1,7 @@
 from rich.console import Console
 from rich.theme import Theme
 from rich.panel import Panel
+from rich.table import Table
 
 # Defines a theme for the console output.
 custom_theme = Theme({"info": "cyan", "info_border": "dim cyan"})
@@ -43,3 +44,26 @@ def print_info(message: str, title: str = "INFO"):
             border_style="info_border",
         )
     )
+
+
+def print_dict_as_table(
+    values: dict[str, str],
+    column1_title: str,
+    column2_title: str,
+):
+    """
+    Prints a table with two columns.
+
+    :param values: A dictionary mapping names (str) to their corresponding values (str).
+    :param column1_title: The title for the first column.
+    :param column2_title: The title for the second column.
+    """
+
+    table = Table()
+    table.add_column(column1_title, style="cyan", no_wrap=True)
+    table.add_column(column2_title, style="magenta")
+
+    for key, value in values.items():
+        table.add_row(key, str(value))
+
+    console.print(table)
