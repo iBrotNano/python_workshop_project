@@ -15,6 +15,7 @@ class Recipe:
         self.ingredients = []
         self.instructions = ""
         self.nutrition = {}
+        self.type = "unknown"  # e.g., breakfast, lunch, dinner, snack
 
     def add_ingredient(self, ingredient: tuple[int, dict]):
         """
@@ -34,7 +35,7 @@ class Recipe:
         :return: The recipe as a markdown string.
         :rtype: str
         """
-        md = f"# {self.name}\n\n"
+        md = f"# {self.name} ({self.type.capitalize()})\n\n"
 
         md += "## Ingredients\n\n"
 

@@ -1,9 +1,9 @@
 recipes = ""
 
 for i in range(1, 100):
-    recipes += f"""Test Recipe {i}:
+    recipes += f"""Test Rezept {i}:
   ingredients:
-  - amount: 100
+  - amount: 80
     product:
       brands: Crownfield (Lidl)
       carbohydrates: 66.7
@@ -85,7 +85,7 @@ for i in range(1, 100):
       sugars_unit: g
       sugars_value: 25.1
       url: https://de.openfoodfacts.org/produkt/20202866/premium-m%C3%BCsli-mit-fr%C3%BCchten-und-kernen-crownfield-lidl
-  - amount: 100
+  - amount: 150
     product:
       brands: Berchtesgadener Land, Bergbauern
       calcium: 0.124
@@ -148,154 +148,17 @@ for i in range(1, 100):
       sugars_unit: g
       sugars_value: 5
       url: https://de.openfoodfacts.org/produkt/4101530002475/h-milch-berchtesgadener-land
-  - amount: 150
-    product:
-      brands: Rewe, ja!
-      carbohydrates: 9.2
-      carbohydrates_100g: 9.2
-      carbohydrates_serving: 13.8
-      carbohydrates_unit: g
-      carbohydrates_value: 9.2
-      energy: 322
-      energy-kcal: 77
-      energy-kcal_100g: 77
-      energy-kcal_serving: 116
-      energy-kcal_unit: kcal
-      energy-kcal_value: 77
-      energy-kcal_value_computed: 75.4
-      energy-kj: 322
-      energy-kj_100g: 322
-      energy-kj_serving: 483
-      energy-kj_unit: kJ
-      energy-kj_value: 322
-      energy-kj_value_computed: 320.2
-      energy_100g: 322
-      energy_serving: 483
-      energy_unit: kJ
-      energy_value: 322
-      fat: 0.2
-      fat_100g: 0.2
-      fat_serving: 0.3
-      fat_unit: g
-      fat_value: 0.2
-      fruits-vegetables-legumes-estimate-from-ingredients_100g: 4.15
-      fruits-vegetables-legumes-estimate-from-ingredients_serving: 4.15
-      fruits-vegetables-nuts-estimate-from-ingredients_100g: 4.15
-      fruits-vegetables-nuts-estimate-from-ingredients_serving: 4.15
-      id: '4337256180221'
-      nova-group: 4
-      nova-group_100g: 4
-      nova-group_serving: 4
-      nutrition-score-fr: -1
-      nutrition-score-fr_100g: -1
-      product: Skyr Bourbon-Vanille
-      proteins: 9.2
-      proteins_100g: 9.2
-      proteins_serving: 13.8
-      proteins_unit: g
-      proteins_value: 9.2
-      quantity: 500 g
-      salt: 0.1
-      salt_100g: 0.1
-      salt_serving: 0.15
-      salt_unit: g
-      salt_value: 0.1
-      saturated-fat: 0.1
-      saturated-fat_100g: 0.1
-      saturated-fat_serving: 0.15
-      saturated-fat_unit: g
-      saturated-fat_value: 0.1
-      sodium: 0.04
-      sodium_100g: 0.04
-      sodium_serving: 0.06
-      sodium_unit: g
-      sodium_value: 0.04
-      sugars: 8.3
-      sugars_100g: 8.3
-      sugars_serving: 12.5
-      sugars_unit: g
-      sugars_value: 8.3
-      url: https://de.openfoodfacts.org/produkt/4337256180221/skyr-bourbon-vanille-rewe
-  - amount: 30
-    product:
-      brands: ja!
-      carbohydrates: 76
-      carbohydrates_100g: 76
-      carbohydrates_serving: 76
-      carbohydrates_unit: g
-      carbohydrates_value: 76
-      energy: 1377
-      energy-kcal: 329
-      energy-kcal_100g: 329
-      energy-kcal_serving: 329
-      energy-kcal_unit: kcal
-      energy-kcal_value: 329
-      energy-kcal_value_computed: 324.2
-      energy-kj: 1377
-      energy-kj_100g: 1377
-      energy-kj_serving: 1380
-      energy-kj_unit: kJ
-      energy-kj_value: 1377
-      energy-kj_value_computed: 1374.1
-      energy_100g: 1377
-      energy_serving: 1380
-      energy_unit: kJ
-      energy_value: 1377
-      fat: 0.8
-      fat_100g: 0.8
-      fat_serving: 0.8
-      fat_unit: g
-      fat_value: 0.8
-      fiber: 5.5
-      fiber_100g: 5.5
-      fiber_serving: 5.5
-      fiber_unit: g
-      fiber_value: 5.5
-      fruits-vegetables-legumes-estimate-from-ingredients_100g: 66
-      fruits-vegetables-legumes-estimate-from-ingredients_serving: 66
-      fruits-vegetables-nuts-estimate-from-ingredients_100g: 66
-      fruits-vegetables-nuts-estimate-from-ingredients_serving: 66
-      id: '4337256793889'
-      nutrition-score-fr: 14
-      nutrition-score-fr_100g: 14
-      product: Cranberries
-      proteins: 0.5
-      proteins_100g: 0.5
-      proteins_serving: 0.5
-      proteins_unit: g
-      proteins_value: 0.5
-      quantity: 200g
-      salt: 0.02
-      salt_100g: 0.02
-      salt_serving: 0.02
-      salt_unit: g
-      salt_value: 0.02
-      saturated-fat: 0.1
-      saturated-fat_100g: 0.1
-      saturated-fat_serving: 0.1
-      saturated-fat_unit: g
-      saturated-fat_value: 0.1
-      sodium: 0.008
-      sodium_100g: 0.008
-      sodium_serving: 0.008
-      sodium_unit: g
-      sodium_value: 0.008
-      sugars: 71
-      sugars_100g: 71
-      sugars_serving: 71
-      sugars_unit: g
-      sugars_value: 71
-      url: https://de.openfoodfacts.org/produkt/4337256793889/cranberries-getrocknet-und-gezuckert-ja
-  instructions: Zutaten in einer Schüssel vermischen.
-  name: Test Recipe {i}
+  instructions: Mischen und essen.
+  name: Test Rezept {i}
   nutrition:
-    calories: 662.2
-    carbohydrates: 108.3
-    energy: 2782.1
-    fat: 11.24
-    protein: 25.849999999999998
-    salt: 0.336
-    sugar: 63.85000000000001\n"""
+    calories: 404.6
+    carbohydrates: 60.86000000000001
+    energy: 1701.3000000000002
+    fat: 11.08
+    protein: 11.9
+    salt: 0.22100000000000003
+    sugar: 27.580000000000002
+  type: breakfast\n"""
 
 with open(f"data/recipes_testdata.yaml", "w", encoding="utf-8") as f:
     f.write("".join(recipes))

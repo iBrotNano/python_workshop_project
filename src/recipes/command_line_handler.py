@@ -1,12 +1,12 @@
 import logging
 import questionary
+from recipes import recipe_types
 from recipes.recipe import Recipe
 from recipes.repository import Repository
 from config.console import console
 from common.console import print_rule_separated, print_dict_as_table, print_info
 import nutrition.command_line_handler as nutrition_cli
 from rich.markdown import Markdown
-from pathlib import Path
 
 log = logging.getLogger(__name__)
 
@@ -111,6 +111,38 @@ class CommandLineHandler:
                     else:
                         return self.CANCEL_COMMAND
 
+        def _select_recipe_type(recipe: Recipe):
+            """
+            Prompts the user to select a recipe type.
+
+            :param recipe: The recipe to set the type for.
+            :type recipe: Recipe
+            """
+            choices = [
+                questionary.Choice(
+                    recipe_types.BREAKFAST.capitalize(), value=recipe_types.BREAKFAST
+                ),
+                questionary.Choice(
+                    recipe_types.LUNCH.capitalize(), value=recipe_types.LUNCH
+                ),
+                questionary.Choice(
+                    recipe_types.DINNER.capitalize(), value=recipe_types.DINNER
+                ),
+                questionary.Choice(
+                    recipe_types.SNACK.capitalize(), value=recipe_types.SNACK
+                ),
+            ]
+
+            recipe.type = questionary.select(
+                "Select the type of the recipe:",
+                choices=choices,
+                use_shortcuts=True,
+            ).ask()
+
+            if not recipe.type:
+                log.warning("No recipe type selected. Returning to menu.")
+                return self.CANCEL_COMMAND
+
         def _add_ingredients_to(recipe: Recipe):
             """
             Prompts the user to add an ingredient to the recipe.
@@ -199,6 +231,9 @@ class CommandLineHandler:
                     _save(recipe)
 
         recipe = Recipe()
+
+        if _select_recipe_type(recipe) == self.CANCEL_COMMAND:
+            return self.CANCEL_COMMAND
 
         if _enter_recipe_name_to(recipe) == self.CANCEL_COMMAND:
             return self.CANCEL_COMMAND
