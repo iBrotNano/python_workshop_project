@@ -6,6 +6,7 @@ from config.console import console
 from common.console import print_rule_separated, print_dict_as_table, print_info
 import nutrition.command_line_handler as nutrition_cli
 from rich.markdown import Markdown
+from pathlib import Path
 
 log = logging.getLogger(__name__)
 
@@ -14,6 +15,7 @@ class CommandLineHandler:
     CANCEL_COMMAND = "CANCEL"
     ADD_RECIPE_COMMAND = "ADD_RECIPE"
     DELETE_RECIPE_COMMAND = "DELETE_RECIPE"
+    VIEW_RECIPE_COMMAND = "VIEW_RECIPE"
 
     def __init__(self):
         """
@@ -33,6 +35,9 @@ class CommandLineHandler:
             if command is None or command == self.CANCEL_COMMAND:
                 return  # User chose to cancel; return to main menu.
 
+            if command == self.VIEW_RECIPE_COMMAND:
+                self._view_recipe()
+
             if command == self.ADD_RECIPE_COMMAND:
                 command = self._add_recipe()
 
@@ -51,6 +56,10 @@ class CommandLineHandler:
         """
 
         choices = [
+            questionary.Choice(
+                "View recipe",
+                value=self.VIEW_RECIPE_COMMAND,
+            ),
             questionary.Choice(
                 "Add recipe",
                 value=self.ADD_RECIPE_COMMAND,
@@ -206,18 +215,7 @@ class CommandLineHandler:
         """
         Deletes a recipe from the repository.
         """
-        if not self.repository.recipes:
-            print_info("No recipes available to delete.")
-            return
-
-        recipe_name = questionary.autocomplete(
-            "Select the recipe you want to delete:",
-            choices=list(self.repository.recipes.keys()),
-            ignore_case=True,
-            validate=lambda text: text
-            in self.repository.recipes.keys()  # Only exiting names are valid
-            or "Please select a valid recipe name from the list.",
-        ).ask()
+        recipe_name = self._select_recipe_with_autocomplete()
 
         if recipe_name:
             if questionary.confirm(
@@ -225,3 +223,46 @@ class CommandLineHandler:
             ).ask():
                 self.repository.delete(recipe_name)
                 print_info(f"Recipe '{recipe_name}' has been deleted.")
+
+    def _view_recipe(self):
+        """
+        Views a recipe from the repository.
+        """
+
+        recipe_name = self._select_recipe_with_autocomplete()
+
+        if recipe_name:
+            recipe = self.repository.get(recipe_name)
+            md = Markdown(recipe.as_markdown())
+            console.print(md, width=100)
+
+            if questionary.confirm("Do you want to export the recipe?").ask():
+                file_name = questionary.path(
+                    "Where do you want to save the markdown file?",
+                    only_directories=True,
+                    default=f"export\\{recipe.name.replace(' ', '_')}.md",
+                ).ask()
+
+                if file_name:
+                    recipe.export_as_markdown(file_name)
+                    print_info(f"Recipe exported to '{file_name}'.")
+
+    def _select_recipe_with_autocomplete(self):
+        """
+        Prompts the user to select a recipe using autocomplete.
+
+        :param prompt: The prompt to display to the user.
+        :return: The selected recipe name or None if cancelled.
+        """
+        if not self.repository.recipes:
+            print_info("No recipes available to view.")
+            return
+
+        return questionary.autocomplete(
+            "Select the recipe you want to view:",
+            choices=list(self.repository.recipes.keys()),
+            ignore_case=True,
+            validate=lambda text: text
+            in self.repository.recipes.keys()  # Only exiting names are valid
+            or "Please select a valid recipe name from the list.",
+        ).ask()

@@ -348,12 +348,13 @@ An existing API will be queried to get nutritional information. The app will han
   - [x] Only the autocomplete items are valid
   - [x] Confirm before deleting a recipe.
   - [x] Delete the recipe from memory and the file.
-- [ ] Do I need the handling of the Cancellation of the add command?
-- [ ] View recipes
-  - [ ] Add a menu entry to view recipes.
-  - [ ] Show all existing recipes with autocomplete
-  - [ ] Display the selected recipe in markdown format in the console.
+- [x] Do I need the handling of the Cancellation of the add command? :heavy_check_mark:
+- [x] View recipes
+  - [x] Add a menu entry to view recipes.
+  - [x] Show all existing recipes with autocomplete
+  - [x] Display the selected recipe in markdown format in the console.
 - [ ] Export recipes as markdown files with nutritional information
+  - [ ] The nutritional information calculated for recipes must be stored with the recipe.
 - [ ] Edit recipes
 - [ ] Create a weekly meal plan from the recipes.
   - [ ] Generate a weekly meal plan randonmly from existing recipes.

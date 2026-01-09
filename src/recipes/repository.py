@@ -49,6 +49,16 @@ class Repository:
             del self.recipes[recipe_name]
             self.save()
 
+    def get(self, recipe_name: str):
+        """
+        Gets a recipe by name.
+
+        :param self: This instance of the Repository class.
+        :param recipe_name: The name of the recipe to get.
+        :return: The recipe if found, otherwise None.
+        """
+        return self.recipes.get(recipe_name)
+
     def _load(self):
         """
         Loads the recipes from disk.

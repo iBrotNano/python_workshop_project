@@ -1,4 +1,5 @@
 import logging
+from pathlib import Path
 
 log = logging.getLogger(__name__)
 
@@ -70,6 +71,20 @@ class Recipe:
                 formatted_nutrition[nutrient.capitalize()] = str(amount)
 
         return formatted_nutrition
+
+    def export_as_markdown(self, file_path: str):
+        """
+        Exports the recipe as a markdown file.
+
+        :param self: This instance of the Recipe class.
+        :param file_path: The file path to save the markdown file.
+        :type file_path: str
+        """
+        path = Path(file_path)
+        path.parent.mkdir(parents=True, exist_ok=True)
+
+        with open(file_path, "w", encoding="utf-8") as file:
+            file.write(self.as_markdown())
 
     def _calculate_nutrition(self) -> dict:
         """
