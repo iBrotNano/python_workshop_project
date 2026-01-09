@@ -93,7 +93,7 @@ class CommandLineHandler:
                     else:
                         return self.CANCEL_COMMAND
 
-        def _add_ingredient_to(recipe: Recipe):
+        def _add_ingredients_to(recipe: Recipe):
             """
             Prompts the user to add an ingredient to the recipe.
 
@@ -190,7 +190,7 @@ class CommandLineHandler:
 
         print_rule_separated("Your recipe needs some ingredients. Let's add them now!")
         food_search = nutrition_cli.CommandLineHandler()
-        _add_ingredient_to(recipe)
+        _add_ingredients_to(recipe)
         _add_instructions_to(recipe)
         md = Markdown(recipe.as_markdown())
         console.print(md, width=100)
