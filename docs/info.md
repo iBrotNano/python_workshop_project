@@ -334,8 +334,8 @@ An existing API will be queried to get nutritional information. The app will han
   - [x] Quantity information is persisted per person.
   - [x] Check if i can handle recipes with markdown files. I could use [Markdown — Rich 14.1.0 documentation](https://rich.readthedocs.io/en/stable/markdown.html) to display them nicely in the console.
 - [x] Is it possible to show the names of the ingredients as links in the nutritional search result? :x:
-- [ ] `recipes.yaml` could not be read because of not supported tuples. Fix it.
-- [ ] Extract console methods in the folder `common`
+- [x] `recipes.yaml` could not be read because of not supported tuples. Fix it.
+- [x] Extract console methods in the folder `common`
 - [ ] I searched for [Bio Spagetti Vollkorn – Edeka – 500](https://de.openfoodfacts.org/produkt/4311501653821/bio-spagetti-vollkorn-edeka) and it caused an error because N/A can not be converted to float. Handle it gracefully.
 - [ ] Delete recipes
 - [ ] Export recipes as markdown files with nutritional information

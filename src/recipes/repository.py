@@ -97,9 +97,10 @@ class Repository:
         """
         return {
             "name": recipe.name,
-            "ingredients": [
-                list(ingredient) for ingredient in recipe.ingredients
-            ],  # yaml does not support tuples
+            "ingredients": [  # yaml does not support tuples
+                {"amount": amount, "product": product}
+                for amount, product in recipe.ingredients
+            ],
             "instructions": recipe.instructions,
         }
 
@@ -115,7 +116,9 @@ class Repository:
         instance = Recipe()
         instance.name = data.get("name")
         ingredients = data.get("ingredients", [])
-        # Convert lists back to tuples (amount, ingredient)
-        instance.ingredients = [tuple(ingredient) for ingredient in ingredients]
+        # Convert dictionary format to tuples (amount, product)
+        instance.ingredients = [
+            (item["amount"], item["product"]) for item in ingredients
+        ]
         instance.instructions = data.get("instructions", "")
         return instance
