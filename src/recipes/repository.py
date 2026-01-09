@@ -1,5 +1,5 @@
 from recipes.recipe import Recipe
-import json
+import yaml
 import config.config as config
 from pathlib import Path
 
@@ -33,7 +33,7 @@ class Repository:
         Stores the recipes to disk.
         """
 
-        self._write_json(
+        self._write_yaml(
             {name: self._to_dict(recipe) for name, recipe in self.recipes.items()}
         )
 
@@ -41,7 +41,7 @@ class Repository:
         """
         Loads the recipes from disk.
         """
-        data = self._read_json()
+        data = self._read_yaml()
 
         self.recipes = {
             name: self._from_dict(payload) for name, payload in data.items()
@@ -54,12 +54,12 @@ class Repository:
         path = Path(config.recipes_storage_path)
         path.parent.mkdir(parents=True, exist_ok=True)
 
-    def _write_json(self, obj):
+    def _write_yaml(self, obj):
         """
-        Writes the given object as JSON to disk.
+        Writes the given object as YAML to disk.
 
         :param self: This instance of the Repository class.
-        :param obj: The object to write as JSON.
+        :param obj: The object to write as YAML.
         :type obj: Any
         """
         self._ensure_storage_path_exists()
@@ -67,14 +67,14 @@ class Repository:
         with open(
             config.recipes_storage_path.absolute(), "w", encoding="utf-8"
         ) as file:
-            json.dump(obj, file, indent=4, ensure_ascii=False)
+            yaml.dump(obj, file, default_flow_style=False, allow_unicode=True)
 
-    def _read_json(self):
+    def _read_yaml(self):
         """
-        Reads the JSON data from disk.
+        Reads the YAML data from disk.
 
         :param self: This instance of the Repository class.
-        :return: The JSON data read from disk.
+        :return: The YAML data read from disk.
         """
         self._ensure_storage_path_exists()
 
@@ -84,7 +84,7 @@ class Repository:
         with open(
             config.recipes_storage_path.absolute(), "r", encoding="utf-8"
         ) as file:
-            return json.load(file)
+            return yaml.safe_load(file) or {}
 
     def _to_dict(self, recipe: Recipe) -> dict:
         """

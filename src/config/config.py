@@ -26,7 +26,7 @@ logging_basic_level = logging.INFO
 logging_basic_format = "%(asctime)s | %(levelname)s | %(message)s"
 
 # Recipe storage
-recipes_storage_path = Path("data/recipes.json")
+recipes_storage_path = Path("data/recipes.yaml")
 
 
 def configure():

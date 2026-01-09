@@ -299,7 +299,7 @@ An existing API will be queried to get nutritional information. The app will han
     - [x] Are the results normalized?
     - [x] What possible values are there for the nutrients?
     - [x] Link to the search item on openfoodfacts.org as header for result
-- [ ] Create recipes with nutrition calculation.
+- [x] Create recipes with nutrition calculation.
   - [x] Main menu entry for recipe management
   - [x] Cancel the recipe management via menu
   - [x] Add recipe as selection
@@ -329,10 +329,10 @@ An existing API will be queried to get nutritional information. The app will han
     - [x] Capitalize the nutrient names.
     - [x] Headline for nutrition table in the markdown output.
     - [x] Disply nutrition as table in the markdown output.
-  - [ ] Ingredients are selected via product search. Ingredient quantities in the recipe must be specified, optionally with the number of people the recipe is intended for.
-  - [ ] Recipes are saved as a JSON file and can be loaded again later. (Maybe YAML?) How to input recipe instuctions?
-  - [ ] Quantity information is persisted per person.
-  - [ ] Check if i can handle recipes with markdown files. I could use [Markdown — Rich 14.1.0 documentation](https://rich.readthedocs.io/en/stable/markdown.html) to display them nicely in the console.
+  - [x] Ingredients are selected via product search. Ingredient quantities in the recipe must be specified, optionally with the number of people the recipe is intended for.
+  - [x] Recipes are saved as a JSON file and can be loaded again later. (Maybe YAML?) How to input recipe instuctions?
+  - [x] Quantity information is persisted per person.
+  - [x] Check if i can handle recipes with markdown files. I could use [Markdown — Rich 14.1.0 documentation](https://rich.readthedocs.io/en/stable/markdown.html) to display them nicely in the console.
 - [ ] Is it possible to show the names of the ingredients as links in the nutritional search result?
 - [ ] Delete recipes
 - [ ] Export recipes as markdown files with nutritional information
