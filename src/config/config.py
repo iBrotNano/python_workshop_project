@@ -1,7 +1,6 @@
 import openfoodfacts
 import logging
 import config.logger as logger_config
-import config.console as console_config
 from pathlib import Path
 
 app_name = "Fezzikazza"  # Fat cat in Althochdeutsch.
@@ -31,4 +30,3 @@ recipes_storage_path = Path("data/recipes.yaml")
 
 def configure():
     logger_config.configure()
-    console_config.configure()

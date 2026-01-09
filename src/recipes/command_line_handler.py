@@ -2,7 +2,8 @@ import logging
 import questionary
 from recipes.recipe import Recipe
 from recipes.repository import Repository
-from config.console import print_rule_separated, console, print_dict_as_table
+from config.console import console
+from common.console import print_rule_separated, print_dict_as_table
 import nutrition.command_line_handler as nutrition_cli
 from rich.markdown import Markdown
 

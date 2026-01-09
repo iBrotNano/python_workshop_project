@@ -2,8 +2,9 @@ import logging
 import questionary
 import nutrition.repository as nutrition_repository
 from prompt_toolkit.formatted_text import FormattedText
-from config.console import console, print_info, print_rule_separated
+from config.console import console
 from rich.table import Table
+from common.console import print_info, print_rule_separated
 
 log = logging.getLogger(__name__)
 

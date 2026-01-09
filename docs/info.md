@@ -333,7 +333,10 @@ An existing API will be queried to get nutritional information. The app will han
   - [x] Recipes are saved as a JSON file and can be loaded again later. (Maybe YAML?) How to input recipe instuctions?
   - [x] Quantity information is persisted per person.
   - [x] Check if i can handle recipes with markdown files. I could use [Markdown — Rich 14.1.0 documentation](https://rich.readthedocs.io/en/stable/markdown.html) to display them nicely in the console.
-- [ ] Is it possible to show the names of the ingredients as links in the nutritional search result?
+- [x] Is it possible to show the names of the ingredients as links in the nutritional search result? :x:
+- [ ] `recipes.yaml` could not be read because of not supported tuples. Fix it.
+- [ ] Extract console methods in the folder `common`
+- [ ] I searched for [Bio Spagetti Vollkorn – Edeka – 500](https://de.openfoodfacts.org/produkt/4311501653821/bio-spagetti-vollkorn-edeka) and it caused an error because N/A can not be converted to float. Handle it gracefully.
 - [ ] Delete recipes
 - [ ] Export recipes as markdown files with nutritional information
 - [ ] Edit recipes
@@ -617,6 +620,31 @@ Here is an example of a product in the search result:
     'zinc_unit': 'mg',
     'zinc_value': 0
 }
+```
+
+Error during calculation of nutrition for recipes because of 'N/A' values:
+
+```
+2026-01-09 12:56:47,763 | ERROR | An error of type <class 'ValueError'> occurred. Message: could not convert string to float: 'N/A'
+Traceback (most recent call last):
+  File "C:\Dev\python_workshop_project\src\main.py", line 24, in <module>
+    recipe_cli.CommandLineHandler().show()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Dev\python_workshop_project\src\recipes\command_line_handler.py", line 36, in show
+    command = self._add_recipe()
+  File "C:\Dev\python_workshop_project\src\recipes\command_line_handler.py", line 194, in _add_recipe
+    _add_ingredients_to(recipe)
+    ~~~~~~~~~~~~~~~~~~~^^^^^^^^
+  File "C:\Dev\python_workshop_project\src\recipes\command_line_handler.py", line 119, in _add_ingredients_to
+    recipe.add_ingredient((int(amount), food))
+    ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Dev\python_workshop_project\src\recipes\recipe.py", line 21, in add_ingredient
+    self.nutrition = self._calculate_nutrition()
+                     ~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Dev\python_workshop_project\src\recipes\recipe.py", line 74, in _calculate_nutrition
+    nutrition["energy"] += float(ingredient.get("energy-kj_100g", 0)) * factor
+                           ~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ValueError: could not convert string to float: 'N/A'
 ```
 
 > [!TIP] Paging

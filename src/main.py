@@ -6,10 +6,11 @@ import nutrition.command_line_handler as nutrition_cli
 import recipes.command_line_handler as recipe_cli
 from config.console import console
 
+log = logging.getLogger(__name__)
+
 # Encapsulates the whole application logic and displays any errors encountered.
 try:
     conf.configure()  # First step configures the app (e.g., logging, console).
-    log = logging.getLogger(__name__)
     main_menu = menu.Menu()
 
     while True:
