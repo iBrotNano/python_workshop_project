@@ -124,6 +124,7 @@ class Repository:
                 for amount, product in recipe.ingredients
             ],
             "instructions": recipe.instructions,
+            "nutrition": recipe.nutrition,
         }
 
     def _from_dict(self, data: dict) -> Recipe:
@@ -143,4 +144,5 @@ class Repository:
             (item["amount"], item["product"]) for item in ingredients
         ]
         instance.instructions = data.get("instructions", "")
+        instance.nutrition = data.get("nutrition", {})
         return instance

@@ -44,11 +44,11 @@ class Recipe:
         md += "\n## Instructions\n\n"
         md += self.instructions + "\n"
         md += "\n## Nutritional Information\n\n"
-        md += "| Nutrient       | Amount          |\n"
-        md += "|:---------------|----------------:|\n"
+        md += "| Nutrient        | Amount          |\n"
+        md += "|:----------------|----------------:|\n"
 
         for nutrient, amount in self.get_formatted_nutrition().items():
-            md += f"| {nutrient} | {amount} |\n"
+            md += f"| {nutrient.ljust(15)} | {amount.ljust(15)} |\n"
 
         return md
 

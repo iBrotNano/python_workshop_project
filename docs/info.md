@@ -353,9 +353,14 @@ An existing API will be queried to get nutritional information. The app will han
   - [x] Add a menu entry to view recipes.
   - [x] Show all existing recipes with autocomplete
   - [x] Display the selected recipe in markdown format in the console.
-- [ ] Export recipes as markdown files with nutritional information
-  - [ ] The nutritional information calculated for recipes must be stored with the recipe.
-- [ ] Edit recipes
+- [x] Export recipes as markdown files with nutritional information
+  - [x] The nutritional information calculated for recipes must be stored with the recipe.
+  - [x] Modify the tool to generate test recipes with nutritional information.
+  - [x] Generate a test file with recipes with nutritional information.
+  - [x] Load the data
+  - [x] Pretty print the table with nutrition data in the markdown export
+- [ ] Search for raw ingredients
+- [ ] Label recipes as breakfast, lunch, dinner, snack
 - [ ] Create a weekly meal plan from the recipes.
   - [ ] Generate a weekly meal plan randonmly from existing recipes.
   - [ ] Users can assign recipes to a day of the week.
@@ -366,6 +371,7 @@ An existing API will be queried to get nutritional information. The app will han
   - [ ] Shopping list displayed in the console.
 - [ ] Save the shopping list to Google Keep.
   - [ ] Integration with the Google Keep API to save the shopping list directly to Google Keep.
+- [ ] Edit recipes
 - [ ] Check if the exception handling is well done
 - [ ] Check if further tests must be written
 - [ ] Are there license conflicts for new dependencies?
