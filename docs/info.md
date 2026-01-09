@@ -248,6 +248,11 @@ An existing API will be queried to get nutritional information. The app will han
 | Action           | I will open `Manage recipes` with not present `data/recipes.json` |
 | Expected result  | The app works and I can add the first recipe.                     |
 
+| Integration test | 32                                                                                                                            |
+| ---------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| Action           | I will add a recipe and check that the sums of macronutrients are correct.                                                    |
+| Expected result  | The calculation is correct and matches the sum of individual ingredients during the addition and at the end in before saving. |
+
 ## :hammer_and_wrench: Development
 
 ### :clipboard: TODOs
@@ -316,13 +321,22 @@ An existing API will be queried to get nutritional information. The app will han
     - [x] Confirm before cancelling the saving of the recipe.
     - [x] Configure the path where recipes are stored.
     - [x] Load recipes from disk.
-  - [ ] Error during search with missing `*_unit` keys.
-  - [ ] Users can enter recipes, and the tool calculates the overall nutritional values based on the ingredients.
+  - [x] Users can enter recipes, and the tool calculates the overall nutritional values based on the ingredients.
+    - [x] Show the nutrients summed up for all ingredients during adding ingredients.
+    - [x] Protein and sugar is not correctly calculated.
+    - [x] Add the unit to the nutrient values.
+    - [x] Round to 2 decimal places.
+    - [x] Capitalize the nutrient names.
+    - [x] Headline for nutrition table in the markdown output.
+    - [x] Disply nutrition as table in the markdown output.
   - [ ] Ingredients are selected via product search. Ingredient quantities in the recipe must be specified, optionally with the number of people the recipe is intended for.
   - [ ] Recipes are saved as a JSON file and can be loaded again later. (Maybe YAML?) How to input recipe instuctions?
   - [ ] Quantity information is persisted per person.
   - [ ] Check if i can handle recipes with markdown files. I could use [Markdown — Rich 14.1.0 documentation](https://rich.readthedocs.io/en/stable/markdown.html) to display them nicely in the console.
 - [ ] Is it possible to show the names of the ingredients as links in the nutritional search result?
+- [ ] Delete recipes
+- [ ] Export recipes as markdown files with nutritional information
+- [ ] Edit recipes
 - [ ] Create a weekly meal plan from the recipes.
   - [ ] Generate a weekly meal plan randonmly from existing recipes.
   - [ ] Users can assign recipes to a day of the week.

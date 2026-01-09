@@ -127,6 +127,15 @@ class CommandLineHandler:
                                 "Amount in g per person",
                             )
 
+                            print_dict_as_table(
+                                {
+                                    f"{key.capitalize()}": f"{value:.2f} {'kcal' if key == 'calories' else 'kJ' if key == 'energy' else 'g'}"
+                                    for key, value in recipe.nutrition.items()
+                                },
+                                "Nutrition",
+                                "Amount per person",
+                            )
+
                 if not questionary.confirm(
                     "Do you want to add another ingredient to your recipe?"
                 ).ask():
