@@ -336,7 +336,7 @@ An existing API will be queried to get nutritional information. The app will han
 - [x] Is it possible to show the names of the ingredients as links in the nutritional search result? :x:
 - [x] `recipes.yaml` could not be read because of not supported tuples. Fix it.
 - [x] Extract console methods in the folder `common`
-- [ ] I searched for [Bio Spagetti Vollkorn – Edeka – 500](https://de.openfoodfacts.org/produkt/4311501653821/bio-spagetti-vollkorn-edeka) and it caused an error because N/A can not be converted to float. Handle it gracefully.
+- [x] I searched for [Bio Spagetti Vollkorn – Edeka – 500](https://de.openfoodfacts.org/produkt/4311501653821/bio-spagetti-vollkorn-edeka) and it caused an error because N/A can not be converted to float. Handle it gracefully.
 - [ ] Delete recipes
 - [ ] Export recipes as markdown files with nutritional information
 - [ ] Edit recipes

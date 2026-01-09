@@ -129,10 +129,7 @@ class CommandLineHandler:
                             )
 
                             print_dict_as_table(
-                                {
-                                    f"{key.capitalize()}": f"{value:.2f} {'kcal' if key == 'calories' else 'kJ' if key == 'energy' else 'g'}"
-                                    for key, value in recipe.nutrition.items()
-                                },
+                                recipe.get_formatted_nutrition(),
                                 "Nutrition",
                                 "Amount per person",
                             )
