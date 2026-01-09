@@ -37,6 +37,18 @@ class Repository:
             {name: self._to_dict(recipe) for name, recipe in self.recipes.items()}
         )
 
+    def delete(self, recipe_name: str):
+        """
+        Deletes a recipe from the repository.
+
+        :param self: This instance of the Repository class.
+        :param recipe_name: The name of the recipe to delete.
+        :type recipe_name: str
+        """
+        if recipe_name in self.recipes:
+            del self.recipes[recipe_name]
+            self.save()
+
     def _load(self):
         """
         Loads the recipes from disk.

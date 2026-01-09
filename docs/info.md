@@ -253,6 +253,11 @@ An existing API will be queried to get nutritional information. The app will han
 | Action           | I will add a recipe and check that the sums of macronutrients are correct.                                                    |
 | Expected result  | The calculation is correct and matches the sum of individual ingredients during the addition and at the end in before saving. |
 
+| Integration test | 33                                                                                           |
+| ---------------- | -------------------------------------------------------------------------------------------- |
+| Action           | I will delete a recipe. `tools/create_test_recipes.py` can be used to generate test recipes. |
+| Expected result  | The recipe is deleted from memory and the file.                                              |
+
 ## :hammer_and_wrench: Development
 
 ### :clipboard: TODOs
@@ -337,7 +342,17 @@ An existing API will be queried to get nutritional information. The app will han
 - [x] `recipes.yaml` could not be read because of not supported tuples. Fix it.
 - [x] Extract console methods in the folder `common`
 - [x] I searched for [Bio Spagetti Vollkorn – Edeka – 500](https://de.openfoodfacts.org/produkt/4311501653821/bio-spagetti-vollkorn-edeka) and it caused an error because N/A can not be converted to float. Handle it gracefully.
-- [ ] Delete recipes
+- [x] Delete recipes
+  - [x] Add a menu entry to delete recipes.
+  - [x] Search for a recipe with autocomplete
+  - [x] Only the autocomplete items are valid
+  - [x] Confirm before deleting a recipe.
+  - [x] Delete the recipe from memory and the file.
+- [ ] Do I need the handling of the Cancellation of the add command?
+- [ ] View recipes
+  - [ ] Add a menu entry to view recipes.
+  - [ ] Show all existing recipes with autocomplete
+  - [ ] Display the selected recipe in markdown format in the console.
 - [ ] Export recipes as markdown files with nutritional information
 - [ ] Edit recipes
 - [ ] Create a weekly meal plan from the recipes.

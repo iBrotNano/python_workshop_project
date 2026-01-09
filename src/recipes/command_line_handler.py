@@ -3,7 +3,7 @@ import questionary
 from recipes.recipe import Recipe
 from recipes.repository import Repository
 from config.console import console
-from common.console import print_rule_separated, print_dict_as_table
+from common.console import print_rule_separated, print_dict_as_table, print_info
 import nutrition.command_line_handler as nutrition_cli
 from rich.markdown import Markdown
 
@@ -13,6 +13,7 @@ log = logging.getLogger(__name__)
 class CommandLineHandler:
     CANCEL_COMMAND = "CANCEL"
     ADD_RECIPE_COMMAND = "ADD_RECIPE"
+    DELETE_RECIPE_COMMAND = "DELETE_RECIPE"
 
     def __init__(self):
         """
@@ -39,6 +40,9 @@ class CommandLineHandler:
                     self.show()  # Return to recipe menu.
                     return
 
+            if command == self.DELETE_RECIPE_COMMAND:
+                self._delete_recipe()
+
     def _get_recipe_menu_selection(self):
         """
         Displays the main menu and gets the user's selection.
@@ -50,6 +54,10 @@ class CommandLineHandler:
             questionary.Choice(
                 "Add recipe",
                 value=self.ADD_RECIPE_COMMAND,
+            ),
+            questionary.Choice(
+                "Delete recipe",
+                value=self.DELETE_RECIPE_COMMAND,
             ),
             questionary.Choice(
                 "Back to main menu",
@@ -193,3 +201,27 @@ class CommandLineHandler:
         md = Markdown(recipe.as_markdown())
         console.print(md, width=100)
         _save(recipe)
+
+    def _delete_recipe(self):
+        """
+        Deletes a recipe from the repository.
+        """
+        if not self.repository.recipes:
+            print_info("No recipes available to delete.")
+            return
+
+        recipe_name = questionary.autocomplete(
+            "Select the recipe you want to delete:",
+            choices=list(self.repository.recipes.keys()),
+            ignore_case=True,
+            validate=lambda text: text
+            in self.repository.recipes.keys()  # Only exiting names are valid
+            or "Please select a valid recipe name from the list.",
+        ).ask()
+
+        if recipe_name:
+            if questionary.confirm(
+                f"Are you sure you want to delete the recipe '{recipe_name}'?"
+            ).ask():
+                self.repository.delete(recipe_name)
+                print_info(f"Recipe '{recipe_name}' has been deleted.")
