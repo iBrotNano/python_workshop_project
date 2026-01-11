@@ -258,6 +258,21 @@ An existing API will be queried to get nutritional information. The app will han
 | Action           | I will delete a recipe. `tools/create_test_recipes.py` can be used to generate test recipes. |
 | Expected result  | The recipe is deleted from memory and the file.                                              |
 
+| Integration test | 34                                                                          |
+| ---------------- | --------------------------------------------------------------------------- |
+| Action           | I will navigate to the meal plan management.                                |
+| Expected result  | I will see a info that no meal plan is present if not meal plan is present. |
+
+| Integration test | 35                                               |
+| ---------------- | ------------------------------------------------ |
+| Action           | I will cancel the meal plan management via menu. |
+| Expected result  | The main menu is displayed.                      |
+
+| Integration test | 36                                                   |
+| ---------------- | ---------------------------------------------------- |
+| Action           | I will cancel the meal plan management via `CTRL+C`. |
+| Expected result  | The main menu is displayed.                          |
+
 ## :hammer_and_wrench: Development
 
 ### :clipboard: TODOs
@@ -364,9 +379,20 @@ An existing API will be queried to get nutritional information. The app will han
   - [x] Save and load label
 - [x] Generate testdata with different labels
 - [ ] Create a weekly meal plan from the recipes.
-  - [ ] Generate a weekly meal plan randonmly from existing recipes.
-  - [ ] Users can assign recipes to a day of the week.
-  - [ ] Summary reports of nutritional values for recipes and meal plans.
+  - [x] Add meal plan management to the main menu.
+  - [x] Show a info if no meal plan is present.
+  - [ ] Cancel the meal plan management via menu.
+  - [ ] Cancel the meal plan management via `CTRL+C`.
+  - [ ] Generate a meal plan via menu.
+    - [ ] Generate a weekly meal plan randomly from existing recipes.
+    - [ ] Show the plan as a table in the console.
+    - [ ] Save the generated meal plan to a yaml file after generation automatically.
+    - [ ] Summary reports of nutritional values for recipes and meal plans.
+  - [ ] Edit the current meal plan via menu.
+    - [ ] Users can assign recipes to the meals in the plan by selecting a day and meal and then a new recipe filtered by the meal type.
+  - [ ] Export the meal plan as markdown file.
+  - [ ] Publish all recipes of the plan to Google Keep.
+    - [ ] What do I have to configure to use the Google Keep API?
 - [ ] Generate a shopping list based on the meal plan.
   - [ ] The tool generates a shopping list with the required ingredients and quantities.
   - [ ] The number of people must be specified to scale the quantities correctly.
@@ -375,6 +401,7 @@ An existing API will be queried to get nutritional information. The app will han
   - [ ] Integration with the Google Keep API to save the shopping list directly to Google Keep.
 - [ ] Edit recipes
 - [ ] Search for raw ingredients by using another source (e.g. Schweizer Nährwerttabelle)
+- [ ] Use DI an punq as DI container
 - [ ] Check if the exception handling is well done
 - [ ] Check if further tests must be written
 - [ ] Are there license conflicts for new dependencies?
