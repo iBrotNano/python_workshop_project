@@ -1,3 +1,11 @@
+import sys
+from pathlib import Path
+
+# 'src' zum Python-Pfad hinzufügen
+sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
+
+from recipes import recipe_types as rt
+
 recipes = ""
 
 for i in range(1, 100):
@@ -158,7 +166,7 @@ for i in range(1, 100):
     protein: 11.9
     salt: 0.22100000000000003
     sugar: 27.580000000000002
-  type: breakfast\n"""
+  type: {rt.RECIPE_TYPES[i % 4]}\n"""
 
 with open(f"data/recipes_testdata.yaml", "w", encoding="utf-8") as f:
     f.write("".join(recipes))

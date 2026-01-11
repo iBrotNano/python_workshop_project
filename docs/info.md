@@ -362,6 +362,7 @@ An existing API will be queried to get nutritional information. The app will han
 - [x] Label recipes as breakfast, lunch, dinner, snack
   - [x] Show label in ui
   - [x] Save and load label
+- [x] Generate testdata with different labels
 - [ ] Create a weekly meal plan from the recipes.
   - [ ] Generate a weekly meal plan randonmly from existing recipes.
   - [ ] Users can assign recipes to a day of the week.
