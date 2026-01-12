@@ -1,9 +1,10 @@
 import logging
 import questionary
 from meal_plan.repository import Repository
-from meal_plan.meal_plan import MealPlan
 from common.console import print_info
 from config.console import console
+from rich.table import Table
+from recipes.recipe_types import RECIPE_TYPE_MAPPINGS
 
 log = logging.getLogger(__name__)
 
@@ -70,11 +71,32 @@ class CommandLineHandler:
 
         :param self: This instance of the CommandLineHandler class.
         """
+
+        def _display_meal_plan():
+            """
+            Displays the current meal plan in a table format.
+            """
+            table = Table(show_lines=True)
+            table.add_column("Meal", style="bold magenta")
+            table.add_column("Monday", style="cyan")
+            table.add_column("Tuesday", style="white")
+            table.add_column("Wednesday", style="cyan")
+            table.add_column("Thursday", style="white")
+            table.add_column("Friday", style="cyan")
+            table.add_column("Saturday", style="white")
+            table.add_column("Sunday", style="cyan")
+
+            for meal_index, meal_name in RECIPE_TYPE_MAPPINGS.items():
+                row_data = [meal_name.capitalize()]
+
+                for day in self.repository.get().meals:
+                    meal = day[meal_index]
+                    row_data.append(meal.recipe.name if meal.recipe else "N/A")
+
+                table.add_row(*row_data)
+
+            console.print(table)
+
         self.repository.get().generate()
         print_info("A new meal plan has been generated and saved.")
-
-        # TODO: Show the generated meal plan in a nice table.
-        for day_index, day in enumerate(self.repository.get().meals):
-            console.print(f"[bold underline]Day {day_index + 1}[/bold underline]")
-            for meal_index, meal in enumerate(day):
-                console.print(f"[bold]Meal {meal_index + 1}:[/bold] {meal.recipe.name}")
+        _display_meal_plan()

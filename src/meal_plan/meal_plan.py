@@ -16,14 +16,6 @@ class MealPlan:
 
         self.recipes_repository = Repository()
 
-        self.recipe_type_mapping = {
-            0: rt.BREAKFAST,
-            1: rt.SNACK,
-            2: rt.LUNCH,
-            3: rt.SNACK,
-            4: rt.DINNER,
-        }
-
     def generate(self):
         """
         Generates a new meal plan by assigning random recipes to each meal.
@@ -36,7 +28,7 @@ class MealPlan:
 
                 self.meals[day][meal_time].set_recipe(
                     self.recipes_repository.get_random_recipe(
-                        self.recipe_type_mapping[meal_time]
+                        rt.RECIPE_TYPE_MAPPINGS[meal_time]
                     )
                 )
 

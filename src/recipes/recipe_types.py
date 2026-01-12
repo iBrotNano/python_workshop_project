@@ -4,3 +4,11 @@ DINNER = "dinner"
 SNACK = "snack"
 
 RECIPE_TYPES = [BREAKFAST, LUNCH, DINNER, SNACK]
+
+RECIPE_TYPE_MAPPINGS = {
+    0: BREAKFAST,
+    1: SNACK,
+    2: LUNCH,
+    3: SNACK,
+    4: DINNER,
+}

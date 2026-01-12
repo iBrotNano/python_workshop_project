@@ -273,6 +273,11 @@ An existing API will be queried to get nutritional information. The app will han
 | Action           | I will cancel the meal plan management via `CTRL+C`. |
 | Expected result  | The main menu is displayed.                          |
 
+| Integration test | 37                                                     |
+| ---------------- | ------------------------------------------------------ |
+| Action           | I will generate a new meal plan.                       |
+| Expected result  | A new meal plan is generated and displayed as a table. |
+
 ## :hammer_and_wrench: Development
 
 ### :clipboard: TODOs
@@ -385,9 +390,29 @@ An existing API will be queried to get nutritional information. The app will han
   - [x] Cancel the meal plan management via `CTRL+C`.
   - [ ] Generate a meal plan via menu.
     - [x] Generate a weekly meal plan randomly from existing recipes.
-    - [ ] Show the plan as a table in the console.
+    - [x] Show the plan as a table in the console.
+    - [ ] Add persons in the household to scale recipes correctly.
+      - [ ] Person Management via main menu.
+      - [ ] Cancel person management via menu.
+      - [ ] Cancel person management via `CTRL+C`.
+      - [ ] Add persons via menu.
+      - [ ] Cancel person addition via menu.
+      - [ ] Cancel person addition via `CTRL+C`.
+        - [ ] Name for person
+        - [ ] What information do i need to calculate the needed calories per day?
+      - [ ] Delete persons via menu.
+      - [ ] Cancel person deletion via menu.
+      - [ ] Cancel person deletion via `CTRL+C`.
+      - [ ] List persons via menu.
+      - [ ] Store persons in a yaml file after addition automatically.
+      - [ ] Load persons from the yaml file during repository initialization.
+      - [ ] Edit persons via menu.
+      - [ ] Cancel person editing via menu.
+      - [ ] Cancel person editing via `CTRL+C`.
+    - [ ] Prevent double assignments of recipes in the plan.
+    - [ ] Navigate to recipes from table via menu. Day --> Meal --> Recipe
+    - [ ] Show nutrition summary for a day's recipes and persons
     - [ ] Save the generated meal plan to a yaml file after generation automatically.
-    - [ ] Summary reports of nutritional values for recipes and meal plans.
   - [ ] Edit the current meal plan via menu.
     - [ ] Users can assign recipes to the meals in the plan by selecting a day and meal and then a new recipe filtered by the meal type.
   - [ ] Export the meal plan as markdown file.
