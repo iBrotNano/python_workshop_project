@@ -38,7 +38,7 @@ class Menu:
                 value=self.SEARCH_NUTRITION_COMMAND,
             ),
             questionary.Choice("Manage recipes", value=self.MANAGE_RECIPES_COMMAND),
-            questionary.Choice("Manage meal plan", value=self.MANAGE_MEAL_PLAN_COMMAND),
+            # questionary.Choice("Manage meal plan", value=self.MANAGE_MEAL_PLAN_COMMAND), # TODO: Enable when meal planning is implemented.
             questionary.Choice(
                 "Exit the application",
                 value=self.EXIT_COMMAND,
