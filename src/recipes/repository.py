@@ -2,6 +2,7 @@ from recipes.recipe import Recipe
 import yaml
 import config.config as config
 from pathlib import Path
+import random
 
 
 class Repository:
@@ -58,6 +59,26 @@ class Repository:
         :return: The recipe if found, otherwise None.
         """
         return self.recipes.get(recipe_name)
+
+    def get_random_recipe(self, recipe_type: str):
+        """
+        Gets a random recipe, filtered by type.
+
+        :param self: This instance of the Repository class.
+        :param recipe_type: The type of recipe to filter by.
+        :type recipe_type: str
+        :return: A random recipe.
+        :rtype: Recipe
+        """
+
+        filtered_recipes = [
+            recipe for recipe in self.recipes.values() if recipe.type == recipe_type
+        ]
+
+        if not filtered_recipes:
+            return None
+
+        return random.choice(filtered_recipes)
 
     def _load(self):
         """

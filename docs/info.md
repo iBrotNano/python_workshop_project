@@ -381,10 +381,10 @@ An existing API will be queried to get nutritional information. The app will han
 - [ ] Create a weekly meal plan from the recipes.
   - [x] Add meal plan management to the main menu.
   - [x] Show a info if no meal plan is present.
-  - [ ] Cancel the meal plan management via menu.
-  - [ ] Cancel the meal plan management via `CTRL+C`.
+  - [x] Cancel the meal plan management via menu.
+  - [x] Cancel the meal plan management via `CTRL+C`.
   - [ ] Generate a meal plan via menu.
-    - [ ] Generate a weekly meal plan randomly from existing recipes.
+    - [x] Generate a weekly meal plan randomly from existing recipes.
     - [ ] Show the plan as a table in the console.
     - [ ] Save the generated meal plan to a yaml file after generation automatically.
     - [ ] Summary reports of nutritional values for recipes and meal plans.

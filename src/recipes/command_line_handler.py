@@ -50,7 +50,7 @@ class CommandLineHandler:
 
     def _get_recipe_menu_selection(self):
         """
-        Displays the main menu and gets the user's selection.
+        Displays the menu and gets the user's selection.
 
         :return: The command selected by the user.
         """
