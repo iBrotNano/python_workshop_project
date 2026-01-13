@@ -33,7 +33,7 @@ class CommandLineHandler:
             if not self.repository.get().is_meal_plan_generated():
                 print_info("No meal plan is present.")
 
-            command = self._get_recipe_menu_selection()
+            command = self._get_menu_selection()
 
             if command is None or command == self.CANCEL_COMMAND:
                 return  # User chose to cancel; return to main menu.
@@ -41,7 +41,7 @@ class CommandLineHandler:
             if command == self.GENERATE_MEAL_PLAN_COMMAND:
                 self._generate_meal_plan()
 
-    def _get_recipe_menu_selection(self):
+    def _get_menu_selection(self):
         """
         Displays the menu and gets the user's selection.
 

@@ -27,6 +27,9 @@ logging_basic_format = "%(asctime)s | %(levelname)s | %(message)s"
 # Recipe storage
 recipes_storage_path = Path("data/recipes.yaml")
 
+# Person storage
+persons_storage_path = Path("data/persons.yaml")
+
 
 def configure():
     logger_config.configure()

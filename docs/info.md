@@ -278,6 +278,41 @@ An existing API will be queried to get nutritional information. The app will han
 | Action           | I will generate a new meal plan.                       |
 | Expected result  | A new meal plan is generated and displayed as a table. |
 
+| Integration test | 38                                        |
+| ---------------- | ----------------------------------------- |
+| Action           | I will navigate to the person management. |
+| Expected result  | The person management menu is displayed.  |
+
+| Integration test | 39                                            |
+| ---------------- | --------------------------------------------- |
+| Action           | I will cancel the person management via menu. |
+| Expected result  | The main menu is displayed.                   |
+
+| Integration test | 40                                                |
+| ---------------- | ------------------------------------------------- |
+| Action           | I will cancel the person management via `CTRL+C`. |
+| Expected result  | The main menu is displayed.                       |
+
+| Integration test | 41                                                                                                                  |
+| ---------------- | ------------------------------------------------------------------------------------------------------------------- |
+| Action           | I will cancel addition of a person by pressing `CTRL+C` during the form to input personal data.                     |
+| Expected result  | The person is not added. The person management menu is displayed besides a log message indicating the cancellation. |
+
+| Integration test | 42                                                                   |
+| ---------------- | -------------------------------------------------------------------- |
+| Action           | I will to add a person with a name already existing.                 |
+| Expected result  | The person is not added. The user is prompted to add the name again. |
+
+| Integration test | 43                                                                                                      |
+| ---------------- | ------------------------------------------------------------------------------------------------------- |
+| Action           | I try to enter invalid values for a person's attributes. I change the name when I am prompted to do so. |
+| Expected result  | The input is invalid and the user is prompted to correct the values as long as it is valid.             |
+
+| Integration test | 44                                                     |
+| ---------------- | ------------------------------------------------------ |
+| Action           | I try to enter valid values for a person's attributes. |
+| Expected result  | The input is valid and the person will be added.       |
+
 ## :hammer_and_wrench: Development
 
 ### :clipboard: TODOs
@@ -393,22 +428,27 @@ An existing API will be queried to get nutritional information. The app will han
     - [x] Show the plan as a table in the console.
     - [ ] Add persons in the household to scale recipes correctly.
       - [ ] Person Management via main menu.
-      - [ ] Cancel person management via menu.
-      - [ ] Cancel person management via `CTRL+C`.
-      - [ ] Add persons via menu.
-      - [ ] Cancel person addition via menu.
-      - [ ] Cancel person addition via `CTRL+C`.
-        - [ ] Name for person
-        - [ ] What information do i need to calculate the needed calories per day?
-      - [ ] Delete persons via menu.
-      - [ ] Cancel person deletion via menu.
-      - [ ] Cancel person deletion via `CTRL+C`.
-      - [ ] List persons via menu.
-      - [ ] Store persons in a yaml file after addition automatically.
-      - [ ] Load persons from the yaml file during repository initialization.
-      - [ ] Edit persons via menu.
-      - [ ] Cancel person editing via menu.
-      - [ ] Cancel person editing via `CTRL+C`.
+        - [x] Cancel person management via menu.
+        - [x] Cancel person management via `CTRL+C`.
+        - [x] Add persons via menu.
+        - [x] Cancel person addition via menu.
+        - [x] Cancel person addition via `CTRL+C`.
+          - [x] Name for person
+          - [x] What information do i need to calculate the needed calories per day?
+          - [x] Enter data to calculate the needed calories per day?
+            - [x] Is it a good idea to wrap the input in a single step that can be cancelled as a whole? :heavy_check_mark:
+        - [x] Save the persons in the repository
+        - [x] Recipes loading does not work after adding persons. Fix it.
+        - [ ] The value for the activity level should be the selected index of ACTIVITY_LEVELS
+        - [ ] Delete persons via menu.
+        - [ ] Cancel person deletion via menu.
+        - [ ] Cancel person deletion via `CTRL+C`.
+        - [ ] List persons via menu.
+        - [ ] Store persons in a yaml file after addition automatically.
+        - [ ] Load persons from the yaml file during repository initialization.
+        - [ ] Edit persons via menu.
+        - [ ] Cancel person editing via menu.
+        - [ ] Cancel person editing via `CTRL+C`.
     - [ ] Prevent double assignments of recipes in the plan.
     - [ ] Navigate to recipes from table via menu. Day --> Meal --> Recipe
     - [ ] Show nutrition summary for a day's recipes and persons
@@ -427,6 +467,9 @@ An existing API will be queried to get nutritional information. The app will han
 - [ ] Edit recipes
 - [ ] Search for raw ingredients by using another source (e.g. Schweizer Nährwerttabelle)
 - [ ] Use DI an punq as DI container
+- [ ] Use validators to ensure that all inputs are valid. E.g. no empty names, positive quantities, etc. Any other handling of invalid inputs is not required. As example: Entering the name of a recipe.
+- [ ] Extract all validation lamdas into an own module
+- [ ] The recipe repository should be implemented as the persons repo.
 - [ ] Check if the exception handling is well done
 - [ ] Check if further tests must be written
 - [ ] Are there license conflicts for new dependencies?
@@ -723,6 +766,14 @@ Traceback (most recent call last):
                            ~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 ValueError: could not convert string to float: 'N/A'
 ```
+
+To calculate the calories needed by a person I need some information:
+
+- Gender
+- Weight
+- Height
+- Age
+- Activity Level
 
 > [!TIP] Paging
 > I just have to name the page until `skip` + `page_count` = `count`.
