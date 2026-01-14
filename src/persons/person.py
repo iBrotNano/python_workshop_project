@@ -18,7 +18,7 @@ class Person:
         self.weight = 0.0
         self.height = 0.0
         self.birth_year = 0
-        self.activity_level = ""
+        self.activity_level = 0
 
     def calculate_calories_needed(self):
         """
@@ -33,7 +33,7 @@ class Person:
             10 * self.weight + 6.25 * self.height - 5 * self._calculate_age() + 5
             if self.gender == "Male"
             else -161
-        ) * self.activity_levels[self.activity_level][1]
+        ) * self.ACTIVITY_LEVELS[self.activity_level][1]
 
     def _calculate_age(self):
         """

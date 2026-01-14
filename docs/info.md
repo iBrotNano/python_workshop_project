@@ -96,222 +96,268 @@ An existing API will be queried to get nutritional information. The app will han
 | Integration test | 1                                                                        |
 | ---------------- | ------------------------------------------------------------------------ |
 | Action           | I will exit the app selecting "Exit the application" from the main menu. |
-| Expected result  | The app should terminate gracefully without errors.                      |
+| Expected result  | The app should terminate gracefully without errors after I entered y.    |
+
 
 | Integration test | 2                                                                                                    |
 | ---------------- | ---------------------------------------------------------------------------------------------------- |
 | Action           | I will provoke an error by not configuring something important.                                      |
 | Expected result  | The errors are handled gracefully and the app does not crash. The error is displayed in the console. |
 
+
 | Integration test | 3                                                                                                                                   |
 | ---------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
 | Action           | I will provoke an error by not configuring something important.                                                                     |
 | Expected result  | A logfile is created with detailed error information for debugging purposes. The error details include timestamps and stack traces. |
+
 
 | Integration test | 4                                                               |
 | ---------------- | --------------------------------------------------------------- |
 | Action           | I will exit the app via the main menu by confirming the prompt. |
 | Expected result  | The app should terminate gracefully without errors.             |
 
+
 | Integration test | 5                                                                 |
 | ---------------- | ----------------------------------------------------------------- |
 | Action           | I will navigate to the nutrition information search via the menu. |
 | Expected result  | The navigation works                                              |
+
 
 | Integration test | 6                                                   |
 | ---------------- | --------------------------------------------------- |
 | Action           | I will exit the app via CTRL+C in the main menu.    |
 | Expected result  | The app should terminate gracefully without errors. |  |
 
+
 | Integration test | 7                                                                                                       |
 | ---------------- | ------------------------------------------------------------------------------------------------------- |
 | Action           | I will check if the confirmation before exit is triggered and performs and prevents the exit correctly. |
 | Expected result  | The confirmation before exit should be recognized.                                                      |
+
 
 | Integration test | 8                                                             |
 | ---------------- | ------------------------------------------------------------- |
 | Action           | I will enter en empty string as a search term.                |
 | Expected result  | The app returns to the main menu without performing a search. |
 
+
 | Integration test | 9                                                             |
 | ---------------- | ------------------------------------------------------------- |
 | Action           | I will press CTRL+C in the search term question.              |
 | Expected result  | The app returns to the main menu without performing a search. |
+
 
 | Integration test | 10                                                            |
 | ---------------- | ------------------------------------------------------------- |
 | Action           | I will search for a non-existent product.                     |
 | Expected result  | The app displays a message indicating no products were found. |
 
+
 | Integration test | 11                                                                                                          |
 | ---------------- | ----------------------------------------------------------------------------------------------------------- |
 | Action           | I will search for a existent product.                                                                       |
 | Expected result  | The app displays all found products and i can select one. The selected product is displayed with it's data. |
+
 
 | Integration test | 12                                                                                 |
 | ---------------- | ---------------------------------------------------------------------------------- |
 | Action           | I will search for a existent product and navigate through the pages of the result. |
 | Expected result  | I can navigate through the pages of the search results. Forward and backward.      |
 
+
 | Integration test | 13                                                                    |
 | ---------------- | --------------------------------------------------------------------- |
 | Action           | I will search for a existent product and cancel the process via menu. |
 | Expected result  | The app returns to the main menu without displaying a search result.  |
+
 
 | Integration test | 14                                                                        |
 | ---------------- | ------------------------------------------------------------------------- |
 | Action           | I will search for a existent product and cancel the process via `CTRL+C`. |
 | Expected result  | The app returns to the main menu without displaying a search result.      |
 
+
 | Integration test | 15                                                               |
 | ---------------- | ---------------------------------------------------------------- |
 | Action           | I will navigate to the feature 'Manage Recipes'.                 |
 | Expected result  | I will see a selection of features related to recipe management. |
+
 
 | Integration test | 16                                                                                                                                                                              |
 | ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Action           | I will add a new recipe and cancel it.                                                                                                                                          |
 | Expected result  | I will be prompted to enter a name for the recipe. If i cancel it with `CTRL+C`, the process is aborted and I return to the recipe management menu. A logging message is shown. |
 
+
 | Integration test | 17                                                                                                                                 |
 | ---------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
 | Action           | I will add a new recipe and enter an empty string as name.                                                                         |
 | Expected result  | If I enter an empty string as name, the process is aborted and I return to the recipe management menu. A logging message is shown. |
+
 
 | Integration test | 18                                          |
 | ---------------- | ------------------------------------------- |
 | Action           | I will exit `Manage recipes` with `CTRL+C`. |
 | Expected result  | I navigate back to the main menu.           |
 
+
 | Integration test | 19                                                                                                                                                            |
 | ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Action           | I will add a new recipe with a duplicate name.                                                                                                                |
 | Expected result  | A warning message is shown indicating that a recipe with the same name already exists. The user is prompted for a different name as long as they want to try. |
 
-| Integration test | 20                                                                                                                                                                                                                          |
-| ---------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+
+| Integration test | 20  |
+| ---------------- | --- |
+
+
 | Action           | I will add a new ingredient to the recipe.                                                                                                                                                                                  |
 | Expected result  | The ingredient is stored with the recipe instance. After I have selected a ingredient a prompt forces me to enter an amount in grams per person. After I entered the amount the ingredient and amount are shown in a table. |
+
 
 | Integration test | 21                                                                                                                        |
 | ---------------- | ------------------------------------------------------------------------------------------------------------------------- |
 | Action           | I will cancel the addition of an ingredient by pressing `CTRL+C`.                                                         |
 | Expected result  | A prompt is shown asking if I want to add another ingredient. If I choose not to, I return to the recipe management menu. |
 
+
 | Integration test | 22                                                                                                                        |
 | ---------------- | ------------------------------------------------------------------------------------------------------------------------- |
 | Action           | I will cancel the addition of an ingredient by selecting `Cancel` in the found products.                                  |
 | Expected result  | A prompt is shown asking if I want to add another ingredient. If I choose not to, I return to the recipe management menu. |
+
 
 | Integration test | 23                                                                                                                        |
 | ---------------- | ------------------------------------------------------------------------------------------------------------------------- |
 | Action           | I will cancel the addition of an ingredient by pressing `CTRL+C` in the amount prompt.                                    |
 | Expected result  | A prompt is shown asking if I want to add another ingredient. If I choose not to, I return to the recipe management menu. |
 
+
 | Integration test | 24                                                    |
 | ---------------- | ----------------------------------------------------- |
 | Action           | I will enter multiline instructions to the recipe.    |
 | Expected result  | The instructions are stored with the recipe instance. |
+
 
 | Integration test | 25                                                  |
 | ---------------- | --------------------------------------------------- |
 | Action           | I will cancel entering instructions for the recipe. |
 | Expected result  | I return to the recipe management menu.             |
 
+
 | Integration test | 26                                                           |
 | ---------------- | ------------------------------------------------------------ |
 | Action           | I will enter an empty string as instructions for the recipe. |
 | Expected result  | I return to the recipe management menu.                      |
+
 
 | Integration test | 27                                                                                                                                              |
 | ---------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
 | Action           | I will cancel the saving of the recipe during the save prompt.                                                                                  |
 | Expected result  | A confirmation prompt is shown asking if I really want to cancel saving the recipe. If I choose not to, I return to the recipe management menu. |
 
+
 | Integration test | 28                                                                                                                                              |
 | ---------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
 | Action           | I will deny saving the recipe during the save prompt.                                                                                           |
 | Expected result  | A confirmation prompt is shown asking if I really want to cancel saving the recipe. If I choose not to, I return to the recipe management menu. |
+
 
 | Integration test | 29                                         |
 | ---------------- | ------------------------------------------ |
 | Action           | I will save 2 recipes.                     |
 | Expected result  | Both recipes are stored in a file as json. |
 
+
 | Integration test | 30                                                                        |
 | ---------------- | ------------------------------------------------------------------------- |
 | Action           | I will try to add an existing recipe after restarting the app.            |
 | Expected result  | The name is already present in the repository and no new recipe is added. |
+
 
 | Integration test | 31                                                                |
 | ---------------- | ----------------------------------------------------------------- |
 | Action           | I will open `Manage recipes` with not present `data/recipes.json` |
 | Expected result  | The app works and I can add the first recipe.                     |
 
+
 | Integration test | 32                                                                                                                            |
 | ---------------- | ----------------------------------------------------------------------------------------------------------------------------- |
 | Action           | I will add a recipe and check that the sums of macronutrients are correct.                                                    |
 | Expected result  | The calculation is correct and matches the sum of individual ingredients during the addition and at the end in before saving. |
+
 
 | Integration test | 33                                                                                           |
 | ---------------- | -------------------------------------------------------------------------------------------- |
 | Action           | I will delete a recipe. `tools/create_test_recipes.py` can be used to generate test recipes. |
 | Expected result  | The recipe is deleted from memory and the file.                                              |
 
+
 | Integration test | 34                                                                          |
 | ---------------- | --------------------------------------------------------------------------- |
 | Action           | I will navigate to the meal plan management.                                |
 | Expected result  | I will see a info that no meal plan is present if not meal plan is present. |
+
 
 | Integration test | 35                                               |
 | ---------------- | ------------------------------------------------ |
 | Action           | I will cancel the meal plan management via menu. |
 | Expected result  | The main menu is displayed.                      |
 
+
 | Integration test | 36                                                   |
 | ---------------- | ---------------------------------------------------- |
 | Action           | I will cancel the meal plan management via `CTRL+C`. |
 | Expected result  | The main menu is displayed.                          |
+
 
 | Integration test | 37                                                     |
 | ---------------- | ------------------------------------------------------ |
 | Action           | I will generate a new meal plan.                       |
 | Expected result  | A new meal plan is generated and displayed as a table. |
 
+
 | Integration test | 38                                        |
 | ---------------- | ----------------------------------------- |
 | Action           | I will navigate to the person management. |
 | Expected result  | The person management menu is displayed.  |
+
 
 | Integration test | 39                                            |
 | ---------------- | --------------------------------------------- |
 | Action           | I will cancel the person management via menu. |
 | Expected result  | The main menu is displayed.                   |
 
+
 | Integration test | 40                                                |
 | ---------------- | ------------------------------------------------- |
 | Action           | I will cancel the person management via `CTRL+C`. |
 | Expected result  | The main menu is displayed.                       |
+
 
 | Integration test | 41                                                                                                                  |
 | ---------------- | ------------------------------------------------------------------------------------------------------------------- |
 | Action           | I will cancel addition of a person by pressing `CTRL+C` during the form to input personal data.                     |
 | Expected result  | The person is not added. The person management menu is displayed besides a log message indicating the cancellation. |
 
+
 | Integration test | 42                                                                   |
 | ---------------- | -------------------------------------------------------------------- |
 | Action           | I will to add a person with a name already existing.                 |
 | Expected result  | The person is not added. The user is prompted to add the name again. |
+
 
 | Integration test | 43                                                                                                      |
 | ---------------- | ------------------------------------------------------------------------------------------------------- |
 | Action           | I try to enter invalid values for a person's attributes. I change the name when I am prompted to do so. |
 | Expected result  | The input is invalid and the user is prompted to correct the values as long as it is valid.             |
 
-| Integration test | 44                                                     |
-| ---------------- | ------------------------------------------------------ |
-| Action           | I try to enter valid values for a person's attributes. |
-| Expected result  | The input is valid and the person will be added.       |
+
+| Integration test | 44                                                                                                        |
+| ---------------- | --------------------------------------------------------------------------------------------------------- |
+| Action           | I try to enter valid values for a person's attributes.                                                    |
+| Expected result  | The input is valid and the person will be added. The person will be automatically saved into a yaml file. |
+
 
 ## :hammer_and_wrench: Development
 
@@ -439,7 +485,8 @@ An existing API will be queried to get nutritional information. The app will han
             - [x] Is it a good idea to wrap the input in a single step that can be cancelled as a whole? :heavy_check_mark:
         - [x] Save the persons in the repository
         - [x] Recipes loading does not work after adding persons. Fix it.
-        - [ ] The value for the activity level should be the selected index of ACTIVITY_LEVELS
+        - [x] Show the added user after addition.
+        - [x] The value for the activity level should be the selected index of ACTIVITY_LEVELS
         - [ ] Delete persons via menu.
         - [ ] Cancel person deletion via menu.
         - [ ] Cancel person deletion via `CTRL+C`.

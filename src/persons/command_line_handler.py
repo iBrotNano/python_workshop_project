@@ -2,6 +2,7 @@ import logging
 from persons.repository import Repository
 import questionary
 from persons.person import Person
+from common.console import print_dict_as_table
 
 log = logging.getLogger(__name__)
 
@@ -91,7 +92,10 @@ class CommandLineHandler:
                 ),
                 activity_level=questionary.select(
                     "What is your activity level?",
-                    choices=[v[0] for v in Person.ACTIVITY_LEVELS.values()],
+                    choices=[
+                        questionary.Choice(v[0], value=k)
+                        for k, v in Person.ACTIVITY_LEVELS.items()
+                    ],
                 ),
             ).ask()
 
@@ -134,3 +138,17 @@ class CommandLineHandler:
 
         person = _create_person()
         _try_add_person_to_repository(person)
+
+        print_dict_as_table(
+            {
+                "Name": person.name,
+                "Gender": person.gender,
+                "Weight (kg)": f"{person.weight:.0f}",
+                "Height (cm)": f"{person.height:.0f}",
+                "Birth Year": f"{person.birth_year}",
+                "Activity Level": Person.ACTIVITY_LEVELS[person.activity_level][0],
+                "Needed Calories (kcal)": f"{person.calculate_calories_needed():.0f}",
+            },
+            column1_title="Attribute",
+            column2_title="Value",
+        )
