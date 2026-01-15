@@ -18,7 +18,7 @@ class: invert
 ```powershell
 z python_workshop_project
 conda activate python_workshop_env
-python -m src.main
+python .\src\main.py
 ```
 
 Stopping through the menu or `CTRL+C` in the terminal.
@@ -56,7 +56,7 @@ Stopping is implemented everywhere in the app.
 # Delete recipe
 
 1. Delete the saved recipe
-2. Show in `recipes.yaml` that it is deleted
+2. Show that it is deleted
 
 ---
 
