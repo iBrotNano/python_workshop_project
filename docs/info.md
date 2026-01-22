@@ -359,6 +359,12 @@ An existing API will be queried to get nutritional information. The app will han
 | Expected result  | The input is valid and the person will be added. The person will be automatically saved into a yaml file. |
 
 
+| Integration test | 45                                                                                  |
+| ---------------- | ----------------------------------------------------------------------------------- |
+| Action           | I delete a person.                                                                  |
+| Expected result  | The person is deleted. The person will be automatically removed from the yaml file. |
+
+
 ## :hammer_and_wrench: Development
 
 ### :clipboard: TODOs
@@ -487,15 +493,18 @@ An existing API will be queried to get nutritional information. The app will han
         - [x] Recipes loading does not work after adding persons. Fix it.
         - [x] Show the added user after addition.
         - [x] The value for the activity level should be the selected index of ACTIVITY_LEVELS
-        - [ ] Delete persons via menu.
+        - [x] Delete persons via menu.
+        - [x] Use the in base repo implemented method to save the data in all subclasses.
         - [ ] Cancel person deletion via menu.
         - [ ] Cancel person deletion via `CTRL+C`.
+        - [ ] Generalize the loading of data.
         - [ ] List persons via menu.
         - [ ] Store persons in a yaml file after addition automatically.
         - [ ] Load persons from the yaml file during repository initialization.
         - [ ] Edit persons via menu.
         - [ ] Cancel person editing via menu.
         - [ ] Cancel person editing via `CTRL+C`.
+        - [ ] Fix wrong calculation of needed calories with Gender Female, Weight 60, Height 160 and activity level moderate.
     - [ ] Prevent double assignments of recipes in the plan.
     - [ ] Navigate to recipes from table via menu. Day --> Meal --> Recipe
     - [ ] Show nutrition summary for a day's recipes and persons
