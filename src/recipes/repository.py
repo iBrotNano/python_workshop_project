@@ -11,7 +11,7 @@ class Repository(YamlFileRepository):
 
         :param self: This instance of the Repository class.
         """
-        super().__init__(config.recipes_storage_path)
+        super().__init__(config.recipes_storage_path, self._to_dict)
         self._load()
 
     def try_add(self, recipe: Recipe):
@@ -27,15 +27,6 @@ class Repository(YamlFileRepository):
 
         self.data[recipe.name] = recipe
         return True
-
-    def save(self):
-        """
-        Stores the recipes to disk.
-        """
-
-        self._write_yaml(
-            {name: self._to_dict(recipe) for name, recipe in self.data.items()}
-        )
 
     def delete(self, recipe_name: str):
         """
@@ -87,24 +78,25 @@ class Repository(YamlFileRepository):
 
         self.data = {name: self._from_dict(payload) for name, payload in data.items()}
 
-    def _to_dict(self, recipe: Recipe) -> dict:
+    def _to_dict(self) -> dict:
         """
-        Converts a Recipe instance to a dictionary.
+        Converts the respository data to a dictionary for serialization.
 
-        :param recipe: The recipe to convert.
-        :type recipe: Recipe
-        :return: The recipe as a dictionary.
+        :return: The repository data as a dictionary.
         :rtype: dict
         """
         return {
-            "name": recipe.name,
-            "type": recipe.type,
-            "ingredients": [  # yaml does not support tuples
-                {"amount": amount, "product": product}
-                for amount, product in recipe.ingredients
-            ],
-            "instructions": recipe.instructions,
-            "nutrition": recipe.nutrition,
+            name: {
+                "name": recipe.name,
+                "type": recipe.type,
+                "ingredients": [  # yaml does not support tuples
+                    {"amount": amount, "product": product}
+                    for amount, product in recipe.ingredients
+                ],
+                "instructions": recipe.instructions,
+                "nutrition": recipe.nutrition,
+            }
+            for name, recipe in self.data.items()
         }
 
     def _from_dict(self, data: dict) -> Recipe:

@@ -1,9 +1,10 @@
 from pathlib import Path
 import yaml
+from typing import Callable
 
 
 class YamlFileRepository:
-    def __init__(self, storage_path: Path):
+    def __init__(self, storage_path: Path, to_dict: Callable):
         """
         Initializes the Repository.
 
@@ -12,6 +13,15 @@ class YamlFileRepository:
         self.data = {}
         self.storage_path = storage_path
         self._ensure_storage_path_exists()
+        self._to_dict = to_dict
+
+    def save(self):
+        """
+        Saves the repository data to the YAML file.
+
+        :param self: This instance of the Repository class.
+        """
+        self._write_yaml(self._to_dict())
 
     def _ensure_storage_path_exists(self):
         """

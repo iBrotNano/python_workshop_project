@@ -2,7 +2,7 @@ import logging
 from persons.repository import Repository
 import questionary
 from persons.person import Person
-from common.console import print_dict_as_table
+from common.console import print_dict_as_table, print_info
 
 log = logging.getLogger(__name__)
 
@@ -10,6 +10,7 @@ log = logging.getLogger(__name__)
 class CommandLineHandler:
     CANCEL_COMMAND = "CANCEL"
     ADD_PERSON_COMMAND = "ADD_PERSON"
+    DELETE_PERSON_COMMAND = "DELETE_PERSON"
 
     def __init__(self):
         """
@@ -32,6 +33,9 @@ class CommandLineHandler:
             if command == self.ADD_PERSON_COMMAND:
                 self._add_person()
 
+            if command == self.DELETE_PERSON_COMMAND:
+                self._delete_person()
+
     def _get_menu_selection(self):
         """
         Displays the menu and gets the user's selection.
@@ -46,6 +50,7 @@ class CommandLineHandler:
                 "Add a new person",
                 value=self.ADD_PERSON_COMMAND,
             ),
+            questionary.Choice("Delete a person", value=self.DELETE_PERSON_COMMAND),
             questionary.Choice(
                 "Back to main menu",
                 value=self.CANCEL_COMMAND,
@@ -152,3 +157,38 @@ class CommandLineHandler:
             column1_title="Attribute",
             column2_title="Value",
         )
+
+    def _delete_person(self):
+        """
+        Deletes a person from the repository.
+
+        :param self: This instance of the CommandLineHandler class.
+        """
+
+        def _select_person_to_delete():
+            """
+            Prompts the user to select a person to delete from the repository.
+
+            :return: The name of the person selected for deletion.
+            """
+            if not self.repository.data:
+                print_info("No persons available to delete.")
+                return
+
+            return questionary.autocomplete(
+                "Select the person you want to delete:",
+                choices=list(self.repository.data.keys()),
+                ignore_case=True,
+                validate=lambda text: text
+                in self.repository.data.keys()  # Only exiting names are valid
+                or "Please select an existing person to delete.",
+            ).ask()
+
+        person_name = _select_person_to_delete()
+
+        if person_name:
+            if questionary.confirm(
+                f"Are you sure you want to delete the person '{person_name}'?"
+            ).ask():
+                self.repository.delete(person_name)
+                print_info(f"Person '{person_name}' has been deleted.")
