@@ -12,13 +12,21 @@ class Person:
         5: ("Super active (very hard exercise & physical job or 2x training)", 1.9),
     }
 
-    def __init__(self):
-        self.name = ""
-        self.gender = ""
-        self.weight = 0.0
-        self.height = 0.0
-        self.birth_year = 0
-        self.activity_level = 0
+    def __init__(
+        self,
+        name: str = "",
+        gender: str = "",
+        weight: float = 0.0,
+        height: float = 0.0,
+        birth_year: int = 0,
+        activity_level: int = 0,
+    ):
+        self.name = name
+        self.gender = gender
+        self.weight = weight
+        self.height = height
+        self.birth_year = birth_year
+        self.activity_level = activity_level
 
     def calculate_calories_needed(self):
         """

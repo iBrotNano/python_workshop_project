@@ -11,8 +11,7 @@ class Repository(YamlFileRepository):
 
         :param self: This instance of the Repository class.
         """
-        super().__init__(config.recipes_storage_path, self._to_dict)
-        self._load()
+        super().__init__(config.recipes_storage_path, Recipe)
 
     def try_add(self, recipe: Recipe):
         """
@@ -69,53 +68,3 @@ class Repository(YamlFileRepository):
             return None
 
         return random.choice(filtered_recipes)
-
-    def _load(self):
-        """
-        Loads the recipes from disk.
-        """
-        data = self._read_yaml()
-
-        self.data = {name: self._from_dict(payload) for name, payload in data.items()}
-
-    def _to_dict(self) -> dict:
-        """
-        Converts the respository data to a dictionary for serialization.
-
-        :return: The repository data as a dictionary.
-        :rtype: dict
-        """
-        return {
-            name: {
-                "name": recipe.name,
-                "type": recipe.type,
-                "ingredients": [  # yaml does not support tuples
-                    {"amount": amount, "product": product}
-                    for amount, product in recipe.ingredients
-                ],
-                "instructions": recipe.instructions,
-                "nutrition": recipe.nutrition,
-            }
-            for name, recipe in self.data.items()
-        }
-
-    def _from_dict(self, data: dict) -> Recipe:
-        """
-        Converts a dictionary to a Recipe instance.
-
-        :param data: The dictionary containing recipe data.
-        :type data: dict
-        :return: The instantiated Recipe object.
-        :rtype: Recipe
-        """
-        instance = Recipe()
-        instance.name = data.get("name")
-        instance.type = data.get("type", "unknown")
-        ingredients = data.get("ingredients", [])
-        # Convert dictionary format to tuples (amount, product)
-        instance.ingredients = [
-            (item["amount"], item["product"]) for item in ingredients
-        ]
-        instance.instructions = data.get("instructions", "")
-        instance.nutrition = data.get("nutrition", {})
-        return instance

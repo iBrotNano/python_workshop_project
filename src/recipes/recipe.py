@@ -5,19 +5,26 @@ log = logging.getLogger(__name__)
 
 
 class Recipe:
-    def __init__(self):
+    def __init__(
+        self,
+        name: str = "",
+        ingredients: list = [],
+        instructions: str = "",
+        nutrition: dict = {},
+        type: str = "unknown",
+    ):
         """
         Initializes the Recipe.
 
         :param self: This instance of the Recipe class.
         """
-        self.name = ""
-        self.ingredients = []
-        self.instructions = ""
-        self.nutrition = {}
-        self.type = "unknown"  # e.g., breakfast, lunch, dinner, snack
+        self.name = name
+        self.ingredients = ingredients
+        self.instructions = instructions
+        self.nutrition = nutrition
+        self.type = type  # e.g., breakfast, lunch, dinner, snack
 
-    def add_ingredient(self, ingredient: tuple[int, dict]):
+    def add_ingredient(self, ingredient: dict):
         """
         Adds an ingredient to the recipe.
 
@@ -39,8 +46,8 @@ class Recipe:
 
         md += "## Ingredients\n\n"
 
-        for amount, ingredient in self.ingredients:
-            md += f"- {amount}g [{ingredient['brands']} {ingredient['product']}]({ingredient['url']})\n"
+        for ingredient in self.ingredients:
+            md += f"- {ingredient['amount']}g [{ingredient['food']['brands']} {ingredient['food']['product']}]({ingredient['food']['url']})\n"
 
         md += "\n## Instructions\n\n"
         md += self.instructions + "\n"
@@ -116,8 +123,8 @@ class Recipe:
             ("salt_100g", "salt"),
         ]
 
-        for amount, ingredient in self.ingredients:
-            factor = amount / 100.0  # Nutritional information is per 100g
+        for ingredient in self.ingredients:
+            factor = ingredient["amount"] / 100.0  # Nutritional information is per 100g
 
             for ingredient_key, nutrition_key in nutrient_mappings:
                 # Skip calculation if this nutrient is already marked as unavailable
@@ -125,14 +132,14 @@ class Recipe:
                     continue
 
                 try:
-                    value = float(ingredient.get(ingredient_key, "N/A"))
+                    value = float(ingredient["food"].get(ingredient_key, "N/A"))
                     nutrition[nutrition_key] += value * factor
                 except (ValueError, TypeError):
                     # Mark this nutrient as unavailable if conversion fails
                     nutrition[nutrition_key] = "N/A"
                     log.warning(
                         f"Missing or invalid value for '{ingredient_key}' "
-                        f"in {ingredient.get('product', 'unknown')}. "
+                        f"in {ingredient['food'].get('product', 'unknown')}. "
                         f"Nutrient '{nutrition_key}' cannot be calculated."
                     )
 

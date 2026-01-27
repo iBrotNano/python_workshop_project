@@ -495,9 +495,11 @@ An existing API will be queried to get nutritional information. The app will han
         - [x] The value for the activity level should be the selected index of ACTIVITY_LEVELS
         - [x] Delete persons via menu.
         - [x] Use the in base repo implemented method to save the data in all subclasses.
+        - [x] Generalize the loading of data.
+          - [x] Error dring loading person data (TypeError: Person.__init__() got an unexpected keyword argument 'activity_level').
+        - [x] Loading persons from file.
         - [ ] Cancel person deletion via menu.
         - [ ] Cancel person deletion via `CTRL+C`.
-        - [ ] Generalize the loading of data.
         - [ ] List persons via menu.
         - [ ] Store persons in a yaml file after addition automatically.
         - [ ] Load persons from the yaml file during repository initialization.

@@ -13,7 +13,7 @@ version = "0.1.0"
 openfoodfacts_api_version = openfoodfacts.APIVersion.v3
 openfoodfacts_api_environment = openfoodfacts.Environment.org
 openfoodfacts_api_country = openfoodfacts.Country.de
-openfoodfacts_api_timeout = 15
+openfoodfacts_api_timeout = 60  # seconds
 
 # Logging
 logging_folder = "logs"

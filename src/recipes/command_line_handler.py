@@ -161,13 +161,13 @@ class CommandLineHandler:
                         ).ask()
 
                         if amount:
-                            recipe.add_ingredient((int(amount), food))
+                            recipe.add_ingredient({"amount": int(amount), "food": food})
 
                             # Only show the table if there are ingredients.
                             print_dict_as_table(
                                 {
-                                    f"[link={ingredient['url']}]{ingredient['brands']} {ingredient['product']}[/link]": f"{amount}g"
-                                    for amount, ingredient in recipe.ingredients
+                                    f"[link={ingredient['food']['url']}]{ingredient['food']['brands']} {ingredient['food']['product']}[/link]": f"{ingredient['amount']}g"
+                                    for ingredient in recipe.ingredients
                                 },
                                 "Ingredients",
                                 "Amount in g per person",
