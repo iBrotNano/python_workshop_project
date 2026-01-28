@@ -3,6 +3,8 @@ from persons.repository import Repository
 import questionary
 from persons.person import Person
 from common.console import print_dict_as_table, print_info
+from rich.table import Table
+from config.console import console
 
 log = logging.getLogger(__name__)
 
@@ -11,6 +13,7 @@ class CommandLineHandler:
     CANCEL_COMMAND = "CANCEL"
     ADD_PERSON_COMMAND = "ADD_PERSON"
     DELETE_PERSON_COMMAND = "DELETE_PERSON"
+    VIEW_PERSONS_COMMAND = "VIEW_PERSONS"
 
     def __init__(self):
         """
@@ -30,6 +33,9 @@ class CommandLineHandler:
             if command is None or command == self.CANCEL_COMMAND:
                 return  # User chose to cancel; return to main menu.
 
+            if command == self.VIEW_PERSONS_COMMAND:
+                self._view_persons()
+
             if command == self.ADD_PERSON_COMMAND:
                 self._add_person()
 
@@ -46,6 +52,7 @@ class CommandLineHandler:
         """
 
         choices = [
+            questionary.Choice("View persons", value=self.VIEW_PERSONS_COMMAND),
             questionary.Choice(
                 "Add a new person",
                 value=self.ADD_PERSON_COMMAND,
@@ -192,3 +199,35 @@ class CommandLineHandler:
             ).ask():
                 self.repository.delete(person_name)
                 print_info(f"Person '{person_name}' has been deleted.")
+
+    def _view_persons(self):
+        """
+        Displays all persons in the repository.
+
+        :param self: This instance of the CommandLineHandler class.
+        """
+        if not self.repository.data:
+            print_info("No persons available to display.")
+            return
+
+        table = Table()
+        table.add_column("Name", style="cyan", no_wrap=True)
+        table.add_column("Gender")
+        table.add_column("Age", justify="right")
+        table.add_column("Weight (kg)", justify="right")
+        table.add_column("Height (cm)", justify="right")
+        table.add_column("Activity Level")
+        table.add_column("Needed Calories (kcal)", justify="right")
+
+        for key, value in self.repository.data.items():
+            table.add_row(
+                key,
+                value.gender,
+                str(Person.calculate_age(value)),
+                f"{value.weight:.0f}",
+                f"{value.height:.0f}",
+                Person.ACTIVITY_LEVELS[value.activity_level][0],
+                f"{Person.calculate_calories_needed(value):.0f}",
+            )
+
+        console.print(table)

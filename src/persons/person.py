@@ -28,29 +28,33 @@ class Person:
         self.birth_year = birth_year
         self.activity_level = activity_level
 
-    def calculate_calories_needed(self):
+    @staticmethod
+    def calculate_calories_needed(person: "Person") -> float:
         """
         Calculates the calories needed per day based on the person's attributes.
 
-        It uses the Mifflin–St Jeor Formela to calculate the Basal Metabolic Rate (BMR)
+        It uses the Mifflin-St Jeor Formula to calculate the Basal Metabolic Rate (BMR)
         and then multiplies it by an activity factor based on the person's activity level.
 
-        :param self: This instance of the Person class.
+        :param person: The Person instance for which to calculate the calories needed.
         """
         return (
-            10 * self.weight + 6.25 * self.height - 5 * self._calculate_age() + 5
-            if self.gender == "Male"
+            10 * person.weight
+            + 6.25 * person.height
+            - 5 * person.calculate_age(person)
+            + 5
+            if person.gender == "Male"
             else -161
-        ) * self.ACTIVITY_LEVELS[self.activity_level][1]
+        ) * Person.ACTIVITY_LEVELS[person.activity_level][1]
 
-    def _calculate_age(self):
+    @staticmethod
+    def calculate_age(person: "Person") -> int:
         """
         Calculates the age of the person based on their birthday.
 
-        :param self: This instance of the Person class.
-
+        :param person: The Person instance for which to calculate the age.
         :return: The age of the person.
         :rtype: int
         """
         current_year = int(time.strftime("%Y"))
-        return current_year - self.birth_year
+        return current_year - person.birth_year

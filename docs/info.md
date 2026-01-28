@@ -365,6 +365,18 @@ An existing API will be queried to get nutritional information. The app will han
 | Expected result  | The person is deleted. The person will be automatically removed from the yaml file. |
 
 
+| Integration test | 46                                                          |
+| ---------------- | ----------------------------------------------------------- |
+| Action           | I view persons when no persons are available.               |
+| Expected result  | A message indicating no persons are available is displayed. |
+
+
+| Integration test | 47                                         |
+| ---------------- | ------------------------------------------ |
+| Action           | I view persons when persons are available. |
+| Expected result  | All persons are listed in a table.         |
+
+
 ## :hammer_and_wrench: Development
 
 ### :clipboard: TODOs
@@ -498,11 +510,11 @@ An existing API will be queried to get nutritional information. The app will han
         - [x] Generalize the loading of data.
           - [x] Error dring loading person data (TypeError: Person.__init__() got an unexpected keyword argument 'activity_level').
         - [x] Loading persons from file.
-        - [ ] Cancel person deletion via menu.
-        - [ ] Cancel person deletion via `CTRL+C`.
-        - [ ] List persons via menu.
-        - [ ] Store persons in a yaml file after addition automatically.
-        - [ ] Load persons from the yaml file during repository initialization.
+        - [x] Cancel person deletion via menu.
+        - [x] Cancel person deletion via `CTRL+C`.
+        - [x] List persons via menu.
+        - [x] Store persons in a yaml file after addition automatically.
+        - [x] Load persons from the yaml file during repository initialization.
         - [ ] Edit persons via menu.
         - [ ] Cancel person editing via menu.
         - [ ] Cancel person editing via `CTRL+C`.
