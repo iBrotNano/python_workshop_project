@@ -490,8 +490,8 @@ An existing API will be queried to get nutritional information. The app will han
   - [ ] Generate a meal plan via menu.
     - [x] Generate a weekly meal plan randomly from existing recipes.
     - [x] Show the plan as a table in the console.
-    - [ ] Add persons in the household to scale recipes correctly.
-      - [ ] Person Management via main menu.
+    - [x] Add persons in the household to scale recipes correctly.
+      - [x] Person Management via main menu.
         - [x] Cancel person management via menu.
         - [x] Cancel person management via `CTRL+C`.
         - [x] Add persons via menu.
@@ -515,10 +515,7 @@ An existing API will be queried to get nutritional information. The app will han
         - [x] List persons via menu.
         - [x] Store persons in a yaml file after addition automatically.
         - [x] Load persons from the yaml file during repository initialization.
-        - [ ] Edit persons via menu.
-        - [ ] Cancel person editing via menu.
-        - [ ] Cancel person editing via `CTRL+C`.
-        - [ ] Fix wrong calculation of needed calories with Gender Female, Weight 60, Height 160 and activity level moderate.
+        - [x] Fix wrong calculation of needed calories with Gender Female, Weight 60, Height 160 and activity level moderate.
     - [ ] Prevent double assignments of recipes in the plan.
     - [ ] Navigate to recipes from table via menu. Day --> Meal --> Recipe
     - [ ] Show nutrition summary for a day's recipes and persons
@@ -540,6 +537,7 @@ An existing API will be queried to get nutritional information. The app will han
 - [ ] Use validators to ensure that all inputs are valid. E.g. no empty names, positive quantities, etc. Any other handling of invalid inputs is not required. As example: Entering the name of a recipe.
 - [ ] Extract all validation lamdas into an own module
 - [ ] The recipe repository should be implemented as the persons repo.
+- [ ] Fix
 - [ ] Check if the exception handling is well done
 - [ ] Check if further tests must be written
 - [ ] Are there license conflicts for new dependencies?
@@ -845,8 +843,59 @@ To calculate the calories needed by a person I need some information:
 - Age
 - Activity Level
 
+> [!NOTE] Calory calculation
+> The needed calories are calculated with the Mifflin-St Jeor Formula.
+> 
+> For men:
+> 
+> $$
+> \mathrm{BMR}=10\cdot \mathrm{Weight\  (kg)}+6,25\cdot \mathrm{Height\  (cm)}-5\cdot \mathrm{Age\  (years)}+5
+> $$
+> 
+> For women:
+> 
+> $$
+> \mathrm{BMR}=10\cdot \mathrm{Weight\  (kg)}+6,25\cdot \mathrm{Height\  (cm)}-5\cdot \mathrm{Age\  (years)}> -161
+> $$
+> 
+> Meaning and use:
+> 
+> - BMR (Basal Metabolic Rate) is the number of calories your body burns at complete rest—only for vital > bodily functions.
+> - To get total daily energy expenditure (TDEE), BMR is multiplied by an activity factor (e.g., 1.2 for very > little movement, up to about 2.4 for very high activity).
+> 
+> Example (from the source):
+> 
+> A 40-year-old man, 75 kg, 180 cm: 
+> 
+> $10 \cdot 75 + 6.25 \cdot 180 - 5 \cdot 40 + 5 = 1480\ \mathrm{kcal/day}$
+
+
 > [!TIP] Paging
 > I just have to name the page until `skip` + `page_count` = `count`.
+
+There is a bug when the following data is entered:
+
+```shell
+? Enter the person's name:  Ronja
+? Enter a biological gender:  Female
+? Enter your weight (in kg):  21
+? Enter your height (in cm):  102
+? Enter your birth year:  2020
+? What is your activity level? Super active (very hard exercise & physical job or 2x training)
+
+2026-03-05 15:24:22,866 | ERROR | An error of type <class 'TypeError'> occurred. Message: Person.calculate_calories_needed() missing 1 required positional argument: 'person'
+Traceback (most recent call last):
+  File "C:\Dev\python_workshop_project\src\main.py", line 32, in <module>
+    persons_cli.CommandLineHandler().show()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Dev\python_workshop_project\src\persons\command_line_handler.py", line 40, in show
+    self._add_person()
+    ~~~~~~~~~~~~~~~~^^
+  File "C:\Dev\python_workshop_project\src\persons\command_line_handler.py", line 162, in _add_person
+    "Needed Calories (kcal)": f"{person.calculate_calories_needed():.0f}",
+                                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+TypeError: Person.calculate_calories_needed() missing 1 required positional argument: 'person'
+```
 
 > [!NOTE]
 > This is a note

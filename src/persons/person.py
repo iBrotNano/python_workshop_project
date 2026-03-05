@@ -38,13 +38,12 @@ class Person:
 
         :param person: The Person instance for which to calculate the calories needed.
         """
+        bmr_without_gender_factor = (
+            10 * person.weight + 6.25 * person.height - 5 * person.calculate_age(person)
+        )
+
         return (
-            10 * person.weight
-            + 6.25 * person.height
-            - 5 * person.calculate_age(person)
-            + 5
-            if person.gender == "Male"
-            else -161
+            bmr_without_gender_factor + (5 if person.gender == "Male" else -161)
         ) * Person.ACTIVITY_LEVELS[person.activity_level][1]
 
     @staticmethod
