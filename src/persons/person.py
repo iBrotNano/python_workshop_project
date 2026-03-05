@@ -1,4 +1,4 @@
-import time
+from datetime import date
 
 
 class Person:
@@ -56,5 +56,5 @@ class Person:
         :return: The age of the person.
         :rtype: int
         """
-        current_year = int(time.strftime("%Y"))
+        current_year = date.today().year
         return current_year - person.birth_year
