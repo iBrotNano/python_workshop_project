@@ -516,7 +516,9 @@ An existing API will be queried to get nutritional information. The app will han
         - [x] Store persons in a yaml file after addition automatically.
         - [x] Load persons from the yaml file during repository initialization.
         - [x] Fix wrong calculation of needed calories with Gender Female, Weight 60, Height 160 and activity level moderate.
-    - [ ] Prevent double assignments of recipes in the plan.
+    - [x] Prevent double assignments of recipes in the plan.
+      - [x] What if there are not enough recipes for a plan?
+      - [x] Assign already assigned recipes only if there are not enough recipes to fill the plan for a meal time.
     - [ ] Navigate to recipes from table via menu. Day --> Meal --> Recipe
     - [ ] Show nutrition summary for a day's recipes and persons
     - [ ] Save the generated meal plan to a yaml file after generation automatically.
@@ -896,6 +898,9 @@ Traceback (most recent call last):
                                  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
 TypeError: Person.calculate_calories_needed() missing 1 required positional argument: 'person'
 ```
+
+> [!NOTE] Duble assignment of recipes in the meal plan
+> To prevent double assignments of recipes in the meal plan, I will first check if a recipe is already assigned to a meal time in the plan before allowing it to be assigned again. If a recipe is already assigned, I will only allow it to be assigned again if there are not enough recipes available to fill the plan for a meal time. This way, I can ensure that the meal plan is diverse and does not contain duplicate recipes unless necessary.
 
 > [!NOTE]
 > This is a note
