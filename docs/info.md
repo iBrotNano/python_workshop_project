@@ -843,7 +843,7 @@ To calculate the calories needed by a person I need some information:
 - Age
 - Activity Level
 
-> [!NOTE] Calory calculation
+> [!NOTE] Calorie calculation
 > The needed calories are calculated with the Mifflin-St Jeor Formula.
 > 
 > For men:
@@ -855,7 +855,7 @@ To calculate the calories needed by a person I need some information:
 > For women:
 > 
 > $$
-> \mathrm{BMR}=10\cdot \mathrm{Weight\  (kg)}+6,25\cdot \mathrm{Height\  (cm)}-5\cdot \mathrm{Age\  (years)}> -161
+> \mathrm{BMR}=10\cdot \mathrm{Weight\  (kg)}+6,25\cdot \mathrm{Height\  (cm)}-5\cdot \mathrm{Age\  (years)}>-161
 > $$
 > 
 > Meaning and use:
@@ -918,6 +918,7 @@ TypeError: Person.calculate_calories_needed() missing 1 required positional argu
 ## :mag: Debug
 
 - [ ] ID: 🟢🔴🟡 Result: As Expected
+- [ ] 1: 
 
 ## :books: Documentation
 - [ ] Do I need a new PIA or update an existing one?
