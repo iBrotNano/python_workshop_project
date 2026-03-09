@@ -897,7 +897,7 @@ Traceback (most recent call last):
 TypeError: Person.calculate_calories_needed() missing 1 required positional argument: 'person'
 ```
 
-> [!NOTE] Duble assignment of recipes in the meal plan
+> [!NOTE] Double assignment of recipes in the meal plan
 > To prevent double assignments of recipes in the meal plan, I will first check if a recipe is already assigned to a meal time in the plan before allowing it to be assigned again. If a recipe is already assigned, I will only allow it to be assigned again if there are not enough recipes available to fill the plan for a meal time. This way, I can ensure that the meal plan is diverse and does not contain duplicate recipes unless necessary.
 
 > [!NOTE]
