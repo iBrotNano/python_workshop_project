@@ -482,12 +482,12 @@ An existing API will be queried to get nutritional information. The app will han
   - [x] Show label in ui
   - [x] Save and load label
 - [x] Generate testdata with different labels
-- [ ] Create a weekly meal plan from the recipes.
+- [x] Create a weekly meal plan from the recipes.
   - [x] Add meal plan management to the main menu.
   - [x] Show a info if no meal plan is present.
   - [x] Cancel the meal plan management via menu.
   - [x] Cancel the meal plan management via `CTRL+C`.
-  - [ ] Generate a meal plan via menu.
+  - [x] Generate a meal plan via menu.
     - [x] Generate a weekly meal plan randomly from existing recipes.
     - [x] Show the plan as a table in the console.
     - [x] Add persons in the household to scale recipes correctly.
@@ -519,42 +519,40 @@ An existing API will be queried to get nutritional information. The app will han
     - [x] Prevent double assignments of recipes in the plan.
       - [x] What if there are not enough recipes for a plan?
       - [x] Assign already assigned recipes only if there are not enough recipes to fill the plan for a meal time.
-    - [ ] Navigate to recipes from table via menu. Day --> Meal --> Recipe
-    - [ ] Show nutrition summary for a day's recipes and persons
-    - [ ] Save the generated meal plan to a yaml file after generation automatically.
-  - [ ] Edit the current meal plan via menu.
-    - [ ] Users can assign recipes to the meals in the plan by selecting a day and meal and then a new recipe filtered by the meal type.
-  - [ ] Export the meal plan as markdown file.
-  - [ ] Publish all recipes of the plan to Google Keep.
-    - [ ] What do I have to configure to use the Google Keep API?
-- [ ] Generate a shopping list based on the meal plan.
-  - [ ] The tool generates a shopping list with the required ingredients and quantities.
-  - [ ] The number of people must be specified to scale the quantities correctly.
-  - [ ] Shopping list displayed in the console.
-- [ ] Save the shopping list to Google Keep.
-  - [ ] Integration with the Google Keep API to save the shopping list directly to Google Keep.
-- [ ] Edit recipes
-- [ ] Search for raw ingredients by using another source (e.g. Schweizer Nährwerttabelle)
-- [ ] Use DI an punq as DI container
-- [ ] Use validators to ensure that all inputs are valid. E.g. no empty names, positive quantities, etc. Any other handling of invalid inputs is not required. As example: Entering the name of a recipe.
-- [ ] Extract all validation lamdas into an own module
-- [ ] The recipe repository should be implemented as the persons repo.
-- [ ] Fix
-- [ ] Check if the exception handling is well done
-- [ ] Check if further tests must be written
-- [ ] Are there license conflicts for new dependencies?
-- [ ] Exisits a `global.json`
-- [ ] Remove deactivated code
-- [ ] Are all TODOs in the code done?
-- [ ] Write meaningful comments
-- [ ] Are there any compiler warnings?
-- [ ] Do all unit tests pass in Visual Studio?
-- [ ] Do all unit tests pass with `dotnet test`?
-- [ ] `dotnet format Contracts.Service.sln --verify-no-changes --verbosity diagnostic`
-- [ ] Is the version number correctly configured?
-- [ ] Phrase a meaningful commit comment
-- [ ] Check-in the changes and push them to the server
-- [ ] Does the build on the buildserver succeed?
+    - [x] Navigate to recipes from table via menu. Day --> Meal --> Recipe
+    - [x] Show nutrition summary for a day's recipes and persons
+    - [x] Save the generated meal plan to a yaml file after generation automatically.
+  - [x] Edit the current meal plan via menu.
+    - [x] Users can assign recipes to the meals in the plan by selecting a day and meal and then a new recipe filtered by the meal type.
+  - [x] Export the meal plan as markdown file.
+  - [x] Publish all recipes of the plan to Google Keep.
+    - [x] What do I have to configure to use the Google Keep API?
+- [x] Generate a shopping list based on the meal plan.
+  - [x] The tool generates a shopping list with the required ingredients and quantities.
+  - [x] The number of people must be specified to scale the quantities correctly.
+  - [x] Shopping list displayed in the console.
+- [x] Save the shopping list to Google Keep.
+  - [x] Integration with the Google Keep API to save the shopping list directly to Google Keep.
+- [x] Edit recipes
+- [x] Search for raw ingredients by using another source (e.g. Schweizer Nährwerttabelle)
+- [x] Use DI an punq as DI container
+- [x] Use validators to ensure that all inputs are valid. E.g. no empty names, positive quantities, etc. Any other handling of invalid inputs is not required. As example: Entering the name of a recipe.
+- [x] Extract all validation lamdas into an own module
+- [x] The recipe repository should be implemented like the persons repo.
+- [x] Fix
+- [x] Check if the exception handling is well done
+- [x] Check if further tests must be written
+- [x] Are there license conflicts for new dependencies?
+- [x] Remove deactivated code
+- [x] Are all TODOs in the code done?
+- [x] Write meaningful comments
+- [x] Are there any compiler warnings?
+- [x] Do all unit tests pass?
+- [x] Format code
+- [x] Is the version number correctly configured?
+- [x] Phrase a meaningful commit comment
+- [x] Check-in the changes and push them to the server
+- [x] Does the build on the buildserver succeed?
 - [ ] Create a PR
 - [ ] Maybe i will fill the form [openfoodfacts-python/REUSE.md at develop · openfoodfacts/openfoodfacts-python](https://github.com/openfoodfacts/openfoodfacts-python/blob/develop/REUSE.md) later
 
