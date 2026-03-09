@@ -55,7 +55,7 @@ class Repository(YamlFileRepository):
         """
         Gets a random recipe, filtered by type.
 
-        Already  assigned recipes are only returned if there are no not assigned recipes available for the given type.
+        Already assigned recipes are only returned if there are no not assigned recipes available for the given type.
 
         :param self: This instance of the Repository class.
         :param recipe_type: The type of recipe to filter by.
