@@ -22,6 +22,8 @@ class MealPlan:
 
         :param self: This instance of the MealPlan class.
         """
+        self.meals = []
+
         for day in range(7):
             self.meals.append([])  # Add a new day column
             for meal_time in range(5):
