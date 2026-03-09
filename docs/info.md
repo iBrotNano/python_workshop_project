@@ -553,8 +553,8 @@ An existing API will be queried to get nutritional information. The app will han
 - [x] Phrase a meaningful commit comment
 - [x] Check-in the changes and push them to the server
 - [x] Does the build on the buildserver succeed?
-- [ ] Create a PR
-- [ ] Maybe i will fill the form [openfoodfacts-python/REUSE.md at develop · openfoodfacts/openfoodfacts-python](https://github.com/openfoodfacts/openfoodfacts-python/blob/develop/REUSE.md) later
+- [x] Create a PR
+- [x] Maybe i will fill the form [openfoodfacts-python/REUSE.md at develop · openfoodfacts/openfoodfacts-python](https://github.com/openfoodfacts/openfoodfacts-python/blob/develop/REUSE.md) later
 
 ### :eyes: Review
 
@@ -1033,36 +1033,4 @@ Is there anything special to note? Perhaps deviations from the ticket or details
 
 Scripts or test data used? Ideally attach or link it.
 ```
-</details>
-
-<details>
-    <summary>Database migration with EF Core</summary>
-
-```powershell
-PS> cd .\src\ProjectName
-PS> dotnet ef database update
-PS> dotnet ef migrations add <migration_name> --project ..\ProjectName.csproj
-```
-
-`dotnet ef` can be updated with the command `dotnet tool update -g dotnet-ef --version 7.0.14`.
-
-During development, sometimes it is necessary to recreate a migration:
-
-```powershell
-# List all migrations an copy the one to reset the database to.
-dotnet ef migrations list
-
-dotnet ef database update <migration_name> && dotnet ef migrations remove && dotnet ef migrations add <migration_name> --project ..\ProjectName.csproj && dotnet ef database update
-```
-
-> [!WARNING] ATTENTION
-> Before merging into `main`, you must check if there are new migrations. The best way to do this is by comparing the migrations in `main` with those in your own branch. It is a good idea to commit migrations separately so that they can be easily reverted if necessary.
-
-If there are new migrations on `main`, proceed as follows:
-
-1. With the feature branch, reset the database to the last state before your own migration. `dotnet ef database update <migration_name>`
-2. On the feature branch, remove the last commit with a `reset`.
-3. Merge `main`.
-4. Now create a new migration. `dotnet ef migrations add <migration_name> --project ..\ProjectName.csproj && dotnet ef database update`
-5. Commit the migration.
 </details>
