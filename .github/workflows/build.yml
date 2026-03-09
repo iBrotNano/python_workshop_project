@@ -1,0 +1,111 @@
+name: build # Name of the action
+
+env:
+  VERSION_MAJOR: 1 # Major version of the package. Will be set in the project and binaries.
+  VERSION_MINOR: 0 # Minor version of the package. Will be set in the project and binaries.
+  VERSION_PATCH: 6 # Patch version of the package. Will be set in the project and binaries.
+  VERSION_BUILD: ${{ github.run_number }} # The run number is used as a build number for the version.
+  VERSION_SUFFIX: ${{ github.ref_name }} # The branch name is used to generate a suffix for pre-releases.
+
+on:
+  workflow_dispatch: # Start a run through the UI.
+  push:
+    branches: [ "main", "feature/*", "bugfix/*", "release/*" , "production" ] # Starts on pushes to this branches.
+  pull_request:
+    branches: [ "main", "production", "release/*"  ] # Starts on pull requests to this branches.
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest # Uses this image for building.
+    
+    permissions: write-all # Needed to write tags and perform other tasks.
+
+    steps:
+  - uses: actions/checkout@v4 # Git checkout
+  - name: Setup .NET
+    uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: 7.0.x # The used .NET version.
+    - name: Restore dependencies
+      run: dotnet restore
+    - name: Generate package version for regular builds
+      run: echo "PACKAGE_VERSION=$VERSION_MAJOR.$VERSION_MINOR.$VERSION_PATCH-${VERSION_SUFFIX/\/#/-}-$VERSION_BUILD" >> $GITHUB_ENV
+      if: github.event_name != 'pull_request' && github.ref_name != 'production' && !startsWith(github.ref_name, 'release/')
+    - name: Generate package version for PRs
+      run: echo "PACKAGE_VERSION=$VERSION_MAJOR.$VERSION_MINOR.$VERSION_PATCH-PR-$VERSION_BUILD" >> $GITHUB_ENV
+      if: github.event_name == 'pull_request'
+    - name: Generate package version for production builds
+      run: echo "PACKAGE_VERSION=$VERSION_MAJOR.$VERSION_MINOR.$VERSION_PATCH" >> $GITHUB_ENV
+      if: github.ref_name == 'production'
+    - name: Generate package version for release builds
+      run: echo "PACKAGE_VERSION=$VERSION_MAJOR.$VERSION_MINOR.$VERSION_PATCH-RC-$VERSION_BUILD" >> $GITHUB_ENV
+      if: startsWith(github.ref_name, 'release/')
+    - name: Generate assembly version
+      run: echo "ASSEMBLY_VERSION=$VERSION_MAJOR.0.0.0" >> $GITHUB_ENV
+    - name: Generate file version
+      run: echo "FILE_VERSION=$(date +'%Y.%-m%-d.%-H%-M.%-S')" >> $GITHUB_ENV
+    - name: Versioning
+      run: |
+        echo "Package version is $PACKAGE_VERSION"
+        echo "File version is $FILE_VERSION"
+        echo "Assembly version is $ASSEMBLY_VERSION"
+        sed -i -e "s/<PackageVersion>4.7.11<\/PackageVersion>/<PackageVersion>$PACKAGE_VERSION<\/PackageVersion>/g" Directory.Build.props
+        sed -i -e "s/<FileVersion>4.7.1.1<\/FileVersion>/<FileVersion>$FILE_VERSION<\/FileVersion>/g" Directory.Build.props
+        sed -i -e "s/<InformationalVersion>4.7.11<\/InformationalVersion>/<InformationalVersion>$PACKAGE_VERSION<\/InformationalVersion>/g" Directory.Build.props
+        sed -i -e "s/<AssemblyVersion>4.7.1.1<\/AssemblyVersion>/<AssemblyVersion>$ASSEMBLY_VERSION<\/AssemblyVersion>/g" Directory.Build.props
+        sed -i -e "s/4.7.1.1/$PACKAGE_VERSION/g" README.md
+        sed -i -e "s/4.7.1.1/$PACKAGE_VERSION/g" CHANGELOG.md
+    - name: Tag the version in Git
+      uses: pkgdeps/git-tag-action@v2
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        github_repo: ${{ github.repository }}
+        git_commit_sha: ${{ github.sha }}
+        version: ${{ env.PACKAGE_VERSION }}
+        git_tag_prefix: "v"
+      if: github.ref_name == 'production'
+    - name: Build
+      run: dotnet build --no-restore -c Release -p:CONTINUOUS_INTEGRATION_BUILD=true
+    - name: Test
+      run: dotnet test -c Release --no-build --verbosity normal
+    - name: Pack
+      run: dotnet pack MarcelMelzig.TestEnvironment/MarcelMelzig.TestEnvironment.csproj --no-build -c Release -p:CONTINUOUS_INTEGRATION_BUILD=true
+    - name: NuGet Repo Cleanup # Removes old pre-release packages from GitHub'S NuGet repository.
+      uses: actions/delete-package-versions@v4
+      with:
+        package-name: MarcelMelzig.TestEnvironment
+        package-type: nuget
+        min-versions-to-keep: 10
+        delete-only-pre-release-versions: true
+    - name: Upload Nuget
+  uses: actions/upload-artifact@v4
+      with:
+        name: NuGet
+        path: /home/runner/work/TestEnvironment/TestEnvironment/target/nugets/Release/*
+    - name: Upload Docs
+  uses: actions/upload-artifact@v4
+      with:
+        name: Docs
+        path: /home/runner/work/TestEnvironment/TestEnvironment/*.md
+    - name: Publish To Github NuGet Repo
+      run: |
+        dotnet nuget add source --username iBrotNano --password ${{ secrets.GITHUB_TOKEN }} --store-password-in-clear-text --name github "https://nuget.pkg.github.com/iBrotNano/index.json"
+        dotnet nuget push "target/nugets/Release/MarcelMelzig.TestEnvironment.$PACKAGE_VERSION.nupkg" --source "github"
+    - name: Publish To nuget.org
+      run: |
+        dotnet nuget push "target/nugets/Release/MarcelMelzig.TestEnvironment.$PACKAGE_VERSION.nupkg" --api-key "$NUGET_API_KEY" --source https://api.nuget.org/v3/index.json 
+      if: github.ref_name == 'production'
+      env:
+          NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
+    - name: Create release draft
+  uses: softprops/action-gh-release@v2
+      if: github.ref_name == 'production'
+      with:
+        files: |
+          README.md
+          LICENSE
+          CHANGELOG.md
+        body_path: CHANGELOG.md
+        draft: true
+        tag_name: "v${{ env.PACKAGE_VERSION }}"

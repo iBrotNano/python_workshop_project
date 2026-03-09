@@ -5,6 +5,7 @@ import config.config as conf
 import nutrition.command_line_handler as nutrition_cli
 import recipes.command_line_handler as recipe_cli
 import meal_plan.command_line_handler as meal_plan_cli
+import persons.command_line_handler as persons_cli
 from config.console import console
 
 log = logging.getLogger(__name__)
@@ -26,6 +27,9 @@ try:
 
             if command == main_menu.MANAGE_MEAL_PLAN_COMMAND:
                 meal_plan_cli.CommandLineHandler().show()
+
+            if command == main_menu.MANAGE_PERSONS_COMMAND:
+                persons_cli.CommandLineHandler().show()
 
             if command == main_menu.EXIT_COMMAND:
                 console.print("Goodbye! 👋")

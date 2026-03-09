@@ -50,7 +50,7 @@ class CommandLineHandler:
 
     def _get_recipe_menu_selection(self):
         """
-        Displays the main menu and gets the user's selection.
+        Displays the menu and gets the user's selection.
 
         :return: The command selected by the user.
         """
@@ -98,18 +98,14 @@ class CommandLineHandler:
             if recipe.name is None or recipe.name.strip() == "":
                 log.warning("No recipe name entered. Returning to menu.")
                 return self.CANCEL_COMMAND
-            else:
-                if not self.repository.try_add(recipe):
-                    log.warning(
-                        f"A recipe with the name '{recipe.name}' already exists."
-                    )
 
-                    if questionary.confirm(
-                        "Do you want to try a different name?"
-                    ).ask():
-                        return _enter_recipe_name_to(recipe)
-                    else:
-                        return self.CANCEL_COMMAND
+            if not self.repository.try_add(recipe):
+                log.warning(f"A recipe with the name '{recipe.name}' already exists.")
+
+                if questionary.confirm("Do you want to try a different name?").ask():
+                    return _enter_recipe_name_to(recipe)
+                else:
+                    return self.CANCEL_COMMAND
 
         def _select_recipe_type(recipe: Recipe):
             """
@@ -165,13 +161,13 @@ class CommandLineHandler:
                         ).ask()
 
                         if amount:
-                            recipe.add_ingredient((int(amount), food))
+                            recipe.add_ingredient({"amount": int(amount), "food": food})
 
                             # Only show the table if there are ingredients.
                             print_dict_as_table(
                                 {
-                                    f"[link={ingredient['url']}]{ingredient['brands']} {ingredient['product']}[/link]": f"{amount}g"
-                                    for amount, ingredient in recipe.ingredients
+                                    f"[link={ingredient['food']['url']}]{ingredient['food']['brands']} {ingredient['food']['product']}[/link]": f"{ingredient['amount']}g"
+                                    for ingredient in recipe.ingredients
                                 },
                                 "Ingredients",
                                 "Amount in g per person",
@@ -225,7 +221,7 @@ class CommandLineHandler:
                 if questionary.confirm(
                     f"Do you really want to discard the recipe '{recipe.name}'? All data will be lost."
                 ).ask():
-                    del self.repository.recipes[recipe.name]
+                    del self.repository.data[recipe.name]
                     console.print(f"Recipe '{recipe.name}' discarded.")
                 else:
                     _save(recipe)
@@ -289,15 +285,15 @@ class CommandLineHandler:
         :param prompt: The prompt to display to the user.
         :return: The selected recipe name or None if cancelled.
         """
-        if not self.repository.recipes:
+        if not self.repository.data:
             print_info("No recipes available to view.")
             return
 
         return questionary.autocomplete(
             "Select the recipe you want to view:",
-            choices=list(self.repository.recipes.keys()),
+            choices=list(self.repository.data.keys()),
             ignore_case=True,
             validate=lambda text: text
-            in self.repository.recipes.keys()  # Only exiting names are valid
+            in self.repository.data.keys()  # Only exiting names are valid
             or "Please select a valid recipe name from the list.",
         ).ask()

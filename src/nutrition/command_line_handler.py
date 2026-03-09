@@ -46,7 +46,7 @@ class CommandLineHandler:
         ).ask()
 
         if search_term is None or search_term.strip() == "":
-            log.warning("No search term entered.")
+            print_info("No search term entered.")
             return (self.CANCEL_COMMAND, None)
 
         return (self.NUTRITION_SEARCH_TERM_COMMAND, search_term.strip())

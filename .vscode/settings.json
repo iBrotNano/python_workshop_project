@@ -1,0 +1,20 @@
+{
+    "python-envs.pythonProjects": [
+        {
+            "path": ".",
+            "envManager": "ms-python.python:conda",
+            "packageManager": "ms-python.python:conda"
+        }
+    ],
+    "terminal.integrated.profiles.windows": {
+        "WorkspacePwsh": {
+            "path": "C:\\Program Files\\PowerShell\\7\\pwsh.exe",
+            "args": [
+                "-NoExit",
+                "-Command",
+                "cd ${workspaceFolder}; conda activate python_workshop_project"
+            ]
+        }
+    },
+    "terminal.integrated.defaultProfile.windows": "WorkspacePwsh"
+}

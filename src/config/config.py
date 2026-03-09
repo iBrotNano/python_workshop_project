@@ -13,7 +13,7 @@ version = "0.1.0"
 openfoodfacts_api_version = openfoodfacts.APIVersion.v3
 openfoodfacts_api_environment = openfoodfacts.Environment.org
 openfoodfacts_api_country = openfoodfacts.Country.de
-openfoodfacts_api_timeout = 60
+openfoodfacts_api_timeout = 60  # seconds
 
 # Logging
 logging_folder = "logs"
@@ -26,6 +26,9 @@ logging_basic_format = "%(asctime)s | %(levelname)s | %(message)s"
 
 # Recipe storage
 recipes_storage_path = Path("data/recipes.yaml")
+
+# Person storage
+persons_storage_path = Path("data/persons.yaml")
 
 
 def configure():

@@ -12,7 +12,7 @@ for i in range(1, 100):
     recipes += f"""Test Rezept {i}:
   ingredients:
   - amount: 80
-    product:
+    food:
       brands: Crownfield (Lidl)
       carbohydrates: 66.7
       carbohydrates_100g: 66.7
@@ -94,7 +94,7 @@ for i in range(1, 100):
       sugars_value: 25.1
       url: https://de.openfoodfacts.org/produkt/20202866/premium-m%C3%BCsli-mit-fr%C3%BCchten-und-kernen-crownfield-lidl
   - amount: 150
-    product:
+    food:
       brands: Berchtesgadener Land, Bergbauern
       calcium: 0.124
       calcium_100g: 0.124
@@ -168,7 +168,7 @@ for i in range(1, 100):
     sugar: 27.580000000000002
   type: {rt.RECIPE_TYPES[i % 4]}\n"""
 
-with open(f"data/recipes_testdata.yaml", "w", encoding="utf-8") as f:
+with open(f"data/recipes.yaml", "w", encoding="utf-8") as f:
     f.write("".join(recipes))
 
-print(f"Created test recipe recipes_testdata.yaml")
+print(f"Created test recipe recipes.yaml")
