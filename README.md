@@ -41,3 +41,6 @@ An existing environment can be updated with:
 ```powershell
 conda env update -f environment.yml -n python_workshop_project
 ```
+
+> [!TIP] Test data
+> You can generate test data by executing `tools/create_test_recipes.py`. It will generate recipes under `data`.

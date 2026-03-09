@@ -558,28 +558,28 @@ An existing API will be queried to get nutritional information. The app will han
 
 ### :eyes: Review
 
-- [ ] Initialize dev environment
-- [ ] Checkout the version from Git
-- [ ] Can the application be compiled?
-- [ ] Are there any open warnings?
-- [ ] Does the application work as a manually performed test?
-- [ ] Is the layout and theme working in the UI?
-- [ ] Is the UI translated?
-- [ ] Is every input validated in frontend and backend?
-- [ ] Are the requirements and acceptance criteria met?
-- [ ] Is the code correct, clean, maintainable and well structured?
-- [ ] Is the code well tested?
-  - [ ] Does the test name describe the context and goal from a business perspective? What is being specified, not how it is technically implemented.
-  - [ ] One aspect per test?
-  - [ ] One essential assert per test. Asserts for the context should be marked as such.
-  - [ ] Side-effect free and complete? No shared **instances** of objects. Especially the SUT.
-  - [ ] Only fixed input data?
-  - [ ] Only own code is tested?
-  - [ ] Does each component have a test suite?
-- [ ] Must something in README.md be updated or described?
-- [ ] Does the pipeline work?
-- [ ] Are there new database migrations before merging to `main`? This ensures that the database will be in the correct state after deployment.
-- [ ] Shut down the dev environment
+- [x] Initialize dev environment
+- [x] Checkout the version from Git
+- [x] Can the application be compiled?
+- [x] Are there any open warnings?
+- [x] Does the application work as a manually performed test?
+- [x] Is the layout and theme working in the UI?
+- [x] Is the UI translated?
+- [x] Is every input validated in frontend and backend?
+- [x] Are the requirements and acceptance criteria met? :x:
+- [x] Is the code correct, clean, maintainable and well structured?
+- [x] Is the code well tested? :x:
+  - [x] Does the test name describe the context and goal from a business perspective? What is being specified, not how it is technically implemented.
+  - [x] One aspect per test?
+  - [x] One essential assert per test. Asserts for the context should be marked as such.
+  - [x] Side-effect free and complete? No shared **instances** of objects. Especially the SUT.
+  - [x] Only fixed input data?
+  - [x] Only own code is tested?
+  - [x] Does each component have a test suite?
+- [x] Must something in README.md be updated or described?
+- [x] Does the pipeline work? :x:
+- [x] Are there new database migrations before merging to `main`? This ensures that the database will be in the correct state after deployment.
+- [x] Shut down the dev environment
 
 ### :spiral_notepad: Notes
 
