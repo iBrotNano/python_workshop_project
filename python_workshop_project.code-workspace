@@ -24,21 +24,6 @@
 				"envManager": "ms-python.python:conda",
 				"packageManager": "ms-python.python:conda"
 			}
-		],
-		"terminal.integrated.profiles.windows": {
-			"WorkspacePwsh": {
-				"path": "C:\\Program Files\\PowerShell\\7\\pwsh.exe",
-				"args": [
-					"-NoExit",
-					"-Command",
-					"cd $env:WORKSPACE_ROOT; conda activate $env:CONDA_ENV"
-				],
-				"env": {
-					"WORKSPACE_ROOT": "${workspaceFolder}",
-					"CONDA_ENV": "base"
-				}
-			}
-		},
-		"terminal.integrated.defaultProfile.windows": "WorkspacePwsh"
+		]
 	}
 }

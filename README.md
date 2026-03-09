@@ -42,5 +42,28 @@ An existing environment can be updated with:
 conda env update -f environment.yml -n python_workshop_project
 ```
 
+## Optional local VS Code terminal setup (opt-in)
+
+Machine-specific terminal profile settings are intentionally not committed to the shared workspace file.
+If you want an auto-activating conda terminal in VS Code, add this to your local `.vscode/settings.json` or into a `python_workshop_project.local.code-workspace` file:
+
+```json
+{
+	"terminal.integrated.profiles.windows": {
+		"WorkspacePwsh": {
+			"path": "C:\\Program Files\\PowerShell\\7\\pwsh.exe",
+			"args": [
+				"-NoExit",
+				"-Command",
+				"cd ${workspaceFolder}; conda activate python_workshop_project"
+			]
+		}
+	},
+	"terminal.integrated.defaultProfile.windows": "WorkspacePwsh"
+}
+```
+
+Adjust the profile name, shell path, and environment name to your local machine.
+
 > [!TIP] Test data
 > You can generate test data by executing `tools/create_test_recipes.py`. It will generate recipes under `data`.
