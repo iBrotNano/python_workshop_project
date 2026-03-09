@@ -49,22 +49,37 @@ class Repository(YamlFileRepository):
         """
         return self.data.get(recipe_name)
 
-    def get_random_recipe(self, recipe_type: str):
+    def get_random_recipe_by(
+        self, recipe_type: str, assigned: set[str] | None = None
+    ) -> Recipe | None:
         """
         Gets a random recipe, filtered by type.
+
+        Already assigned recipes are only returned if there are no not assigned recipes available for the given type.
 
         :param self: This instance of the Repository class.
         :param recipe_type: The type of recipe to filter by.
         :type recipe_type: str
-        :return: A random recipe.
-        :rtype: Recipe
+        :param assigned: A set of recipe names that have already been assigned.
+        :type assigned: set[str] | None
+        :return: A random recipe if found, otherwise None.
+        :rtype: Recipe | None
         """
 
-        filtered_recipes = [
+        filtered_by_type = [
             recipe for recipe in self.data.values() if recipe.type == recipe_type
         ]
 
-        if not filtered_recipes:
+        if not filtered_by_type:
             return None
 
-        return random.choice(filtered_recipes)
+        filtered_by_assigned = []
+
+        if assigned:
+            filtered_by_assigned = [
+                recipe for recipe in filtered_by_type if recipe.name not in assigned
+            ]
+
+        return random.choice(
+            filtered_by_assigned if filtered_by_assigned else filtered_by_type
+        )

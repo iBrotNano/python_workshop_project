@@ -223,11 +223,11 @@ class CommandLineHandler:
             table.add_row(
                 key,
                 value.gender,
-                str(Person.calculate_age(value)),
+                str(value.calculate_age()),
                 f"{value.weight:.0f}",
                 f"{value.height:.0f}",
                 Person.ACTIVITY_LEVELS[value.activity_level][0],
-                f"{Person.calculate_calories_needed(value):.0f}",
+                f"{value.calculate_calories_needed():.0f}",
             )
 
         console.print(table)

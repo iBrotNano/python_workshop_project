@@ -4,5 +4,26 @@
 			"path": "."
 		}
 	],
-	"settings": {}
+	"settings": {
+		"python.analysis.extraPaths": [
+			"${workspaceFolder}/src"
+		],
+		"python.analysis.typeCheckingMode": "basic",
+		"python.analysis.diagnosticSeverityOverrides": {
+			"reportAttributeAccessIssue": "warning",
+			"reportArgumentType": "warning"
+		},
+		"python.testing.pytestArgs": [
+			"tests"
+		],
+		"python.testing.pytestEnabled": true,
+		"python.testing.unittestEnabled": false,
+		"python-envs.pythonProjects": [
+			{
+				"path": ".",
+				"envManager": "ms-python.python:conda",
+				"packageManager": "ms-python.python:conda"
+			}
+		]
+	}
 }
