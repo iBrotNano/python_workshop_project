@@ -13,7 +13,6 @@ dependencies:
   - mdurl=0.1.2=py313haa95532_0
   - openssl=3.6.1=hf411b9b_1
   - pip=25.3=pyhc872135_0
-  - prompt-toolkit=3.0.52=pyha770c72_0
   - prompt_toolkit=3.0.52=hd8ed1ab_0
   - pygments=2.19.2=py313haa95532_0
   - python=3.13.11=h260b955_100_cp313
