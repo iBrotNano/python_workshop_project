@@ -4,7 +4,7 @@ import config.logger as logger_config
 from pathlib import Path
 
 app_name = "Fezzikazza"  # Fat cat in Althochdeutsch.
-version = "0.1.0"
+version = "0.2.0"
 
 # Configuration is hardcoded here for simplicity.
 # TODO: Later, read from a config file or environment variables.

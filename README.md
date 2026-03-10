@@ -19,7 +19,6 @@ I used Anaconda to set up the project environment.
 ```powershell
 conda create -n python_workshop_project python=3.13
 conda activate python_workshop_project
-# If you don't have conda, you can use pip to install the required packages.
 ```
 
 You can install the requirements using:
@@ -44,6 +43,23 @@ An existing environment can be updated with:
 
 ```powershell
 conda env update -f environment.yml -n python_workshop_project
+```
+
+## Testing
+
+To make pytest and other Pylance find imports in the folder `src` or any subfolder of it, you need to configure the `PYTHONPATH` environment variable to include them. This can be done in `tests/conftest.py`:
+
+```python
+SRC_PATH = PROJECT_ROOT / "src"
+
+if str(SRC_PATH) not in sys.path:
+    sys.path.insert(0, str(SRC_PATH))
+```
+
+The tests can then be run with:
+
+```powershell
+pytest
 ```
 
 ## Optional local VS Code terminal setup (opt-in)
@@ -71,6 +87,9 @@ Adjust the profile name, shell path, and environment name to your local machine.
 
 > [!TIP] Test data
 > You can generate test data by executing `tools/create_test_recipes.py`. It will generate recipes under `data`.
+
+> [!IMPORTANT] CODE-WORKSPACE
+> In the `code-workspace` file, set `"CONDA_ENV"` to the name of the conda environment you created. This will allow VS Code to automatically activate the correct environment when you open the workspace.
 
 ## Security and Privacy
 
