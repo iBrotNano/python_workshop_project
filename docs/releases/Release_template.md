@@ -1,7 +1,3 @@
-
-
-
-
 # Release x.x.x
 
 | Name      | Value  |
@@ -20,7 +16,7 @@ For everyone.
 
 ### What are the goals to fulfill with this release?
 
-1. Better user experiance.
+1. Better user experience.
 
 ## TODO
 

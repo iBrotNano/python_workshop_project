@@ -1,5 +1,6 @@
 import importlib
 from types import ModuleType
+from typing import Any
 
 
 def reload_module(module: ModuleType) -> None:
@@ -12,7 +13,11 @@ def reload_module(module: ModuleType) -> None:
     importlib.reload(module)
 
 
-def fake_method_call(method: str, return_value):
+def fake_method_call(method: str, return_value: Any) -> Any:
+    """
+    Create a dummy method call that returns a specified value.
+    """
+
     def method_call(*args, **kwargs):
         return type("Dummy", (), {method: lambda self: return_value})()
 

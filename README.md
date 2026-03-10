@@ -47,7 +47,7 @@ conda env update -f environment.yml -n python_workshop_project
 
 ## Testing
 
-To make pytest and other Pylance find imports in the folder `src` or any subfolder of it, you need to configure the `PYTHONPATH` environment variable to include them. This can be done in `tests/conftest.py`:
+To make pytest and other Pylance find imports in the folder `src` or any subfolder of it, you need to configure the `SRC_PATH` to include them. This can be done in `tests/conftest.py`:
 
 ```python
 SRC_PATH = PROJECT_ROOT / "src"
@@ -89,7 +89,7 @@ Adjust the profile name, shell path, and environment name to your local machine.
 > You can generate test data by executing `tools/create_test_recipes.py`. It will generate recipes under `data`.
 
 > [!IMPORTANT] CODE-WORKSPACE
-> In the `code-workspace` file, set `"CONDA_ENV"` to the name of the conda environment you created. This will allow VS Code to automatically activate the correct environment when you open the workspace.
+> In the `local.code-workspace` file, set `"CONDA_ENV"` to the name of the conda environment you created. This will allow VS Code to automatically activate the correct environment when you open the workspace.
 
 ## Security and Privacy
 

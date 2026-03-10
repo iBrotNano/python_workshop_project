@@ -1,7 +1,3 @@
-
-
-
-
 # PIA id
 
 | Name      | Value           |
@@ -17,7 +13,7 @@
 
 ## What kind of personal data is processed?
 
-What kind of personal data is processed? If none is processed no PIA is needed. Othrewise it is good practice to document the process in a PIA.
+What kind of personal data is processed? If none is processed no PIA is needed. Otherwise it is good practice to document the process in a PIA.
 
 ## Description of the processing
 
@@ -57,7 +53,7 @@ What kind of personal data is processed? If none is processed no PIA is needed. 
 
 ## Consultation process
 
-1. Describe when and how you will seek individuals� views � or justify why it�s not appropriate to do so. 
+1. Describe when and how you will seek individuals, views or justify why it's not appropriate to do so. 
 2. Who else do you need to involve within your organisation? 
 3. Do you need to ask your processors to assist? 
 4. Do you plan to consult information security experts, or any other experts?
