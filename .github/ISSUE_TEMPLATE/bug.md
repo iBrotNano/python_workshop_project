@@ -56,7 +56,7 @@ Are there any?
 
 ### Prepare the development
 
-- [ ] Create a `bugfix`  or `hotfix` branch
+- [ ] Create a `bugfix` or `hotfix` branch
 
 ### Docs
 

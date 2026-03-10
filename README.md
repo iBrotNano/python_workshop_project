@@ -28,8 +28,8 @@ You can install the requirements using:
 pip install -r requirements.txt
 
 # Or from environment.yml (recommended for conda)
-conda env create -f environment.yml -n python_workshop_project
-conda activate python_workshop_project
+conda env create -f environment.yml -n fat_cat
+conda activate fat_cat
 ```
 
 > [!IMPORTANT] DEPENDENCIES
@@ -42,7 +42,7 @@ pip list --format=freeze > requirements.txt & conda env export > environment.yml
 An existing environment can be updated with:
 
 ```powershell
-conda env update -f environment.yml -n python_workshop_project
+conda env update -f environment.yml -n fat_cat
 ```
 
 ## Testing
@@ -65,7 +65,7 @@ pytest
 ## Optional local VS Code terminal setup (opt-in)
 
 Machine-specific terminal profile settings are intentionally not committed to the shared workspace file.
-If you want an auto-activating conda terminal in VS Code, add this to your local `.vscode/settings.json` or into a `python_workshop_project.local.code-workspace` file:
+If you want an auto-activating conda terminal in VS Code, add this to your local `.vscode/settings.json` or into a `fat_cat.local.code-workspace` file:
 
 ```json
 {
@@ -75,7 +75,7 @@ If you want an auto-activating conda terminal in VS Code, add this to your local
 			"args": [
 				"-NoExit",
 				"-Command",
-				"cd ${workspaceFolder}; conda activate python_workshop_project"
+				"cd ${workspaceFolder}; conda activate fat_cat"
 			]
 		}
 	},

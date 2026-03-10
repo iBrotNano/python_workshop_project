@@ -16,7 +16,7 @@ dependencies:
   - packaging=25.0=py314haa95532_1
   - pip=26.0.1=pyhc872135_0
   - prompt-toolkit=3.0.52=pyha770c72_0
-  - prompt_toolkit=3.0.52=hd8ed1ab_0
+
   - pygments=2.19.2=py314haa95532_0
   - python=3.14.3=h653fc63_101_cp314
   - python_abi=3.14=2_cp314
@@ -51,4 +51,4 @@ dependencies:
       - typing-extensions==4.15.0
       - typing-inspection==0.4.2
       - urllib3==2.6.3
-prefix: C:\Users\Asus\anaconda3\envs\fat_cat
+

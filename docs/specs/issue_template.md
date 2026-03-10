@@ -111,7 +111,6 @@ Link to related PIA
 
 - [ ] Setup a fresh demo environment
 - [ ] Check all acceptance tests
-- [ ] 
 ## :unicorn: Magie
 
 Hints and tricks that were helpful during the implementation or documentation.
