@@ -1,0 +1,26 @@
+# Remove the line below if you want to inherit .editorconfig settings from higher directories
+root = true
+
+# All files
+[*]
+guidelines = 80, 100
+# Indentation and spacing
+indent_size = 4
+indent_style = space
+tab_width = 4
+# Named color format
+guidelines_style = 1px dotted 40ff1a8c
+
+# Py files
+[*.py]
+
+#### Core EditorConfig Options ####
+
+# Indentation and spacing
+indent_size = 4
+indent_style = space
+tab_width = 4
+
+# New line preferences
+end_of_line = lf
+insert_final_newline = false

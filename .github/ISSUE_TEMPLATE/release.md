@@ -58,6 +58,10 @@ assignees: iBrotNano
 - [ ] Are there new database migrations before merging to `main`? This ensures that the database will be in the correct state after deployment.
 - [ ] Shut down the dev environment
 
+### :clipboard: GitHub
+
+- [ ] Create a release on GitHub with a tag and a description of the release. The description should include the changes that were made in the release, as well as any important information for users.
+
 ### :memo: Notes
 
 Nothing to mention.
