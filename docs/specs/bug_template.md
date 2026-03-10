@@ -18,7 +18,6 @@ Architecture of the system and/or layout of the GUI. Specification of the input 
 
 ### :clipboard: TODOs
 
-- [ ] Create a `bugfix`  or `hotfix` branch
 - [ ] Try to reproduce the bug
 - [ ] Investigate why it happens
 - [ ] Plan the needed changes to fix the bug

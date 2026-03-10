@@ -50,6 +50,14 @@ What data goes out of the system and why?
 
 Are there any?
 
+### Acceptance Tests
+
+- [ ] Given <context>, when <action>, then <expected outcome>.
+
+### Prepare the development
+
+- [ ] Create a `bugfix`  or `hotfix` branch
+
 ### Docs
 
 Links to documentation pages related to the bug.

@@ -18,7 +18,6 @@ Architecture of the system and/or layout of the GUI. Specification of the input 
 
 ### :clipboard: TODOs
 
-- [ ] Create a `feature` branch
 - [ ] Update the dependencies
 - [ ] Document the updated dependencies in CHANGELOG.md
 - [ ] Here is the place for development to-do items
@@ -112,7 +111,7 @@ Link to related PIA
 
 - [ ] Setup a fresh demo environment
 - [ ] Check all acceptance tests
-
+- [ ] 
 ## :unicorn: Magie
 
 Hints and tricks that were helpful during the implementation or documentation.
