@@ -17,8 +17,8 @@ python .\src\main.py
 I used Anaconda to set up the project environment.
 
 ```powershell
-conda create -n python_workshop_project python=3.13
-conda activate python_workshop_project
+conda create -n fat_cat python=3.14
+conda activate fat_cat
 ```
 
 You can install the requirements using:
