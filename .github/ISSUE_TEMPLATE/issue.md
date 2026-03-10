@@ -38,3 +38,17 @@ Are there any?
 ### Docs
 
 Links to documentation pages related to the bug.
+
+### :package: Deployment
+
+- [ ] Merge `bugfix` into `main` or `hotfix` into `production` and `main` and remove the `bugfix` branch via PR
+- [ ] Check if the compiled artifact is valid
+- [ ] Cleanup the Git history locally on the dev system
+
+### :beer: Retro
+
+> [!TIP]  Was gab es zu lernen?
+> What did I learn?
+
+> [!WARNING] Where were the problems?
+> Where did I have difficulties? What hindered my work?

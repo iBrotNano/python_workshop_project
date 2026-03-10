@@ -113,20 +113,6 @@ Link to related PIA
 - [ ] Setup a fresh demo environment
 - [ ] Check all acceptance tests
 
-## :package: Deployment
-
-- [ ] Merge `feature` into `main` or `hotfix` into `production` and `main` and remove the `feature` branch
-- [ ] Check if the compiled artifact is valid
-- [ ] Cleanup the Git history locally on the dev system
-
-## :beer: Retro
-
-> [!TIP]  Was gab es zu lernen?
-> What did I learn?
-
-> [!WARNING] Where were the problems?
-> Where did I have difficulties? What hindered my work?
-
 ## :unicorn: Magie
 
 Hints and tricks that were helpful during the implementation or documentation.
