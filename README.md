@@ -14,7 +14,7 @@ python .\src\main.py
 
 ## Initializing the Project
 
-I used Anaconda to set up the project environment.
+I used Anaconda to set up the project environment. I only use conda to manage the Python environment and pip to manage the dependencies. You can create a new conda environment with:
 
 ```powershell
 conda create -n fat_cat python=3.14
@@ -24,25 +24,44 @@ conda activate fat_cat
 You can install the requirements using:
 
 ```powershell
-# From requirements.txt
-pip install -r requirements.txt
-
 # Or from environment.yml (recommended for conda)
 conda env create -f environment.yml -n fat_cat
 conda activate fat_cat
+
+# From requirements.txt
+pip install -r requirements.txt
 ```
 
 > [!IMPORTANT] DEPENDENCIES
 > Both files need to be updated whenever new packages are added to the project or existing ones are updated.
 
 ```powershell
-pip list --format=freeze > requirements.txt & conda env export > environment.yml
+pip list --format=freeze --not-required > requirements.txt & conda env export --no-builds --ignore-channels --from-history | Select-String -NotMatch "^prefix:" > environment.yml
 ```
 
 An existing environment can be updated with:
 
 ```powershell
 conda env update -f environment.yml -n fat_cat
+pip install -r requirements.txt --upgrade
+```
+
+## Updating Dependencies
+
+You can check if there are outdated packages with:
+
+```powershell
+conda update --all --dry-run
+pip list --not-required --outdated
+```
+
+The version numbers in the `requirements.txt` must be updated manually. Updating dependencies should be manually and under the developer's control.
+
+If there are any outdated packages, you can update them with:
+
+```powershell
+conda update -n fat_cat --all
+pip install -r requirements.txt --upgrade
 ```
 
 ## Testing
