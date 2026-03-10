@@ -35,6 +35,14 @@ What conditions must be met? High pressure? Many users?
 
 Are there any?
 
+### Acceptance Tests
+
+- [ ] Given <context>, when <action>, then <expected outcome>.
+
+### Prepare the development
+
+- [ ] Create a `feature` branch
+
 ### Docs
 
 Links to documentation pages related to the bug.

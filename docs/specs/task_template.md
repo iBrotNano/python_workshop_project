@@ -18,7 +18,6 @@ How can the task be done?
 
 ### :clipboard: TODOs
 
-- [ ] Create a `feature` branch if needed (Maybe configuration changes or new project files)
 - [ ] Update the dependencies
 - [ ] Document the updated dependencies in CHANGELOG.md
 - [ ] Here is the place for development todo items

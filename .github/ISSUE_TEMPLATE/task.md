@@ -28,9 +28,13 @@ What conditions must be met? High pressure? Many users?
 
 Are there any?
 
-### Docs
+### Acceptance Tests
 
-Links to documentation pages related to the bug.
+- [ ] Given <context>, when <action>, then <expected outcome>.
+
+### Prepare the development
+
+- [ ] Create a `feature` branch if needed (Maybe configuration changes or new project files)
 
 ### :package: Deployment
 
