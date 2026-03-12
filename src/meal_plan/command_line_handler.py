@@ -7,7 +7,7 @@ from common.terminal import terminal
 from rich.table import Table
 from meal_plan.meal_planner import MealPlanner
 from meal_plan.meal_plan import MealPlan
-from persistence.database_engine_builder import database_engine
+from persistence.database_engine_factory import database_engine
 
 log = logging.getLogger(__name__)
 

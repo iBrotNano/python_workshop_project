@@ -7,7 +7,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 from recipes.recipe_type import RecipeType
 from recipes.repository import Repository
 from recipes.recipe import Recipe
-from persistence.database_engine_builder import database_engine
+from persistence.database_engine_factory import database_engine
 
 database_engine.initialize_schema()
 

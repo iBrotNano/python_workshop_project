@@ -8,7 +8,7 @@ from recipes.repository import Repository
 from common.terminal import terminal
 from recipes.recipe_type import RecipeType
 from recipes.exporter import Exporter
-from persistence.database_engine_builder import database_engine
+from persistence.database_engine_factory import database_engine
 
 log = logging.getLogger(__name__)
 

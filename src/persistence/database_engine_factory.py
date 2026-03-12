@@ -4,7 +4,7 @@ from sqlalchemy.orm import sessionmaker, declarative_base
 from persistence.database_engine import DatabaseEngine
 
 
-class DatabaseEngineBuilder:
+class DatabaseEngineFactory:
     """
     Configures the database engine with the necessary parameters.
     This class is responsible for setting up the database engine using the configuration defined in the configuration module.
@@ -12,14 +12,14 @@ class DatabaseEngineBuilder:
 
     def __init__(self, configuration: Configuration):
         """
-        Initializes the builder with the provided configuration.
+        Initializes the factory with the provided configuration.
 
         :param configuration: An instance of the Configuration class containing database settings.
         :type configuration: Configuration
         """
         self._configuration = configuration
 
-    def build(self):
+    def create(self):
         """
         Configures and returns an instance of the DatabaseEngine.
 
@@ -42,5 +42,5 @@ class DatabaseEngineBuilder:
 
 # Shared instances used across the application.
 # TODO: Stuff here should be instantiated by DI.
-database_engine_builder = DatabaseEngineBuilder(Configuration())
-database_engine = database_engine_builder.build()
+database_engine_factory = DatabaseEngineFactory(Configuration())
+database_engine = database_engine_factory.create()

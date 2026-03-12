@@ -1,5 +1,5 @@
 from sqlalchemy import Column, Integer, String, Enum, JSON, Text
-from persistence.database_engine_builder import database_engine
+from persistence.database_engine_factory import database_engine
 from recipes.recipe_type import RecipeType
 
 

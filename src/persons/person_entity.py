@@ -1,5 +1,5 @@
 from sqlalchemy import Column, Integer, Float, String, Enum
-from persistence.database_engine_builder import database_engine
+from persistence.database_engine_factory import database_engine
 from persons.gender import Gender
 
 

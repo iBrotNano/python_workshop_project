@@ -8,7 +8,7 @@ import persons.command_line_handler as persons_cli
 
 from common.terminal import terminal
 from config.configurator import configurator
-from persistence.database_engine_builder import database_engine
+from persistence.database_engine_factory import database_engine
 
 
 log = logging.getLogger(__name__)

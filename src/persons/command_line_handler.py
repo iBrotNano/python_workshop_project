@@ -7,7 +7,7 @@ from rich.table import Table
 from common.terminal import terminal
 from persons.repository import Repository
 from typing import Any
-from persistence.database_engine_builder import database_engine
+from persistence.database_engine_factory import database_engine
 
 log = logging.getLogger(__name__)
 

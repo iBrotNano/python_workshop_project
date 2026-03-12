@@ -3,7 +3,7 @@ import openfoodfacts
 from config.configuration import Configuration, configuration
 
 
-class OpenFoodFactsApiBuilder:
+class OpenFoodFactsApiFactory:
     """
     Configures the Open Food Facts API client with the necessary parameters.
     This class is responsible for setting up the API client using the configuration
@@ -19,11 +19,11 @@ class OpenFoodFactsApiBuilder:
         """
         self._configuration = configuration
 
-    def build(self) -> openfoodfacts.API:
+    def create(self) -> openfoodfacts.API:
         """
         Configures and returns an instance of the Open Food Facts API client.
 
-        :param self: The instance of the OpenFoodFactsApiBuilder class.
+        :param self: The instance of the OpenFoodFactsApiFactory class.
         :return: An instance of the Open Food Facts API client.
         :rtype: openfoodfacts.API
         """
@@ -39,5 +39,5 @@ class OpenFoodFactsApiBuilder:
 
 # Shared instances used across the application.
 # TODO: Stuff here should be instantiated by DI.
-openfoodfacts_api_builder = OpenFoodFactsApiBuilder(configuration)
-api_client = openfoodfacts_api_builder.build()
+openfoodfacts_api_factory = OpenFoodFactsApiFactory(configuration)
+api_client = openfoodfacts_api_factory.create()
