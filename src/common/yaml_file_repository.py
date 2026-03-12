@@ -1,9 +1,15 @@
-from pathlib import Path
 import yaml
-from typing import Callable
+
+from pathlib import Path
+from enum import Enum
+from typing import Any
 
 
 class YamlFileRepository:
+    """
+    A base class for repositories that store data in YAML files. It provides methods for loading and saving data, as well as converting between objects and dictionaries for serialization.
+    """
+
     def __init__(
         self,
         storage_path: Path,
@@ -41,7 +47,7 @@ class YamlFileRepository:
         """
         self.storage_path.parent.mkdir(parents=True, exist_ok=True)
 
-    def _write_yaml(self, obj):
+    def _write_yaml(self, obj: Any):
         """
         Writes the given object as YAML to disk.
 
@@ -50,7 +56,13 @@ class YamlFileRepository:
         :type obj: Any
         """
         with open(self.storage_path.absolute(), "w", encoding="utf-8") as file:
-            yaml.dump(obj, file, default_flow_style=False, allow_unicode=True)
+            yaml.safe_dump(
+                obj,
+                file,
+                default_flow_style=False,
+                allow_unicode=True,
+                sort_keys=False,
+            )
 
     def _read_yaml(self):
         """
@@ -66,7 +78,7 @@ class YamlFileRepository:
         with open(self.storage_path.absolute(), "r", encoding="utf-8") as file:
             return yaml.safe_load(file) or {}
 
-    def _to_dict(self):
+    def _to_dict(self) -> dict:
         """
         Converts an object to a dictionary for serialization.
 
@@ -74,9 +86,37 @@ class YamlFileRepository:
         :return: A dictionary representation of the Person object.
         :rtype: dict
         """
-        return {name: instance.__dict__ for name, instance in self.data.items()}
 
-    def _from_data(self, data: dict):
+        return {
+            name: self._to_primitive(instance.__dict__)
+            for name, instance in self.data.items()
+        }
+
+    def _to_primitive(self, value: Any) -> Any:
+        """
+        Converts values to YAML-safe primitive structures.
+
+        :param value: The value to normalize.
+        :return: A normalized primitive value.
+        """
+        if isinstance(value, Enum):
+            return value.value
+
+        if isinstance(value, dict):
+            return {
+                self._to_primitive(key): self._to_primitive(item)
+                for key, item in value.items()
+            }
+
+        if isinstance(value, list):
+            return [self._to_primitive(item) for item in value]
+
+        if isinstance(value, tuple):
+            return [self._to_primitive(item) for item in value]
+
+        return value
+
+    def _from_data(self, data: dict) -> dict:
         """
         Converts a dictionary to entity objects for deserialization.
 

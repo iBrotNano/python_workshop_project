@@ -1,17 +1,22 @@
 import logging
 import questionary
-from recipes import recipe_types
+import nutrition.command_line_handler as nutrition_cli
+
+from rich.markdown import Markdown
 from recipes.recipe import Recipe
 from recipes.repository import Repository
-from config.console import console
-from common.console import print_rule_separated, print_dict_as_table, print_info
-import nutrition.command_line_handler as nutrition_cli
-from rich.markdown import Markdown
+from common.terminal import terminal
+from recipes.recipe_type import RecipeType
+from recipes.exporter import Exporter
 
 log = logging.getLogger(__name__)
 
 
 class CommandLineHandler:
+    """
+    Handles the command line interface for managing recipes.
+    """
+
     CANCEL_COMMAND = "CANCEL"
     ADD_RECIPE_COMMAND = "ADD_RECIPE"
     DELETE_RECIPE_COMMAND = "DELETE_RECIPE"
@@ -23,11 +28,13 @@ class CommandLineHandler:
 
         :param self: This instance of the CommandLineHandler class.
         """
-        self.repository = Repository()
+        self._repository = Repository()
 
     def show(self):
         """
         Displays the command line interface to the user and handles input.
+
+        :param self: This instance of the CommandLineHandler class.
         """
         while True:
             command = self._get_recipe_menu_selection()
@@ -52,7 +59,9 @@ class CommandLineHandler:
         """
         Displays the menu and gets the user's selection.
 
+        :param self: This instance of the CommandLineHandler class.
         :return: The command selected by the user.
+        :rtype: str
         """
 
         choices = [
@@ -81,14 +90,21 @@ class CommandLineHandler:
     def _add_recipe(self):
         """
         Handles the process of adding a new recipe.
+
+        :param self: This instance of the CommandLineHandler class.
+        :return: The command to execute after adding the recipe, or CANCEL_COMMAND if the process was cancelled.
+        :rtype: str
         """
 
         def _enter_recipe_name_to(recipe: Recipe):
             """
             Prompts the user to enter a recipe name as long as they want to try.
 
+            :param self: This instance of the CommandLineHandler class.
             :param recipe: The recipe to name.
             :type recipe: Recipe
+            :return: The command to execute after entering the recipe name, or CANCEL_COMMAND if the process was cancelled.
+            :rtype: str
             """
             recipe.name = questionary.text(
                 "What is the name of the recipe you want to add?"
@@ -99,7 +115,7 @@ class CommandLineHandler:
                 log.warning("No recipe name entered. Returning to menu.")
                 return self.CANCEL_COMMAND
 
-            if not self.repository.try_add(recipe):
+            if not self._repository.try_add(recipe):
                 log.warning(f"A recipe with the name '{recipe.name}' already exists.")
 
                 if questionary.confirm("Do you want to try a different name?").ask():
@@ -111,21 +127,24 @@ class CommandLineHandler:
             """
             Prompts the user to select a recipe type.
 
+            :param self: This instance of the CommandLineHandler class.
             :param recipe: The recipe to set the type for.
             :type recipe: Recipe
+            :return: The command to execute after selecting the recipe type, or CANCEL_COMMAND if the process was cancelled.
+            :rtype: str
             """
             choices = [
                 questionary.Choice(
-                    recipe_types.BREAKFAST.capitalize(), value=recipe_types.BREAKFAST
+                    RecipeType.BREAKFAST.capitalize(), value=RecipeType.BREAKFAST
                 ),
                 questionary.Choice(
-                    recipe_types.LUNCH.capitalize(), value=recipe_types.LUNCH
+                    RecipeType.LUNCH.capitalize(), value=RecipeType.LUNCH
                 ),
                 questionary.Choice(
-                    recipe_types.DINNER.capitalize(), value=recipe_types.DINNER
+                    RecipeType.DINNER.capitalize(), value=RecipeType.DINNER
                 ),
                 questionary.Choice(
-                    recipe_types.SNACK.capitalize(), value=recipe_types.SNACK
+                    RecipeType.SNACK.capitalize(), value=RecipeType.SNACK
                 ),
             ]
 
@@ -143,6 +162,7 @@ class CommandLineHandler:
             """
             Prompts the user to add an ingredient to the recipe.
 
+            :param self: This instance of the CommandLineHandler class.
             :param recipe: The recipe to add the ingredient to.
             :type recipe: Recipe
             """
@@ -164,7 +184,7 @@ class CommandLineHandler:
                             recipe.add_ingredient({"amount": int(amount), "food": food})
 
                             # Only show the table if there are ingredients.
-                            print_dict_as_table(
+                            terminal.print_dict_as_table(
                                 {
                                     f"[link={ingredient['food']['url']}]{ingredient['food']['brands']} {ingredient['food']['product']}[/link]": f"{ingredient['amount']}g"
                                     for ingredient in recipe.ingredients
@@ -173,7 +193,7 @@ class CommandLineHandler:
                                 "Amount in g per person",
                             )
 
-                            print_dict_as_table(
+                            terminal.print_dict_as_table(
                                 recipe.get_formatted_nutrition(),
                                 "Nutrition",
                                 "Amount per person",
@@ -184,7 +204,7 @@ class CommandLineHandler:
                 ).ask():
                     break
 
-            console.print(
+            terminal.print(
                 f"Recipe '{recipe.name}' added with {len(recipe.ingredients)} ingredients."
             )
 
@@ -203,7 +223,7 @@ class CommandLineHandler:
 
             if instructions:
                 recipe.instructions = instructions
-                console.print(f"Instructions added to recipe '{recipe.name}'.")
+                terminal.print(f"Instructions added to recipe '{recipe.name}'.")
 
         def _save(recipe: Recipe):
             """
@@ -215,14 +235,14 @@ class CommandLineHandler:
             if questionary.confirm(
                 f"Do you want to save the recipe '{recipe.name}' to disk?"
             ).ask():
-                self.repository.save()
-                console.print(f"Recipe '{recipe.name}' saved to disk.")
+                self._repository.save()
+                terminal.print(f"Recipe '{recipe.name}' saved to disk.")
             else:
                 if questionary.confirm(
                     f"Do you really want to discard the recipe '{recipe.name}'? All data will be lost."
                 ).ask():
-                    del self.repository.data[recipe.name]
-                    console.print(f"Recipe '{recipe.name}' discarded.")
+                    del self._repository.data[recipe.name]
+                    terminal.print(f"Recipe '{recipe.name}' discarded.")
                 else:
                     _save(recipe)
 
@@ -234,17 +254,21 @@ class CommandLineHandler:
         if _enter_recipe_name_to(recipe) == self.CANCEL_COMMAND:
             return self.CANCEL_COMMAND
 
-        print_rule_separated("Your recipe needs some ingredients. Let's add them now!")
+        terminal.print_rule_separated(
+            "Your recipe needs some ingredients. Let's add them now!"
+        )
         food_search = nutrition_cli.CommandLineHandler()
         _add_ingredients_to(recipe)
         _add_instructions_to(recipe)
         md = Markdown(recipe.as_markdown())
-        console.print(md, width=100)
+        terminal.print(md, width=100)
         _save(recipe)
 
     def _delete_recipe(self):
         """
         Deletes a recipe from the repository.
+
+        :param self: This instance of the CommandLineHandler class.
         """
         recipe_name = self._select_recipe_with_autocomplete()
 
@@ -252,20 +276,28 @@ class CommandLineHandler:
             if questionary.confirm(
                 f"Are you sure you want to delete the recipe '{recipe_name}'?"
             ).ask():
-                self.repository.delete(recipe_name)
-                print_info(f"Recipe '{recipe_name}' has been deleted.")
+                self._repository.delete(recipe_name)
+                terminal.print_info(f"Recipe '{recipe_name}' has been deleted.")
 
     def _view_recipe(self):
         """
         Views a recipe from the repository.
+
+        :param self: This instance of the CommandLineHandler class.
         """
 
         recipe_name = self._select_recipe_with_autocomplete()
 
         if recipe_name:
-            recipe = self.repository.get(recipe_name)
+            recipe = self._repository.get(recipe_name)
+
+            if not recipe:
+                log.warning(f"Recipe '{recipe_name}' not found.")
+                terminal.print_info(f"Recipe '{recipe_name}' not found.")
+                return
+
             md = Markdown(recipe.as_markdown())
-            console.print(md, width=100)
+            terminal.print(md, width=100)
 
             if questionary.confirm("Do you want to export the recipe?").ask():
                 file_name = questionary.path(
@@ -275,25 +307,26 @@ class CommandLineHandler:
                 ).ask()
 
                 if file_name:
-                    recipe.export_as_markdown(file_name)
-                    print_info(f"Recipe exported to '{file_name}'.")
+                    Exporter(recipe).export_as_markdown(file_name)
+                    terminal.print_info(f"Recipe exported to '{file_name}'.")
 
     def _select_recipe_with_autocomplete(self):
         """
         Prompts the user to select a recipe using autocomplete.
 
-        :param prompt: The prompt to display to the user.
+        :param self: This instance of the CommandLineHandler class.
         :return: The selected recipe name or None if cancelled.
+        :rtype: str
         """
-        if not self.repository.data:
-            print_info("No recipes available to view.")
+        if not self._repository.data:
+            terminal.print_info("No recipes available to view.")
             return
 
         return questionary.autocomplete(
             "Select the recipe you want to view:",
-            choices=list(self.repository.data.keys()),
+            choices=list(self._repository.data.keys()),
             ignore_case=True,
             validate=lambda text: text
-            in self.repository.data.keys()  # Only exiting names are valid
+            in self._repository.data.keys()  # Only existing names are valid
             or "Please select a valid recipe name from the list.",
         ).ask()

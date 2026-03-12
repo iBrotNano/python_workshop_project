@@ -1,23 +1,42 @@
 import logging
 import questionary
-import nutrition.repository as nutrition_repository
-from prompt_toolkit.formatted_text import FormattedText
-from config.console import console
+
 from rich.table import Table
-from common.console import print_info, print_rule_separated
+from common.terminal import terminal
+from nutrition.repository import Repository
+from config.openfoodfacts_api_configurator import openfoodfacts_api_configurator
 
 log = logging.getLogger(__name__)
 
 
 class CommandLineHandler:
+    """Handles the command line interface for nutrition-related features."""
+
     NUTRITION_SEARCH_TERM_COMMAND = "NUTRITION_SEARCH_TERM"
     CANCEL_COMMAND = "CANCEL"
     PREVIOUS_COMMAND = "PREVIOUS"
     NEXT_COMMAND = "NEXT"
 
+    def __init__(self):
+        """
+        Initializes the CommandLineHandler and checks if the API client is configured.
+
+        :param self: This instance of the CommandLineHandler class.
+
+        :raises RuntimeError: If the API client is not configured.
+        """
+        if openfoodfacts_api_configurator.api_client is None:
+            raise RuntimeError(
+                "API client is not configured. Please configure it before using the CommandLineHandler."
+            )
+
+        self._repository = Repository(openfoodfacts_api_configurator.api_client)
+
     def show(self):
         """
         Displays the command line interface to the user and handles input.
+
+        :param self: This instance of the CommandLineHandler class.
         """
 
         command, search_term = self._get_nutrition_search_term()
@@ -25,56 +44,67 @@ class CommandLineHandler:
         if command == self.CANCEL_COMMAND:
             return  # User chose to cancel; return to main menu.
 
-        if command == self.NUTRITION_SEARCH_TERM_COMMAND:
+        if command == self.NUTRITION_SEARCH_TERM_COMMAND and search_term is not None:
             result = self._execute_search(search_term)
 
             if result is None or result == self.CANCEL_COMMAND:
                 return  # User chose to cancel during search; return to main menu.
-            else:
+            elif isinstance(result, dict):
                 self._print_nutrition_info(result)
                 return result
 
-    def _get_nutrition_search_term(self):
+    def _get_nutrition_search_term(self) -> tuple[str, str | None]:
         """
         Prompts the user to enter a search term for nutritional information.
 
+        :param self: This instance of the CommandLineHandler class.
+
         :return: The search term entered by the user with the search nutrition command or a cancel command if none is entered or CTRL+C is pressed.
+        :rtype: tuple[str, str | None]
         """
 
         search_term = questionary.text(
             "What food product do you want to search for?"
         ).ask()
 
-        if search_term is None or search_term.strip() == "":
-            print_info("No search term entered.")
+        if (
+            search_term is None
+            or type(search_term) is not str
+            or search_term.strip() == ""
+        ):
+            terminal.print_info("No search term entered.")
             return (self.CANCEL_COMMAND, None)
 
         return (self.NUTRITION_SEARCH_TERM_COMMAND, search_term.strip())
 
-    def _execute_search(self, search_term: str, page: int = 1):
+    def _execute_search(self, search_term: str, page: int = 1) -> dict | str | None:
         """
         Executes the nutrition search using the provided search term and handles pagination.
 
+        :param self: This instance of the CommandLineHandler class.
         :param search_term: The term to search for in the nutrition repository.
+        :type search_term: str
         :param page: The page number to retrieve.
+        :type page: int
         :return: The selected product, next/previous command, or cancel command.
+        :rtype: dict | str | None
         """
 
-        with console.status("Searching...", spinner="earth"):
+        with terminal.console.status("Searching...", spinner="earth"):
             # Don't change the page_size to more than 7. The index is used for shortcut
             # keys and more than 9 items would break it.
-            search_result = nutrition_repository.NutritionRepository().search_products(
+            search_result = self._repository.search_products(
                 search_term, page=page, page_size=7
             )
 
         product_count = search_result["count"]
 
         if product_count == 0:
-            print_info(
+            terminal.print_info(
                 f"No products found for search term: '[yellow]{search_term}[/yellow]'"
             )
         else:
-            print_rule_separated(
+            terminal.print_rule_separated(
                 f"Showing {search_result['skip'] + 1} to {search_result['skip'] + search_result['page_count']} of {product_count} products for search term: '{search_term}'"
             )
 
@@ -110,54 +140,48 @@ class CommandLineHandler:
 
         choices += [
             questionary.Choice(
-                title=FormattedText(
-                    [
-                        (
-                            "",  # No special style
-                            f"{0}) ",  # Shortcut key 0
-                        ),
-                        (
-                            "bold fg:ansired ",
-                            "Cancel",
-                        ),
-                    ]
-                ),
+                title=[
+                    (
+                        "",  # No special style
+                        f"{0}) ",  # Shortcut key 0
+                    ),
+                    (
+                        "bold fg:ansired ",
+                        "Cancel",
+                    ),
+                ],
                 value=self.CANCEL_COMMAND,
                 shortcut_key=str(0),  # Assign shortcut key '0' to Cancel
             ),
             questionary.Choice(
-                title=FormattedText(
-                    [
-                        (
-                            f"{'fg:ansiblue' if has_previous_page else 'fg:ansibrightblack'} ",
-                            f"{1}) ",  # Shortcut key 1
-                        ),
-                        (
-                            f"bold {'fg:ansiblue' if has_previous_page else 'fg:ansibrightblack'} ",
-                            "Previous",
-                        ),
-                    ]
-                ),
+                title=[
+                    (
+                        f"{'fg:ansiblue' if has_previous_page else 'fg:ansibrightblack'} ",
+                        f"{1}) ",  # Shortcut key 1
+                    ),
+                    (
+                        f"bold {'fg:ansiblue' if has_previous_page else 'fg:ansibrightblack'} ",
+                        "Previous",
+                    ),
+                ],
                 value=self.PREVIOUS_COMMAND,
                 shortcut_key=str(1),  # Assign shortcut key '1' to Previous
-                disabled=not has_previous_page,
+                disabled=None if has_previous_page else "No previous page",
             ),
             questionary.Choice(
-                title=FormattedText(
-                    [
-                        (
-                            f"{'fg:ansigreen' if has_next_page else 'fg:ansibrightblack'} ",
-                            f"{2}) ",  # Shortcut key 2
-                        ),
-                        (
-                            f"bold {'fg:ansigreen' if has_next_page else 'fg:ansibrightblack'} ",
-                            "Next",
-                        ),
-                    ]
-                ),
+                title=[
+                    (
+                        f"{'fg:ansigreen' if has_next_page else 'fg:ansibrightblack'} ",
+                        f"{2}) ",  # Shortcut key 2
+                    ),
+                    (
+                        f"bold {'fg:ansigreen' if has_next_page else 'fg:ansibrightblack'} ",
+                        "Next",
+                    ),
+                ],
                 value=self.NEXT_COMMAND,
                 shortcut_key=str(2),  # Assign shortcut key '2' to Next
-                disabled=not has_next_page,
+                disabled=None if has_next_page else "No next page",
             ),
         ]
 
@@ -172,22 +196,20 @@ class CommandLineHandler:
         for index, product in enumerate(products["products"], start=3):
             choices.append(
                 questionary.Choice(
-                    title=FormattedText(
-                        [
-                            (
-                                "",  # No special style
-                                f"{index}) ",  # Shortcut key
-                            ),
-                            (
-                                "bold fg:ansiyellow ",
-                                f"{product['brands']} {product['product']} {product['quantity']}",
-                            ),
-                            (
-                                "fg:ansibrightblack ",
-                                f" | {product['energy-kcal_100g']} kcal / {product['energy-kj_100g']} kj | {product['carbohydrates_100g']} g carbs | {product['proteins_100g']} g proteins | {product['fat_100g']} g fat | {product['sugars_100g']} g sugars | {product['salt_100g']} g salt",
-                            ),
-                        ]
-                    ),
+                    title=[
+                        (
+                            "",  # No special style
+                            f"{index}) ",  # Shortcut key
+                        ),
+                        (
+                            "bold fg:ansiyellow ",
+                            f"{product['brands']} {product['product']} {product['quantity']}",
+                        ),
+                        (
+                            "fg:ansibrightblack ",
+                            f" | {product['energy-kcal_100g']} kcal / {product['energy-kj_100g']} kj | {product['carbohydrates_100g']} g carbs | {product['proteins_100g']} g proteins | {product['fat_100g']} g fat | {product['sugars_100g']} g sugars | {product['salt_100g']} g salt",
+                        ),
+                    ],
                     value=product,
                     shortcut_key=str(index),  # Assign shortcut key based on index
                 )
@@ -197,7 +219,9 @@ class CommandLineHandler:
         """
         Prints the nutritional information of the product in a table format.
 
+        :param self: This instance of the CommandLineHandler class.
         :param product: The product details.
+        :type product: dict
         """
 
         def _print_nutrition_table(
@@ -223,9 +247,9 @@ class CommandLineHandler:
             for nutrient, amount in nutrients.items():
                 table.add_row(nutrient, str(amount))
 
-            console.print(table)
+            terminal.print(table)
 
-        print_rule_separated(
+        terminal.print_rule_separated(
             f"[link={product['url']}]{product['brands']} {product['product']} {product['quantity']}[/link]"
         )
 

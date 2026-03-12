@@ -4,12 +4,22 @@ from pathlib import Path
 # 'src' zum Python-Pfad hinzufügen
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
-from recipes import recipe_types as rt
+from recipes.recipe_type import RecipeType
+
+RECIPE_TYPES = [
+    RecipeType.BREAKFAST,
+    RecipeType.LUNCH,
+    RecipeType.DINNER,
+    RecipeType.SNACK,
+]
 
 recipes = ""
 
 for i in range(1, 100):
-    recipes += f"""Test Rezept {i}:
+    recipe_type = RECIPE_TYPES[(i - 1) % len(RECIPE_TYPES)].value
+    name = f"{recipe_type.capitalize()} Recipe {i}"
+
+    recipes += f"""{name}:
   ingredients:
   - amount: 80
     food:
@@ -157,7 +167,7 @@ for i in range(1, 100):
       sugars_value: 5
       url: https://de.openfoodfacts.org/produkt/4101530002475/h-milch-berchtesgadener-land
   instructions: Mischen und essen.
-  name: Test Rezept {i}
+  name: {name}
   nutrition:
     calories: 404.6
     carbohydrates: 60.86000000000001
@@ -166,7 +176,7 @@ for i in range(1, 100):
     protein: 11.9
     salt: 0.22100000000000003
     sugar: 27.580000000000002
-  type: {rt.RECIPE_TYPES[i % 4]}\n"""
+  type: {recipe_type}\n"""
 
 with open(f"data/recipes.yaml", "w", encoding="utf-8") as f:
     f.write("".join(recipes))
