@@ -1,6 +1,7 @@
 from sqlalchemy import Column, Integer, Float, String, Enum
 from persistence.database_engine_factory import database_engine
 from persons.gender import Gender
+from sqlalchemy.orm import relationship
 
 
 class PersonEntity(database_engine.Base):
@@ -22,3 +23,9 @@ class PersonEntity(database_engine.Base):
     birth_year = Column(Integer, nullable=False)
     # TODO: Change activity level into table and remove the hardcoded mapping.
     activity_level = Column(Integer, nullable=False)
+
+    meals = relationship(
+        "MealEntity",
+        secondary="meal_person_association",
+        back_populates="persons",
+    )

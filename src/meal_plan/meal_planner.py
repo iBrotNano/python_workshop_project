@@ -1,8 +1,9 @@
 from meal_plan.meal import Meal
 from meal_plan.meal_plan import MealPlan
-from recipes.repository import Repository
+from recipes.repository import Repository as RecipesRepository
 from recipes.recipe import Recipe
 from recipes.recipe_type import RecipeType
+from persons.repository import Repository as PersonsRepository
 
 
 class MealPlanner:
@@ -18,16 +19,23 @@ class MealPlanner:
         4: RecipeType.DINNER,
     }
 
-    def __init__(self, meal_plan: MealPlan, recipe_repository: Repository):
+    def __init__(
+        self,
+        meal_plan: MealPlan,
+        recipe_repository: RecipesRepository,
+        persons_repository: PersonsRepository,
+    ):
         """
         Initializes the MealPlanner.
 
         :param self: This instance of the MealPlanner class.
         :param meal_plan: An instance of the MealPlan class to hold the assigned meals.
         :param recipe_repository: An instance of the Repository class to fetch and store recipes.
+        :param persons_repository: An instance of the Repository class to fetch and store persons.
         """
         self._meal_plan = meal_plan
         self._recipes_repository = recipe_repository
+        self._persons_repository = persons_repository
 
     def generate(self):
         """
@@ -36,13 +44,14 @@ class MealPlanner:
         :param self: This instance of the MealPlanner class.
         """
         self._meal_plan.clear()
+        persons = self._persons_repository.get_all()
 
         for day in range(7):
             for meal_time in range(5):
                 recipe = self._get_recipe(self.MEAL_SLOTS[meal_time])
 
                 if recipe:
-                    self._meal_plan.set_meal(day, meal_time, Meal(recipe))
+                    self._meal_plan.set_meal(day, meal_time, Meal(recipe, persons))
 
     def _get_recipe(self, recipe_type: str) -> Recipe | None:
         """

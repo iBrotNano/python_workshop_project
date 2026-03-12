@@ -1,6 +1,7 @@
 from sqlalchemy import Column, Integer, String, Enum, JSON, Text
 from persistence.database_engine_factory import database_engine
 from recipes.recipe_type import RecipeType
+from sqlalchemy.orm import relationship
 
 
 class RecipeEntity(database_engine.Base):
@@ -21,3 +22,5 @@ class RecipeEntity(database_engine.Base):
         nullable=False,
         default=RecipeType.UNKNOWN.value,
     )
+
+    meals = relationship("MealEntity", back_populates="recipe")

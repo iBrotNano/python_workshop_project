@@ -8,6 +8,7 @@ from rich.table import Table
 from meal_plan.meal_planner import MealPlanner
 from meal_plan.meal_plan import MealPlan
 from persistence.database_engine_factory import database_engine
+from persons.repository import Repository as PersonsRepository
 
 log = logging.getLogger(__name__)
 
@@ -25,10 +26,14 @@ class CommandLineHandler:
         :param self: This instance of the CommandLineHandler class.
         """
 
-        self._meal_plan = MealPlan()
-        self._repository = Repository(self._meal_plan)
+        self._repository = Repository(next(database_engine.get_db()))
+        self._meal_plan = self._repository.get() or MealPlan()
         self._recipe_repository = RecipesRepository(next(database_engine.get_db()))
-        self._meal_planner = MealPlanner(self._meal_plan, self._recipe_repository)
+        self._persons_repository = PersonsRepository(next(database_engine.get_db()))
+
+        self._meal_planner = MealPlanner(
+            self._meal_plan, self._recipe_repository, self._persons_repository
+        )
 
     def show(self):
         """
@@ -37,8 +42,11 @@ class CommandLineHandler:
         :param self: This instance of the CommandLineHandler class.
         """
         while True:
-            if not self._repository.meal_plan.is_meal_plan_filled():
+            if not self._meal_plan or not self._meal_plan.is_meal_plan_filled():
                 terminal.print_info("The current meal plan is not fully populated.")
+            else:
+                terminal.print_info("Current meal plan:")
+                self._display_meal_plan(self._meal_plan)
 
             command = self._get_menu_selection()
 
@@ -72,6 +80,36 @@ class CommandLineHandler:
             "What do you want to do?", choices=choices, use_shortcuts=True
         ).ask()
 
+    def _display_meal_plan(self, meal_plan: MealPlan):
+        """
+        Displays the current meal plan in a table format.
+        """
+        table = Table(show_lines=True)
+        table.add_column("Meal", style="bold magenta")
+        table.add_column("Monday", style="cyan")
+        table.add_column("Tuesday", style="white")
+        table.add_column("Wednesday", style="cyan")
+        table.add_column("Thursday", style="white")
+        table.add_column("Friday", style="cyan")
+        table.add_column("Saturday", style="white")
+        table.add_column("Sunday", style="cyan")
+
+        for meal_index, meal_name in MealPlanner.MEAL_SLOTS.items():
+            row_data = [meal_name.capitalize()]
+
+            for day in meal_plan.plan:
+                meal = day[meal_index]
+
+                row_data.append(
+                    meal.recipe.name
+                    if meal is not None and meal.recipe is not None
+                    else "N/A"
+                )
+
+            table.add_row(*row_data)
+
+        terminal.print(table)
+
     def _generate_meal_plan(self):
         """
         Generates a new meal plan and saves it to the repository.
@@ -79,36 +117,7 @@ class CommandLineHandler:
         :param self: This instance of the CommandLineHandler class.
         """
 
-        def _display_meal_plan():
-            """
-            Displays the current meal plan in a table format.
-            """
-            table = Table(show_lines=True)
-            table.add_column("Meal", style="bold magenta")
-            table.add_column("Monday", style="cyan")
-            table.add_column("Tuesday", style="white")
-            table.add_column("Wednesday", style="cyan")
-            table.add_column("Thursday", style="white")
-            table.add_column("Friday", style="cyan")
-            table.add_column("Saturday", style="white")
-            table.add_column("Sunday", style="cyan")
-
-            for meal_index, meal_name in MealPlanner.MEAL_SLOTS.items():
-                row_data = [meal_name.capitalize()]
-
-                for day in self._meal_plan.plan:
-                    meal = day[meal_index]
-
-                    row_data.append(
-                        meal.recipe.name
-                        if meal is not None and meal.recipe is not None
-                        else "N/A"
-                    )
-
-                table.add_row(*row_data)
-
-            terminal.print(table)
-
         self._meal_planner.generate()
+        self._repository.create(self._meal_plan)
         terminal.print_info("A new meal plan has been generated and saved.")
-        _display_meal_plan()
+        self._display_meal_plan(self._meal_plan)
