@@ -236,7 +236,7 @@ class CommandLineHandler:
             :type recipe: Recipe
             """
             if questionary.confirm(
-                f"Do you want to save the recipe '{recipe.name}' to disk?"
+                f"Do you want to save the recipe '{recipe.name}'?"
             ).ask():
                 if self._repository.try_add(recipe):
                     terminal.print(f"Recipe '{recipe.name}' saved to disk.")
