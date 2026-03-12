@@ -14,7 +14,7 @@ class Person:
     :param weight: The weight of the person in kilograms.
     :param height: The height of the person in centimeters.
     :param birth_year: The birth year of the person.
-    :param activity_level: The activity level of the person, represented as an integer index corresponding to the ACTIVITY_LEVELS list.
+    :param activity_level: The activity level of the person, represented as an integer key in the ACTIVITY_LEVELS mapping.
     """
 
     name: str = ""

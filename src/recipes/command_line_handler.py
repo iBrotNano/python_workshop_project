@@ -315,8 +315,8 @@ class CommandLineHandler:
         Prompts the user to select a recipe using autocomplete.
 
         :param self: This instance of the CommandLineHandler class.
-        :param prompt: The prompt to display to the user.
         :return: The selected recipe name or None if cancelled.
+        :rtype: str
         """
         if not self._repository.data:
             terminal.print_info("No recipes available to view.")

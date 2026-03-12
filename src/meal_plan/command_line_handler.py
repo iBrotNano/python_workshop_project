@@ -22,8 +22,6 @@ class CommandLineHandler:
         Initializes the CommandLineHandler.
 
         :param self: This instance of the CommandLineHandler class.
-        :param repository: The meal plan repository.
-        :type repository: Repository
         """
 
         self._meal_plan = MealPlan()
@@ -39,7 +37,7 @@ class CommandLineHandler:
         """
         while True:
             if not self._repository.meal_plan.is_meal_plan_filled():
-                terminal.print_info("No meal plan is present.")
+                terminal.print_info("The current meal plan is not fully populated.")
 
             command = self._get_menu_selection()
 

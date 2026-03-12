@@ -33,8 +33,7 @@ class OpenFoodFactsApiConfigurator:
         """
         Configures and returns an instance of the Open Food Facts API client.
 
-        :return: An instance of the Open Food Facts API client configured with the application name, version, environment, country, and timeout settings.
-        :rtype: openfoodfacts.API
+        :param self: The instance of the OpenFoodFactsApiConfigurator class.
         """
 
         self._api_client = openfoodfacts.API(

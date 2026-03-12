@@ -169,7 +169,7 @@ class CommandLineHandler:
         terminal.print_dict_as_table(
             {
                 "Name": person.name,
-                "Gender": person.gender,
+                "Gender": person.gender.value,
                 "Weight (kg)": f"{person.weight:.0f}",
                 "Height (cm)": f"{person.height:.0f}",
                 "Birth Year": f"{person.birth_year}",
@@ -238,7 +238,7 @@ class CommandLineHandler:
         for key, value in self._repository.data.items():
             table.add_row(
                 key,
-                value.gender,
+                value.gender.value,
                 str(value.age()),
                 f"{value.weight:.0f}",
                 f"{value.height:.0f}",

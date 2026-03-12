@@ -1,5 +1,3 @@
-import recipes.recipe_type as rt
-
 from meal_plan.meal import Meal
 from meal_plan.meal_plan import MealPlan
 from recipes.repository import Repository
