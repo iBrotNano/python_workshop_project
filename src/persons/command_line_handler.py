@@ -90,7 +90,8 @@ class CommandLineHandler:
             return questionary.form(
                 name=questionary.text(
                     "Enter the person's name: ",
-                    validate=lambda text: text != "" or "Name cannot be empty.",
+                    validate=lambda text: 1 <= len(text) <= 100
+                    or "Name muss zwischen 1 und 100 Zeichen lang sein.",
                 ),
                 gender=questionary.select(
                     "Enter a biological gender: ", choices=[g.value for g in Gender]

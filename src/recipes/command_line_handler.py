@@ -108,7 +108,9 @@ class CommandLineHandler:
             :rtype: str
             """
             recipe.name = questionary.text(
-                "What is the name of the recipe you want to add?"
+                "What is the name of the recipe you want to add?",
+                validate=lambda text: 1 <= len(text) <= 255
+                or "Name muss zwischen 1 und 100 Zeichen lang sein.",
             ).ask()
 
             # A recipe needs at least a name to store something meaningful.
