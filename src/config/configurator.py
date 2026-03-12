@@ -1,5 +1,4 @@
 from config.logger_configurator import logger_configurator
-from config.openfoodfacts_api_configurator import openfoodfacts_api_configurator
 
 
 class Configurator:
@@ -12,7 +11,6 @@ class Configurator:
         :param self: The instance of the Configurator class.
         """
         logger_configurator.configure()
-        openfoodfacts_api_configurator.configure()
 
 
 # Shared instances used across the application.
