@@ -6,8 +6,8 @@ from persons.person import Gender, Person
 from rich.table import Table
 from common.terminal import terminal
 from persons.repository import Repository
-from config.configuration import configuration
 from typing import Any
+from persistence.database_engine_builder import database_engine
 
 log = logging.getLogger(__name__)
 
@@ -26,7 +26,7 @@ class CommandLineHandler:
 
         :param self: This instance of the CommandLineHandler class.
         """
-        self._repository = Repository(configuration)
+        self._repository = Repository(next(database_engine.get_db()))
 
     def show(self):
         """
@@ -194,16 +194,18 @@ class CommandLineHandler:
             :return: The name of the person selected for deletion.
             :rtype: Any
             """
-            if not self._repository.data:
+            if not self._repository.get_all():
                 terminal.print_info("No persons available to delete.")
                 return
 
             return questionary.autocomplete(
                 "Select the person you want to delete:",
-                choices=list(self._repository.data.keys()),
+                choices=[person.name for person in self._repository.get_all()],
                 ignore_case=True,
                 validate=lambda text: text
-                in self._repository.data.keys()  # Only exiting names are valid
+                in [
+                    person.name for person in self._repository.get_all()
+                ]  # Only existing names are valid
                 or "Please select an existing person to delete.",
             ).ask()
 
@@ -222,7 +224,7 @@ class CommandLineHandler:
 
         :param self: This instance of the CommandLineHandler class.
         """
-        if not self._repository.data:
+        if not self._repository.get_all():
             terminal.print_info("No persons available to display.")
             return
 
@@ -235,15 +237,15 @@ class CommandLineHandler:
         table.add_column("Activity Level")
         table.add_column("Needed Calories (kcal)", justify="right")
 
-        for key, value in self._repository.data.items():
+        for person in self._repository.get_all():
             table.add_row(
-                key,
-                value.gender.value,
-                str(value.age()),
-                f"{value.weight:.0f}",
-                f"{value.height:.0f}",
-                ACTIVITY_LEVELS[value.activity_level][0],
-                f"{value.calories_needed():.0f}",
+                person.name,
+                person.gender.value,
+                str(person.age()),
+                f"{person.weight:.0f}",
+                f"{person.height:.0f}",
+                ACTIVITY_LEVELS[person.activity_level][0],
+                f"{person.calories_needed():.0f}",
             )
 
         terminal.print(table)

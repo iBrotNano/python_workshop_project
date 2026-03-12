@@ -15,6 +15,7 @@ class OpenFoodFactsApiBuilder:
         Initializes the configurator with the provided configuration.
 
         :param configuration: An instance of the Configuration class containing API settings.
+        :type configuration: Configuration
         """
         self._configuration = configuration
 
@@ -23,6 +24,8 @@ class OpenFoodFactsApiBuilder:
         Configures and returns an instance of the Open Food Facts API client.
 
         :param self: The instance of the OpenFoodFactsApiBuilder class.
+        :return: An instance of the Open Food Facts API client.
+        :rtype: openfoodfacts.API
         """
 
         return openfoodfacts.API(

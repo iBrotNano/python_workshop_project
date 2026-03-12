@@ -7,6 +7,7 @@ from common.terminal import terminal
 from rich.table import Table
 from meal_plan.meal_planner import MealPlanner
 from meal_plan.meal_plan import MealPlan
+from persistence.database_engine_builder import database_engine
 
 log = logging.getLogger(__name__)
 
@@ -26,7 +27,7 @@ class CommandLineHandler:
 
         self._meal_plan = MealPlan()
         self._repository = Repository(self._meal_plan)
-        self._recipe_repository = RecipesRepository()
+        self._recipe_repository = RecipesRepository(next(database_engine.get_db()))
         self._meal_planner = MealPlanner(self._meal_plan, self._recipe_repository)
 
     def show(self):

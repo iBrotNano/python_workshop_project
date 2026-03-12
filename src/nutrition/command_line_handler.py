@@ -4,7 +4,7 @@ import questionary
 from rich.table import Table
 from common.terminal import terminal
 from nutrition.repository import Repository
-from common.openfoodfacts_api_builder import api_client
+from nutrition.openfoodfacts_api_builder import api_client
 
 log = logging.getLogger(__name__)
 

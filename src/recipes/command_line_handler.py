@@ -8,6 +8,7 @@ from recipes.repository import Repository
 from common.terminal import terminal
 from recipes.recipe_type import RecipeType
 from recipes.exporter import Exporter
+from persistence.database_engine_builder import database_engine
 
 log = logging.getLogger(__name__)
 
@@ -28,7 +29,7 @@ class CommandLineHandler:
 
         :param self: This instance of the CommandLineHandler class.
         """
-        self._repository = Repository()
+        self._repository = Repository(next(database_engine.get_db()))
 
     def show(self):
         """
@@ -115,7 +116,7 @@ class CommandLineHandler:
                 log.warning("No recipe name entered. Returning to menu.")
                 return self.CANCEL_COMMAND
 
-            if not self._repository.try_add(recipe):
+            if self._repository.get(recipe.name):
                 log.warning(f"A recipe with the name '{recipe.name}' already exists.")
 
                 if questionary.confirm("Do you want to try a different name?").ask():
@@ -235,13 +236,16 @@ class CommandLineHandler:
             if questionary.confirm(
                 f"Do you want to save the recipe '{recipe.name}' to disk?"
             ).ask():
-                self._repository.save()
-                terminal.print(f"Recipe '{recipe.name}' saved to disk.")
+                if self._repository.try_add(recipe):
+                    terminal.print(f"Recipe '{recipe.name}' saved to disk.")
+                else:
+                    terminal.print_info(
+                        f"Recipe '{recipe.name}' already exists and was not saved."
+                    )
             else:
                 if questionary.confirm(
                     f"Do you really want to discard the recipe '{recipe.name}'? All data will be lost."
                 ).ask():
-                    del self._repository.data[recipe.name]
                     terminal.print(f"Recipe '{recipe.name}' discarded.")
                 else:
                     _save(recipe)
@@ -318,15 +322,17 @@ class CommandLineHandler:
         :return: The selected recipe name or None if cancelled.
         :rtype: str
         """
-        if not self._repository.data:
+        if not self._repository.get_all():
             terminal.print_info("No recipes available to view.")
             return
 
         return questionary.autocomplete(
             "Select the recipe you want to view:",
-            choices=list(self._repository.data.keys()),
+            choices=[recipe.name for recipe in self._repository.get_all()],
             ignore_case=True,
             validate=lambda text: text
-            in self._repository.data.keys()  # Only existing names are valid
+            in [
+                recipe.name for recipe in self._repository.get_all()
+            ]  # Only existing names are valid
             or "Please select a valid recipe name from the list.",
         ).ask()

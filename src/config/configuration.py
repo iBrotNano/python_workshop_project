@@ -39,6 +39,11 @@ class Configuration:
     # Person storage
     persons_storage_path: Path = Path("data/persons.yaml")
 
+    sqlite_url: str = "sqlite:///./data/data.db"
+    sqlite_echo: bool = False
+    sqlite_auto_flush: bool = False
+    sqlite_auto_commit: bool = False
+
 
 # Shared instances used across the application.
 # TODO: Stuff here should be instantiated by DI.
