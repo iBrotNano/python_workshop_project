@@ -67,21 +67,6 @@ Architecture of the system and/or layout of the GUI. Specification of the input 
 
 Notes about the development of the issue.
 
-> [!NOTE]
-> This is a note
-
-> [!TIP]
-> This is a tip.
-
-> [!WARNING]
-> This is a warning
-
-> [!IMPORTANT]
-> This info is important to know.
-
-> [!CAUTION]
-> This has possibly negative consequences.
-
 ## :mag: Debug
 
 - [ ] ID: 🟢🔴🟡 Result: As Expected
@@ -131,6 +116,27 @@ Hints and tricks that were helpful during the implementation or documentation.
 | :red_circle:         | Fehlschlag                |
 | :green_circle:       | Erfolg                    |
 | :yellow_circle:      | Problem                   |
+</details>
+
+<details>
+    <summary>Notification panels</summary>
+
+```markdown
+> [!NOTE]
+> This is a note
+
+> [!TIP]
+> This is a tip.
+
+> [!WARNING]
+> This is a warning
+
+> [!IMPORTANT]
+> This info is important to know.
+
+> [!CAUTION]
+> This has possibly negative consequences.
+```
 </details>
 
 <details> 
