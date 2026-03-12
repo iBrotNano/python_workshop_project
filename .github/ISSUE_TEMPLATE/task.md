@@ -36,6 +36,11 @@ Are there any?
 
 - [ ] Create a `feature` branch if needed (Maybe configuration changes or new project files)
 
+## :clapper: Demo
+
+- [ ] Setup a fresh demo environment
+- [ ] Check all acceptance tests
+
 ### :package: Deployment
 
 - [ ] Merge `bugfix` into `main` or `hotfix` into `production` and `main` and remove the `bugfix` branch via PR

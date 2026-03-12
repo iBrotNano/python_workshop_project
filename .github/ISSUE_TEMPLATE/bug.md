@@ -58,9 +58,10 @@ Are there any?
 
 - [ ] Create a `bugfix` or `hotfix` branch
 
-### Docs
+## :clapper: Demo
 
-Links to documentation pages related to the bug.
+- [ ] Setup a fresh demo environment
+- [ ] Check all acceptance tests
 
 ### :package: Deployment
 

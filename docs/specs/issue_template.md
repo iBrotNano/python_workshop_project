@@ -92,11 +92,6 @@ Link to related PIA
 
 - Any other documentation should be linked here. Intern and extern.
 
-## :clapper: Demo
-
-- [ ] Setup a fresh demo environment
-- [ ] Check all acceptance tests
-
 ## :unicorn: Magie
 
 Hints and tricks that were helpful during the implementation or documentation.
