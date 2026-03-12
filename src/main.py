@@ -1,18 +1,20 @@
 import logging
 import sys
 import main_menu.menu as menu
-import config.config as conf
 import nutrition.command_line_handler as nutrition_cli
 import recipes.command_line_handler as recipe_cli
 import meal_plan.command_line_handler as meal_plan_cli
 import persons.command_line_handler as persons_cli
-from config.console import console
+
+from common.terminal import terminal
+from config.configurator import configurator
+
 
 log = logging.getLogger(__name__)
 
 # Encapsulates the whole application logic and displays any errors encountered.
 try:
-    conf.configure()  # First step configures the app (e.g., logging, console).
+    configurator.configure()  # First step configures the app (e.g., logging, console).
     main_menu = menu.Menu()
 
     while True:
@@ -32,7 +34,7 @@ try:
                 persons_cli.CommandLineHandler().show()
 
             if command == main_menu.EXIT_COMMAND:
-                console.print("Goodbye! 👋")
+                terminal.print("Goodbye! 👋")
                 sys.exit(0)
 
         except Exception as e:

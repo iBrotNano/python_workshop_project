@@ -2,19 +2,25 @@ from meal_plan.meal_plan import MealPlan
 
 
 class Repository:
-    def __init__(self):
+    """Repository class that holds the meal plan."""
+
+    def __init__(self, meal_plan: MealPlan):
         """
         Initializes the Repository.
 
         :param self: This instance of the Repository class.
+        :param meal_plan: An instance of the MealPlan class.
+        :type meal_plan: MealPlan
         """
-        self.meal_plan = MealPlan()
+        self._meal_plan = meal_plan
 
-    def get(self):
+    @property
+    def meal_plan(self) -> MealPlan:
         """
-        Gets the current meal plan.
+        Returns the meal plan.
 
         :param self: This instance of the Repository class.
-        :return: The current meal plan.
+        :return: The meal plan.
+        :rtype: MealPlan
         """
-        return self.meal_plan
+        return self._meal_plan

@@ -1,34 +1,42 @@
+from dataclasses import dataclass
 from datetime import date
+from persons.gender import Gender
+from persons.activity_levels import ACTIVITY_LEVELS
 
 
+@dataclass
 class Person:
-    GENDERS = ("Male", "Female")
+    """
+    Data class representing a person with attributes relevant for calorie calculation.
 
-    ACTIVITY_LEVELS = {
-        1: ("Sedentary (little or no exercise)", 1.2),
-        2: ("Lightly active (light exercise/sports 1-3 days/week)", 1.375),
-        3: ("Moderately active (moderate exercise/sports 3-5 days/week)", 1.55),
-        4: ("Very active (hard exercise/sports 6-7 days a week)", 1.725),
-        5: ("Super active (very hard exercise & physical job or 2x training)", 1.9),
-    }
+    :param name: The name of the person.
+    :param gender: The biological gender of the person.
+    :param weight: The weight of the person in kilograms.
+    :param height: The height of the person in centimeters.
+    :param birth_year: The birth year of the person.
+    :param activity_level: The activity level of the person, represented as an integer index corresponding to the ACTIVITY_LEVELS list.
+    """
 
-    def __init__(
-        self,
-        name: str = "",
-        gender: str = "",
-        weight: float = 0.0,
-        height: float = 0.0,
-        birth_year: int = 0,
-        activity_level: int = 0,
-    ):
-        self.name = name
-        self.gender = gender
-        self.weight = weight
-        self.height = height
-        self.birth_year = birth_year
-        self.activity_level = activity_level
+    name: str = ""
+    gender: Gender = Gender.MALE
+    weight: float = 0.0
+    height: float = 0.0
+    birth_year: int = 0
+    activity_level: int = 0
 
-    def calculate_calories_needed(self) -> float:
+    def __post_init__(self):
+        """
+        Normalizes persisted values to runtime types.
+
+        :param self: The Person instance being initialized.
+        """
+        if isinstance(self.gender, str):
+            try:
+                self.gender = Gender(self.gender)
+            except ValueError:
+                self.gender = Gender.MALE
+
+    def calories_needed(self) -> float:
         """
         Calculates the calories needed per day based on the person's attributes.
 
@@ -38,14 +46,14 @@ class Person:
         :param self: The Person instance for which to calculate the calories needed.
         """
         bmr_without_gender_factor = (
-            10 * self.weight + 6.25 * self.height - 5 * self.calculate_age()
+            10 * self.weight + 6.25 * self.height - 5 * self.age()
         )
 
         return (
-            bmr_without_gender_factor + (5 if self.gender == "Male" else -161)
-        ) * Person.ACTIVITY_LEVELS[self.activity_level][1]
+            bmr_without_gender_factor + (5 if self.gender == Gender.MALE else -161)
+        ) * ACTIVITY_LEVELS[self.activity_level][1]
 
-    def calculate_age(self) -> int:
+    def age(self) -> int:
         """
         Calculates the age of the person based on their birthday.
 

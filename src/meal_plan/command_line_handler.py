@@ -1,15 +1,19 @@
 import logging
 import questionary
+
 from meal_plan.repository import Repository
-from common.console import print_info
-from config.console import console
+from recipes.repository import Repository as RecipesRepository
+from common.terminal import terminal
 from rich.table import Table
-from recipes.recipe_types import RECIPE_TYPE_MAPPINGS
+from meal_plan.meal_planner import MealPlanner
+from meal_plan.meal_plan import MealPlan
 
 log = logging.getLogger(__name__)
 
 
 class CommandLineHandler:
+    """Handles the command line interface for meal plan management."""
+
     CANCEL_COMMAND = "CANCEL"
     GENERATE_MEAL_PLAN_COMMAND = "GENERATE_MEAL_PLAN"
 
@@ -21,7 +25,11 @@ class CommandLineHandler:
         :param repository: The meal plan repository.
         :type repository: Repository
         """
-        self.repository = Repository()
+
+        self._meal_plan = MealPlan()
+        self._repository = Repository(self._meal_plan)
+        self._recipe_repository = RecipesRepository()
+        self._meal_planner = MealPlanner(self._meal_plan, self._recipe_repository)
 
     def show(self):
         """
@@ -30,8 +38,8 @@ class CommandLineHandler:
         :param self: This instance of the CommandLineHandler class.
         """
         while True:
-            if not self.repository.get().is_meal_plan_generated():
-                print_info("No meal plan is present.")
+            if not self._repository.meal_plan.is_meal_plan_filled():
+                terminal.print_info("No meal plan is present.")
 
             command = self._get_menu_selection()
 
@@ -86,17 +94,22 @@ class CommandLineHandler:
             table.add_column("Saturday", style="white")
             table.add_column("Sunday", style="cyan")
 
-            for meal_index, meal_name in RECIPE_TYPE_MAPPINGS.items():
+            for meal_index, meal_name in MealPlanner.MEAL_SLOTS.items():
                 row_data = [meal_name.capitalize()]
 
-                for day in self.repository.get().meals:
+                for day in self._meal_plan.plan:
                     meal = day[meal_index]
-                    row_data.append(meal.recipe.name if meal.recipe else "N/A")
+
+                    row_data.append(
+                        meal.recipe.name
+                        if meal is not None and meal.recipe is not None
+                        else "N/A"
+                    )
 
                 table.add_row(*row_data)
 
-            console.print(table)
+            terminal.print(table)
 
-        self.repository.get().generate()
-        print_info("A new meal plan has been generated and saved.")
+        self._meal_planner.generate()
+        terminal.print_info("A new meal plan has been generated and saved.")
         _display_meal_plan()

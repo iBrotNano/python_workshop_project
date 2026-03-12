@@ -1,17 +1,24 @@
 from common.yaml_file_repository import YamlFileRepository
 from recipes.recipe import Recipe
-import config.config as config
+from config.configuration import configuration
 import random
 
 
 class Repository(YamlFileRepository):
+    """
+    A repository class for managing recipes, providing methods to add, delete, and retrieve recipes.
+
+    :param YamlFileRepository: The base class for YAML file repositories.
+    :type YamlFileRepository: type
+    """
+
     def __init__(self):
         """
         Initializes the Repository.
 
         :param self: This instance of the Repository class.
         """
-        super().__init__(config.recipes_storage_path, Recipe)
+        super().__init__(configuration.recipes_storage_path, Recipe)
 
     def try_add(self, recipe: Recipe):
         """
@@ -39,13 +46,15 @@ class Repository(YamlFileRepository):
             del self.data[recipe_name]
             self.save()
 
-    def get(self, recipe_name: str):
+    def get(self, recipe_name: str) -> Recipe | None:
         """
         Gets a recipe by name.
 
         :param self: This instance of the Repository class.
         :param recipe_name: The name of the recipe to get.
+        :type recipe_name: str
         :return: The recipe if found, otherwise None.
+        :rtype: Recipe | None
         """
         return self.data.get(recipe_name)
 

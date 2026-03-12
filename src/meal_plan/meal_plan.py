@@ -1,67 +1,72 @@
-import random
-
 from meal_plan.meal import Meal
-from recipes.repository import Repository
-import recipes.recipe_types as rt
 
 
 class MealPlan:
+    """Represents a meal plan, which is a matrix of meals for each day of the week and meal time. 7 days, 5 meals per day"""
+
     def __init__(self):
         """
-        Initializes the MealPlan.
+        Initializes the MealPlan with an empty plan.
 
         :param self: This instance of the MealPlan class.
         """
-        self.meals: list[list[Meal]] = []  # Matrix: 7 days, 5 meals per day
+        self._plan: list[list[Meal | None]] = [
+            [None for _ in range(5)] for _ in range(7)
+        ]
 
-        self.recipes_repository = Repository()
-
-    def generate(self):
+    @property
+    def plan(self) -> list[list[Meal | None]]:
         """
-        Generates a new meal plan by assigning random recipes to each meal.
+        Returns the meal plan.
+
+        :param self: This instance of the MealPlan class.
+        :return: The meal plan, which is a list of lists containing Meal objects or None.
+        :rtype: list[list[Meal | None]]
+        """
+        return self._plan
+
+    def clear(self):
+        """
+        Clears the meal plan by resetting all meals to None.
 
         :param self: This instance of the MealPlan class.
         """
-        self.meals = []
+        self._plan = [[None for _ in range(5)] for _ in range(7)]
 
-        for day in range(7):
-            self.meals.append([])  # Add a new day column
-            for meal_time in range(5):
-                self.meals[day].append(Meal())
-
-                recipe = self._get_recipe(rt.RECIPE_TYPE_MAPPINGS[meal_time])
-
-                if recipe:
-                    self.meals[day][meal_time].set_recipe(recipe)
-
-    def _get_recipe(self, recipe_type: str):
+    def set_meal(self, day: int, meal_time: int, meal: Meal):
         """
-        Gets a random recipe that has been assigned to any meal in the plan only if there are not enough recipes to fill the plan for a meal time.
-
-        If no recipe is available for a meal time, None is returned.
+        Sets a meal for a specific day and meal time in the meal plan.
 
         :param self: This instance of the MealPlan class.
-        :param recipe_type: The type of recipe to filter by.
-        :type recipe_type: str
-        :return: A random recipe that has not been assigned, or None if all recipes are assigned.
-        :rtype: Recipe | None
+        :param day: The index of the day (0-6) for which to set the meal.
+        :param meal_time: The index of the meal time (0-4) for which to set the meal.
+        :param meal: The Meal object to set in the meal plan.
         """
-        already_assigned_recipes = {
+        self._plan[day][meal_time] = meal
+
+    def get_assigned_recipes(self) -> set[str]:
+        """
+        Retrieves the names of all recipes that have been assigned to meals in the meal plan.
+
+        :param self: This instance of the MealPlan class.
+        :return: A set of recipe names that are currently assigned in the meal plan.
+        :rtype: set[str]
+        """
+        return {
             meal.recipe.name
-            for day in self.meals
+            for day in self._plan
             for meal in day
-            if meal.recipe is not None
+            if meal is not None and meal.recipe is not None
         }
 
-        return self.recipes_repository.get_random_recipe_by(
-            recipe_type, assigned=already_assigned_recipes
-        )
-
-    def is_meal_plan_generated(self) -> bool:
+    def is_meal_plan_filled(self) -> bool:
         """
-        Checks if the meal plan has been generated.
+        Checks if the meal plan has been filled.
 
         :param self: This instance of the MealPlan class.
-        :return: True if the meal plan is generated, False otherwise.
+        :return: True if the meal plan is filled, False otherwise.
         """
-        return any(any(meal.recipe is not None for meal in day) for day in self.meals)
+        return all(
+            all(meal is not None and meal.recipe is not None for meal in day)
+            for day in self._plan
+        )

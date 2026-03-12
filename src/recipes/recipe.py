@@ -1,35 +1,50 @@
 import logging
-from pathlib import Path
+
+from dataclasses import dataclass, field
+from typing import Any
+from recipes.recipe_type import RecipeType
 
 log = logging.getLogger(__name__)
 
 
+@dataclass
 class Recipe:
-    def __init__(
-        self,
-        name: str = "",
-        ingredients: list = [],
-        instructions: str = "",
-        nutrition: dict = {},
-        type: str = "unknown",
-    ):
-        """
-        Initializes the Recipe.
+    """
+    A class representing a recipe with its details, including ingredients, instructions, and nutritional information.
 
-        :param self: This instance of the Recipe class.
-        """
-        self.name = name
-        self.ingredients = ingredients
-        self.instructions = instructions
-        self.nutrition = nutrition
-        self.type = type  # e.g., breakfast, lunch, dinner, snack
+    :param name: The name of the recipe.
+    :type name: str
+    :param ingredients: The ingredients of the recipe.
+    :type ingredients: list[dict[str, Any]]
+    :param instructions: The instructions for the recipe.
+    :type instructions: str
+    :param nutrition: The nutritional information of the recipe.
+    :type nutrition: dict[str, float | str]
+    :param type: The type of the recipe (e.g., breakfast, lunch, dinner).
+    :type type: RecipeType
+    """
 
-    def add_ingredient(self, ingredient: dict):
+    name: str = ""
+    ingredients: list[dict[str, Any]] = field(default_factory=list)
+    instructions: str = ""
+    nutrition: dict[str, float | str] = field(default_factory=dict)
+    type: RecipeType = RecipeType.UNKNOWN
+
+    def __post_init__(self):
+        """Normalizes persisted values to runtime types."""
+        if isinstance(self.type, str):
+            try:
+                self.type = RecipeType(self.type)
+            except ValueError:
+                self.type = RecipeType.UNKNOWN
+
+    def add_ingredient(self, ingredient: dict[str, Any]):
         """
         Adds an ingredient to the recipe.
 
         :param self: This instance of the Recipe class.
         :param ingredient: The ingredient to add with quantity information.
+        :type ingredient: dict[str, Any]
         """
         self.ingredients.append(ingredient)
         self.nutrition = self._calculate_nutrition()
@@ -60,13 +75,13 @@ class Recipe:
 
         return md
 
-    def get_formatted_nutrition(self) -> dict:
+    def get_formatted_nutrition(self) -> dict[str, str]:
         """
         Returns the nutritional information with formatted values.
 
         :param self: This instance of the Recipe class.
         :return: The formatted nutritional information.
-        :rtype: dict
+        :rtype: dict[str, str]
         """
         formatted_nutrition = {}
 
@@ -80,36 +95,22 @@ class Recipe:
 
         return formatted_nutrition
 
-    def export_as_markdown(self, file_path: str):
-        """
-        Exports the recipe as a markdown file.
-
-        :param self: This instance of the Recipe class.
-        :param file_path: The file path to save the markdown file.
-        :type file_path: str
-        """
-        path = Path(file_path)
-        path.parent.mkdir(parents=True, exist_ok=True)
-
-        with open(file_path, "w", encoding="utf-8") as file:
-            file.write(self.as_markdown())
-
-    def _calculate_nutrition(self) -> dict:
+    def _calculate_nutrition(self) -> dict[str, float | str]:
         """
         Calculates the total nutritional information for the recipe.
 
         :param self: This instance of the Recipe class.
         :return: The total nutritional information for the recipe.
-        :rtype: dict
+        :rtype: dict[str, float | str]
         """
-        nutrition = {
-            "calories": 0,
-            "energy": 0,
-            "fat": 0,
-            "carbohydrates": 0,
-            "protein": 0,
-            "sugar": 0,
-            "salt": 0,
+        nutrition: dict[str, float | str] = {
+            "calories": 0.0,
+            "energy": 0.0,
+            "fat": 0.0,
+            "carbohydrates": 0.0,
+            "protein": 0.0,
+            "sugar": 0.0,
+            "salt": 0.0,
         }
 
         # Map ingredient nutrient keys to recipe nutrition keys
@@ -137,6 +138,7 @@ class Recipe:
                 except (ValueError, TypeError):
                     # Mark this nutrient as unavailable if conversion fails
                     nutrition[nutrition_key] = "N/A"
+
                     log.warning(
                         f"Missing or invalid value for '{ingredient_key}' "
                         f"in {ingredient['food'].get('product', 'unknown')}. "
