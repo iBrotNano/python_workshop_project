@@ -23,6 +23,7 @@ class MealEntity(database_engine.Base):
     )
 
     recipe = relationship("RecipeEntity", back_populates="meals")
+
     persons = relationship(
         "PersonEntity",
         secondary="meal_person_association",

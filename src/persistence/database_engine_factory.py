@@ -2,6 +2,7 @@ from config.configuration import Configuration
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, declarative_base
 from persistence.database_engine import DatabaseEngine
+from config.configuration import configuration
 
 
 class DatabaseEngineFactory:
@@ -42,5 +43,5 @@ class DatabaseEngineFactory:
 
 # Shared instances used across the application.
 # TODO: Stuff here should be instantiated by DI.
-database_engine_factory = DatabaseEngineFactory(Configuration())
+database_engine_factory = DatabaseEngineFactory(configuration)
 database_engine = database_engine_factory.create()

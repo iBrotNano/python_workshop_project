@@ -22,7 +22,7 @@ class Configuration:
     )
 
     openfoodfacts_api_country: openfoodfacts.Country = openfoodfacts.Country.de
-    openfoodfacts_api_timeout: int = 60  # seconds
+    openfoodfacts_api_timeout: int = 15  # seconds
 
     # Logging
     logging_folder: str = "logs"

@@ -120,4 +120,3 @@ class CommandLineHandler:
         self._meal_planner.generate()
         self._repository.create(self._meal_plan)
         terminal.print_info("A new meal plan has been generated and saved.")
-        self._display_meal_plan(self._meal_plan)
