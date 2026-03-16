@@ -12,11 +12,12 @@
 - Use `pytest` as the test framework.
 - Name tests `test_*.py` and test functions `test_*`.
 - No comments in tests, the test name should be descriptive enough.
-- Don't change existing tests unless necessary to fix a bug or add coverage for new code.
+- Keep tests as they are and only modify them to fix a bug or add coverage for new code.
 - Either change tests or code, but not both at the same time. It is not possible that a system validates or falsifies itself.
 
 ## Style
-- Prefer explicit imports and avoid wildcard imports.
+- Prefer explicit imports.
+- Avoid wildcard imports.
 - Start private fields and methods with an underscore (_).
 - Use snake_case for functions and variables, and PascalCase for classes.
 - Add type hints for function parameters and return types. Only add None as return type hint if it is returned explicitly. If the function does not return anything, it is not necessary to add a return type hint.
