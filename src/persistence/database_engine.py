@@ -32,6 +32,50 @@ class DatabaseEngine:
         """
         load_model_definitions()
         self.Base.metadata.create_all(bind=self._engine)
+        self._seed_activity_levels()
+
+    def _seed_activity_levels(self):
+        """
+        Inserts default activity levels if they do not exist and synchronizes changed values.
+
+        :param self: The instance of the DatabaseEngine class.
+        """
+        from persons.activity_levels_entity import ActivityLevelsEntity
+
+        default_activity_levels = {
+            1: ("Sedentary (little or no exercise)", 1.2),
+            2: ("Lightly active (light exercise/sports 1-3 days/week)", 1.375),
+            3: ("Moderately active (moderate exercise/sports 3-5 days/week)", 1.55),
+            4: ("Very active (hard exercise/sports 6-7 days a week)", 1.725),
+            5: ("Super active (very hard exercise & physical job or 2x training)", 1.9),
+        }
+
+        db: Session = self.session()
+
+        try:
+            for id, (name, multiplier) in default_activity_levels.items():
+                entity = db.get(ActivityLevelsEntity, id)
+
+                if entity is None:
+                    db.add(
+                        ActivityLevelsEntity(
+                            id=id,
+                            name=name,
+                            multiplier=multiplier,
+                        )
+                    )
+
+                    continue
+
+                entity.name = name
+                entity.multiplier = multiplier
+
+            db.commit()
+        except Exception:
+            db.rollback()
+            raise
+        finally:
+            db.close()
 
     def get_db(self) -> Generator[Session, None, None]:
         """
