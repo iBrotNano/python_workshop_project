@@ -22,13 +22,12 @@ class PersonEntity(database_engine.Base):
     height = Column(Float, nullable=False)
     birth_year = Column(Integer, nullable=False)
 
-    # TODO: Change activity level into table and remove the hardcoded mapping.
     activity_level_id = Column(
         Integer, ForeignKey("activity_levels.id", ondelete="SET NULL"), nullable=True
     )
 
     activity_level = relationship(
-        "ActivityLevelsEntity",
+        "ActivityLevelEntity",
         back_populates="persons",
     )
 

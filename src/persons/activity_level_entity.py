@@ -3,7 +3,7 @@ from sqlalchemy import Column, Integer, Float, String
 from sqlalchemy.orm import relationship
 
 
-class ActivityLevelsEntity(database_engine.Base):
+class ActivityLevelEntity(database_engine.Base):
     """
     SQLAlchemy entity representing an activity level in the database. This class defines the structure of the 'activity_levels' table and its columns.
     """

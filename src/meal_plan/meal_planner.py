@@ -3,7 +3,7 @@ from meal_plan.meal_plan import MealPlan
 from recipes.repository import Repository as RecipesRepository
 from recipes.recipe import Recipe
 from recipes.recipe_type import RecipeType
-from persons.repository import Repository as PersonsRepository
+from persons.person_repository import PersonRepository as PersonsRepository
 
 
 class MealPlanner:

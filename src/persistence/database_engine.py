@@ -40,8 +40,10 @@ class DatabaseEngine:
 
         :param self: The instance of the DatabaseEngine class.
         """
-        from persons.activity_levels_entity import ActivityLevelsEntity
+        # The import is placed here to avoid circular imports, as the Repository class also imports the DatabaseEngine.
+        from persons.activity_level_entity import ActivityLevelEntity
 
+        # TODO: The default data is hardcoded. Maybe storing them as a JSON file or similar would be better?
         default_activity_levels = {
             1: ("Sedentary (little or no exercise)", 1.2),
             2: ("Lightly active (light exercise/sports 1-3 days/week)", 1.375),
@@ -54,11 +56,11 @@ class DatabaseEngine:
 
         try:
             for id, (name, multiplier) in default_activity_levels.items():
-                entity = db.get(ActivityLevelsEntity, id)
+                entity = db.get(ActivityLevelEntity, id)
 
                 if entity is None:
                     db.add(
-                        ActivityLevelsEntity(
+                        ActivityLevelEntity(
                             id=id,
                             name=name,
                             multiplier=multiplier,

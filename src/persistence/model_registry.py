@@ -10,6 +10,6 @@ def load_model_definitions():
     import_module("persistence.schema")
     import_module("meal_plan.meal_plan_entity")
     import_module("meal_plan.meal_entity")
-    import_module("persons.activity_levels_entity")
+    import_module("persons.activity_level_entity")
     import_module("persons.person_entity")
     import_module("recipes.recipe_entity")

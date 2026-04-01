@@ -1,13 +1,13 @@
 import logging
 import questionary
 
-from persons.activity_levels import ACTIVITY_LEVELS
 from persons.person import Gender, Person
 from rich.table import Table
 from common.terminal import terminal
-from persons.repository import Repository
+from persons.person_repository import PersonRepository
 from typing import Any
 from persistence.database_engine_factory import database_engine
+from persons.activity_level_repository import ActivityLevelRepository
 
 log = logging.getLogger(__name__)
 
@@ -26,7 +26,13 @@ class CommandLineHandler:
 
         :param self: This instance of the CommandLineHandler class.
         """
-        self._repository = Repository(next(database_engine.get_db()))
+        self._repository = PersonRepository(next(database_engine.get_db()))
+
+        self._activity_level_repository = ActivityLevelRepository(
+            next(database_engine.get_db())
+        )
+
+        self._activity_levels = self._activity_level_repository.get_all()
 
     def show(self):
         """
@@ -114,8 +120,8 @@ class CommandLineHandler:
                 activity_level=questionary.select(
                     "What is your activity level?",
                     choices=[
-                        questionary.Choice(v[0], value=k)
-                        for k, v in ACTIVITY_LEVELS.items()
+                        questionary.Choice(al.name, value=al.id)
+                        for al in self._activity_levels
                     ],
                 ),
             ).ask()
@@ -127,23 +133,35 @@ class CommandLineHandler:
             :return: A new Person instance with the provided information.
             :rtype: Person
             """
-            return Person(
-                answers["name"],
-                answers["gender"],
-                float(answers["weight"]),
-                float(answers["height"]),
-                int(answers["birth_year"]),
-                answers["activity_level"],
+            selected_activity_level_id = int(answers["activity_level"])
+
+            selected_activity_level = next(
+                (
+                    activity_level
+                    for activity_level in self._activity_levels
+                    if activity_level.id == selected_activity_level_id
+                ),
+                None,
             )
 
-        def _try_add_person_to_repository(person: Person):
+            return Person(
+                name=answers["name"],
+                gender=answers["gender"],
+                weight=float(answers["weight"]),
+                height=float(answers["height"]),
+                birth_year=int(answers["birth_year"]),
+                activity_level=selected_activity_level,
+            )
+
+        def _try_add_person_to_repository(person: Person) -> bool:
             """
             Tries to add the person to the repository. If a person with the same name
             already exists, prompts the user to enter a different name or cancel the operation.
 
             :param person: The Person instance to be added to the repository.
             :type person: Person
-
+            :return: True if the person was successfully added, False if the operation was cancelled.
+            :rtype: bool
             """
             while not self._repository.try_add(person):
                 log.warning(f"A person with the name '{person.name}' already exists.")
@@ -156,7 +174,9 @@ class CommandLineHandler:
                         validate=lambda text: text != "" or "Name cannot be empty.",
                     ).ask()
                 else:
-                    return
+                    return False
+
+            return True
 
         answers = _ask_personal_information()
 
@@ -165,7 +185,9 @@ class CommandLineHandler:
             return
 
         person = _create_person()
-        _try_add_person_to_repository(person)
+
+        if not _try_add_person_to_repository(person):
+            return
 
         terminal.print_dict_as_table(
             {
@@ -174,7 +196,9 @@ class CommandLineHandler:
                 "Weight (kg)": f"{person.weight:.0f}",
                 "Height (cm)": f"{person.height:.0f}",
                 "Birth Year": f"{person.birth_year}",
-                "Activity Level": ACTIVITY_LEVELS[person.activity_level][0],
+                "Activity Level": (
+                    person.activity_level.name if person.activity_level else "None"
+                ),
                 "Needed Calories (kcal)": f"{person.calories_needed():.0f}",
             },
             column1_title="Attribute",
@@ -245,7 +269,7 @@ class CommandLineHandler:
                 str(person.age()),
                 f"{person.weight:.0f}",
                 f"{person.height:.0f}",
-                ACTIVITY_LEVELS[person.activity_level][0],
+                person.activity_level.name if person.activity_level else "None",
                 f"{person.calories_needed():.0f}",
             )
 

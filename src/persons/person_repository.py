@@ -1,10 +1,12 @@
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
+from persons.activity_level import ActivityLevel
 from persons.person import Person
 from persons.person_entity import PersonEntity
+from persistence.model_registry import load_model_definitions
 
 
-class Repository:
+class PersonRepository:
     """
     Repository class for managing database access related to persons. This class provides methods to add, retrieve, update, and delete person records in the database.
     """
@@ -13,10 +15,12 @@ class Repository:
         """
         Initializes the Repository with the provided SQLAlchemy session.
 
+        :param self: This instance of the Repository class.
         :param session: The SQLAlchemy session instance.
         :type session: Session
         """
 
+        load_model_definitions()
         self._session = session
 
     def _entity_to_model(self, entity: PersonEntity) -> Person:
@@ -35,6 +39,15 @@ class Repository:
             if key in Person.__dataclass_fields__
         }
 
+        if entity.activity_level is not None:
+            al_data = {
+                key: value
+                for key, value in entity.activity_level.__dict__.items()
+                if key in ActivityLevel.__dataclass_fields__ and key != "persons"
+            }
+
+            model_data["activity_level"] = ActivityLevel(**al_data)
+
         return Person(**model_data)
 
     def _model_to_entity(self, model: Person) -> PersonEntity:
@@ -45,9 +58,22 @@ class Repository:
         :param model: The model to convert.
         :type model: Person
         :return: A PersonEntity entity with the data of the model.
-        :rtype:
+        :rtype: PersonEntity
         """
-        return PersonEntity(**model.__dict__)
+        entity_data = {
+            key: value
+            for key, value in model.__dict__.items()
+            if key in Person.__dataclass_fields__ and key != "activity_level"
+        }
+
+        # Let the database assign the primary key for new entities.
+        if entity_data.get("id") in (None, 0):
+            entity_data.pop("id", None)
+
+        if model.activity_level is not None:
+            entity_data["activity_level_id"] = model.activity_level.id
+
+        return PersonEntity(**entity_data)
 
     def try_add(self, person: Person) -> bool:
         """
@@ -64,9 +90,13 @@ class Repository:
 
         try:
             self._session.commit()
-        except IntegrityError:
+        except IntegrityError as error:
             self._session.rollback()
-            return False
+
+            if "UNIQUE constraint failed: persons.name" in str(error.orig):
+                return False
+
+            raise
 
         return True
 
