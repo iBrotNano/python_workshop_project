@@ -1,5 +1,10 @@
 # Copilot Instructions (Python)
 
+## Python Environment
+- Assume the workspace interpreter is already configured.
+- Do not call interpreter/environment setup tools unless the user explicitly asks.
+- Only re-check environment if Python execution fails with missing interpreter or missing module errors.
+
 ## General
 - Prefer small, readable functions and clear naming.
 - Keep changes minimal and focused on the request.
