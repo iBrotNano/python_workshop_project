@@ -33,16 +33,15 @@ class Configuration:
     logging_basic_level: int = logging.INFO
     logging_basic_format: str = "%(asctime)s | %(levelname)s | %(message)s"
 
-    # Recipe storage
-    recipes_storage_path: Path = Path("data/recipes.yaml")
-
-    # Person storage
-    persons_storage_path: Path = Path("data/persons.yaml")
-
-    sqlite_url: str = "sqlite:///./data/data.db"
+    sqlite_data_folder: str = "data"
+    sqlite_url: str = f"sqlite:///.//{sqlite_data_folder}/data.db"
     sqlite_echo: bool = False
     sqlite_auto_flush: bool = False
-    sqlite_auto_commit: bool = False
+
+    def __init__(self):
+        # Ensure the logging folder exists.
+        Path(self.logging_folder).mkdir(parents=True, exist_ok=True)
+        Path(self.sqlite_data_folder).mkdir(parents=True, exist_ok=True)
 
 
 # Shared instances used across the application.

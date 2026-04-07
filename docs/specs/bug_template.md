@@ -54,7 +54,7 @@ Architecture of the system and/or layout of the GUI. Specification of the input 
 - [ ] Are there license conflicts for new dependencies?
 - [ ] Is there any deactivated code?
 - [ ] Are all TODOs in the code done?
-- [ ] Are there enough meaningful comments
+- [ ] Are there enough meaningful comments?
 - [ ] Is the code well tested?
   - [ ] Does the test name describe the context and goal from a business perspective? What is being specified, not how it is technically implemented.
   - [ ] One aspect per test?

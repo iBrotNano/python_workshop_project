@@ -90,7 +90,7 @@ class CommandLineHandler:
                 name=questionary.text(
                     "Enter the person's name: ",
                     validate=lambda text: 1 <= len(text) <= 100
-                    or "Name muss zwischen 1 und 100 Zeichen lang sein.",
+                    or "The name must be between 1 and 100 characters long.",
                 ),
                 gender=questionary.select(
                     "Enter a biological gender: ", choices=[g.value for g in Gender]

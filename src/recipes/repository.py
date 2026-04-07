@@ -4,6 +4,7 @@ from recipes.recipe import Recipe
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 from recipes.recipe_entity import RecipeEntity
+from recipes.recipe_type import RecipeType
 
 
 class RecipeRepository:
@@ -48,7 +49,15 @@ class RecipeRepository:
         :return: The corresponding RecipeEntity instance.
         :rtype: RecipeEntity
         """
-        return RecipeEntity(**model.__dict__)
+        entity_data = {
+            key: value for key, value in model.__dict__.items() if key != "type"
+        }
+
+        entity_data["type"] = (
+            model.type.value if isinstance(model.type, RecipeType) else model.type
+        )
+
+        return RecipeEntity(**entity_data)
 
     def try_add(self, recipe: Recipe):
         """

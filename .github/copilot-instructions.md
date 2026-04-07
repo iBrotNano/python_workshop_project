@@ -8,6 +8,7 @@
 ## General
 - Prefer small, readable functions and clear naming.
 - Keep changes minimal and focused on the request.
+- Keep your answers concise and to the point.
 
 ## Project Structure
 - Source code lives in the `src/` directory.

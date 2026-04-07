@@ -24,7 +24,7 @@ class MealPlanRepository:
     def _entity_to_model(self, entity: MealPlanEntity) -> MealPlan:
         meal_plan = MealPlan()
 
-        for index, meal_entity in enumerate(entity.meals):
+        for meal_entity in entity.meals:
             recipe = None
 
             if meal_entity.recipe:
@@ -49,8 +49,8 @@ class MealPlanRepository:
                     persons.append(Person(**person_data))
 
             meal = Meal(recipe=recipe, persons=persons if persons else None)
-            day = index // 5
-            meal_time = index % 5
+            day = meal_entity.slot_index // 5
+            meal_time = meal_entity.slot_index % 5
             meal_plan._plan[day][meal_time] = meal
 
         return meal_plan
@@ -59,8 +59,8 @@ class MealPlanRepository:
         flattend_plan = [meal for day in model.plan for meal in day]
         meal_entities = []
 
-        for meal in flattend_plan:
-            meal_entity = MealEntity()
+        for slot_index, meal in enumerate(flattend_plan):
+            meal_entity = MealEntity(slot_index=slot_index)
 
             if meal is not None:
                 if meal.recipe:

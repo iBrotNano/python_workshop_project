@@ -11,6 +11,7 @@ class MealEntity(database_engine.Base):
     __tablename__ = "meals"
 
     id = Column(Integer, primary_key=True)
+    slot_index = Column(Integer, nullable=False, default=0)
 
     meal_plan_id = Column(
         Integer, ForeignKey("meal_plans.id", ondelete="CASCADE"), nullable=False

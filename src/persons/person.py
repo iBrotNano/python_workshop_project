@@ -21,7 +21,7 @@ class Person:
     :type height: float
     :param birth_year: The birth year of the person.
     :type birth_year: int
-    :param activity_level: The activity level of the person, represented as an integer key in the ACTIVITY_LEVELS mapping.
+    :param activity_level: The activity level of the person.
     :type activity_level: ActivityLevel | None
     """
 

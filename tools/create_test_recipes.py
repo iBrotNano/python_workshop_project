@@ -110,4 +110,5 @@ with UnitOfWork() as uow:
         uow.recipes.try_add(recipe)
 
     uow.commit()
-print(f"Created test recipe recipes.yaml")
+
+print(f"Created test recipes")

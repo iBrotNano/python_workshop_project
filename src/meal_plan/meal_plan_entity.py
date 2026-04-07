@@ -9,5 +9,8 @@ class MealPlanEntity(database_engine.Base):
     id = Column(Integer, primary_key=True)
 
     meals = relationship(
-        "MealEntity", back_populates="meal_plan", cascade="all, delete-orphan"
+        "MealEntity",
+        back_populates="meal_plan",
+        cascade="all, delete-orphan",
+        order_by="MealEntity.slot_index",
     )

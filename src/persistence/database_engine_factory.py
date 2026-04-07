@@ -33,7 +33,6 @@ class DatabaseEngineFactory:
 
         self._session = sessionmaker(
             autoflush=self._configuration.sqlite_auto_flush,
-            autocommit=self._configuration.sqlite_auto_commit,
             bind=self._engine,
         )
 

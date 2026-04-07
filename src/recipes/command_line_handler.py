@@ -101,7 +101,7 @@ class CommandLineHandler:
             recipe.name = questionary.text(
                 "What is the name of the recipe you want to add?",
                 validate=lambda text: 1 <= len(text) <= 255
-                or "Name muss zwischen 1 und 100 Zeichen lang sein.",
+                or "The name must be between 1 and 255 characters long.",
             ).ask()
 
             # A recipe needs at least a name to store something meaningful.
@@ -239,7 +239,7 @@ class CommandLineHandler:
                         uow.commit()
 
                 if created:
-                    terminal.print(f"Recipe '{recipe.name}' saved to disk.")
+                    terminal.print(f"Recipe '{recipe.name}' saved.")
                 else:
                     terminal.print_info(
                         f"Recipe '{recipe.name}' already exists and was not saved."

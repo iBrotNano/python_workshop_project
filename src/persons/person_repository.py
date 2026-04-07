@@ -1,6 +1,7 @@
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
 from persons.activity_level import ActivityLevel
+from persons.gender import Gender
 from persons.person import Person
 from persons.person_entity import PersonEntity
 from persistence.model_registry import load_model_definitions
@@ -60,20 +61,38 @@ class PersonRepository:
         :return: A PersonEntity entity with the data of the model.
         :rtype: PersonEntity
         """
+        entity_data = self._get_entity_data(model)
+        return PersonEntity(**entity_data)
+
+    def _get_entity_data(self, model: Person) -> dict:
+        """
+        Normalizes a Person model instance to database column values.
+
+        :param self: This instance of the Repository class.
+        :param model: The model to normalize.
+        :type model: Person
+        :return: The normalized entity data.
+        :rtype: dict
+        """
         entity_data = {
             key: value
             for key, value in model.__dict__.items()
             if key in Person.__dataclass_fields__ and key != "activity_level"
         }
 
+        entity_data["gender"] = (
+            model.gender.value if isinstance(model.gender, Gender) else model.gender
+        )
+
         # Let the database assign the primary key for new entities.
         if entity_data.get("id") in (None, 0):
             entity_data.pop("id", None)
 
-        if model.activity_level is not None:
-            entity_data["activity_level_id"] = model.activity_level.id
+        entity_data["activity_level_id"] = (
+            model.activity_level.id if model.activity_level is not None else None
+        )
 
-        return PersonEntity(**entity_data)
+        return entity_data
 
     def try_add(self, person: Person) -> bool:
         """
@@ -131,7 +150,7 @@ class PersonRepository:
         if not entity:
             raise ValueError(f"Person with id {person_id} not found")
 
-        for key, value in person.__dict__.items():
+        for key, value in self._get_entity_data(person).items():
             setattr(entity, key, value)
 
         self._session.flush()
