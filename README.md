@@ -113,3 +113,7 @@ Adjust the profile name, shell path, and environment name to your local machine.
 ## Security and Privacy
 
 Under `docs/pias` is documented what personal data is processed in the app, how it is processed, and what measures are taken to protect it. These are living documents that should be updated whenever there are changes to the data processing in the app. It is important to keep these documents up to date to ensure compliance with data protection regulations and to maintain transparency with users about how their data is being used.
+
+## Database
+
+The article [persistence.md](docs/articles/persistence.md) contains all information needed to work with the database and add new entities to the system.
