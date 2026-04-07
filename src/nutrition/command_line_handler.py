@@ -3,7 +3,7 @@ import questionary
 
 from rich.table import Table
 from common.terminal import terminal
-from nutrition.repository import Repository
+from nutrition.repository import NutritionRepository
 from nutrition.openfoodfacts_api_factory import api_client
 
 log = logging.getLogger(__name__)
@@ -31,7 +31,7 @@ class CommandLineHandler:
                 "API client is not configured. Please configure it before using the CommandLineHandler."
             )
 
-        self._repository = Repository(api_client)
+        self._repository = NutritionRepository(api_client)
 
     def show(self):
         """

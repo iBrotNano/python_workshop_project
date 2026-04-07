@@ -9,7 +9,7 @@ from persons.person_entity import PersonEntity
 from persons.person import Person
 
 
-class Repository:
+class MealPlanRepository:
     """Repository class that holds the meal plan."""
 
     def __init__(self, session: Session):
@@ -101,7 +101,7 @@ class Repository:
         self.delete()  # TODO: Implement an update instead.
         entity = self._model_to_entity(meal_plan)
         self._session.add(entity)
-        self._session.commit()
+        self._session.flush()
         self._session.refresh(entity)
         return self._entity_to_model(entity)
 
@@ -132,4 +132,3 @@ class Repository:
             return
 
         self._session.delete(entity)
-        self._session.commit()

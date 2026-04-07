@@ -1,9 +1,9 @@
 from meal_plan.meal import Meal
 from meal_plan.meal_plan import MealPlan
-from recipes.repository import Repository as RecipesRepository
+from recipes.repository import RecipeRepository
 from recipes.recipe import Recipe
 from recipes.recipe_type import RecipeType
-from persons.person_repository import PersonRepository as PersonsRepository
+from persons.person_repository import PersonRepository
 
 
 class MealPlanner:
@@ -22,8 +22,8 @@ class MealPlanner:
     def __init__(
         self,
         meal_plan: MealPlan,
-        recipe_repository: RecipesRepository,
-        persons_repository: PersonsRepository,
+        recipe_repository: RecipeRepository,
+        persons_repository: PersonRepository,
     ):
         """
         Initializes the MealPlanner.

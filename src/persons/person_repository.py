@@ -89,7 +89,7 @@ class PersonRepository:
         self._session.add(entity)
 
         try:
-            self._session.commit()
+            self._session.flush()
         except IntegrityError as error:
             self._session.rollback()
 
@@ -134,7 +134,7 @@ class PersonRepository:
         for key, value in person.__dict__.items():
             setattr(entity, key, value)
 
-        self._session.commit()
+        self._session.flush()
         self._session.refresh(entity)
         return self._entity_to_model(entity)
 
@@ -154,4 +154,3 @@ class PersonRepository:
             raise ValueError(f"Person with name {name} not found")
 
         self._session.delete(entity)
-        self._session.commit()

@@ -3,7 +3,7 @@ import openfoodfacts
 from typing import Any
 
 
-class Repository:
+class NutritionRepository:
     """Repository class for handling interactions with the Open Food Facts API."""
 
     def __init__(self, api_client: openfoodfacts.API):

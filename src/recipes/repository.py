@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 from recipes.recipe_entity import RecipeEntity
 
 
-class Repository:
+class RecipeRepository:
     """
     Repository for accessing the recipes in the database.
     """
@@ -63,7 +63,7 @@ class Repository:
         self._session.add(entity)
 
         try:
-            self._session.commit()
+            self._session.flush()
         except IntegrityError:
             self._session.rollback()
             return False
@@ -85,7 +85,6 @@ class Repository:
             raise ValueError(f"Recipe with name {recipe_name} not found")
 
         self._session.delete(entity)
-        self._session.commit()
 
     def get(self, recipe_name: str) -> Recipe | None:
         """

@@ -4,11 +4,10 @@ import nutrition.command_line_handler as nutrition_cli
 
 from rich.markdown import Markdown
 from recipes.recipe import Recipe
-from recipes.repository import Repository
 from common.terminal import terminal
 from recipes.recipe_type import RecipeType
 from recipes.exporter import Exporter
-from persistence.database_engine_factory import database_engine
+from persistence.unit_of_work import UnitOfWork
 
 log = logging.getLogger(__name__)
 
@@ -22,14 +21,6 @@ class CommandLineHandler:
     ADD_RECIPE_COMMAND = "ADD_RECIPE"
     DELETE_RECIPE_COMMAND = "DELETE_RECIPE"
     VIEW_RECIPE_COMMAND = "VIEW_RECIPE"
-
-    def __init__(self):
-        """
-        Initializes the CommandLineHandler.
-
-        :param self: This instance of the CommandLineHandler class.
-        """
-        self._repository = Repository(next(database_engine.get_db()))
 
     def show(self):
         """
@@ -118,13 +109,16 @@ class CommandLineHandler:
                 log.warning("No recipe name entered. Returning to menu.")
                 return self.CANCEL_COMMAND
 
-            if self._repository.get(recipe.name):
-                log.warning(f"A recipe with the name '{recipe.name}' already exists.")
+            with UnitOfWork() as uow:
+                if not uow.recipes.get(recipe.name):
+                    return None
 
-                if questionary.confirm("Do you want to try a different name?").ask():
-                    return _enter_recipe_name_to(recipe)
-                else:
-                    return self.CANCEL_COMMAND
+            log.warning(f"A recipe with the name '{recipe.name}' already exists.")
+
+            if questionary.confirm("Do you want to try a different name?").ask():
+                return _enter_recipe_name_to(recipe)
+
+            return self.CANCEL_COMMAND
 
         def _select_recipe_type(recipe: Recipe):
             """
@@ -238,7 +232,13 @@ class CommandLineHandler:
             if questionary.confirm(
                 f"Do you want to save the recipe '{recipe.name}'?"
             ).ask():
-                if self._repository.try_add(recipe):
+                with UnitOfWork() as uow:
+                    created = uow.recipes.try_add(recipe)
+
+                    if created:
+                        uow.commit()
+
+                if created:
                     terminal.print(f"Recipe '{recipe.name}' saved to disk.")
                 else:
                     terminal.print_info(
@@ -282,7 +282,10 @@ class CommandLineHandler:
             if questionary.confirm(
                 f"Are you sure you want to delete the recipe '{recipe_name}'?"
             ).ask():
-                self._repository.delete(recipe_name)
+                with UnitOfWork() as uow:
+                    uow.recipes.delete(recipe_name)
+                    uow.commit()
+
                 terminal.print_info(f"Recipe '{recipe_name}' has been deleted.")
 
     def _view_recipe(self):
@@ -295,7 +298,8 @@ class CommandLineHandler:
         recipe_name = self._select_recipe_with_autocomplete()
 
         if recipe_name:
-            recipe = self._repository.get(recipe_name)
+            with UnitOfWork() as uow:
+                recipe = uow.recipes.get(recipe_name)
 
             if not recipe:
                 log.warning(f"Recipe '{recipe_name}' not found.")
@@ -324,17 +328,18 @@ class CommandLineHandler:
         :return: The selected recipe name or None if cancelled.
         :rtype: str
         """
-        if not self._repository.get_all():
+        with UnitOfWork() as uow:
+            recipes = uow.recipes.get_all()
+
+        if not recipes:
             terminal.print_info("No recipes available to view.")
             return
 
         return questionary.autocomplete(
             "Select the recipe you want to view:",
-            choices=[recipe.name for recipe in self._repository.get_all()],
+            choices=[recipe.name for recipe in recipes],
             ignore_case=True,
             validate=lambda text: text
-            in [
-                recipe.name for recipe in self._repository.get_all()
-            ]  # Only existing names are valid
+            in [recipe.name for recipe in recipes]  # Only existing names are valid
             or "Please select a valid recipe name from the list.",
         ).ask()

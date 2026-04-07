@@ -1,3 +1,4 @@
+from contextlib import contextmanager
 from sqlalchemy import Engine
 from sqlalchemy.orm import sessionmaker, Session
 from typing import Any, Generator
@@ -79,9 +80,15 @@ class DatabaseEngine:
         finally:
             db.close()
 
+    @contextmanager
     def get_db(self) -> Generator[Session, None, None]:
         """
-        Provides a database session for performing operations. This method is a generator that yields a session and ensures it is properly closed after use.
+        Provides a database session for performing operations.
+        This method is a generator that yields a session and ensures
+        it is properly closed after use.
+
+        By decorating this method with @contextmanager, it can be used in a
+        with statement to automatically manage the session's lifecycle.
 
         :return: A generator yielding a SQLAlchemy session.
         :rtype: Generator[Session, None, None]

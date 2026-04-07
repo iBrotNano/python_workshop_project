@@ -1,14 +1,11 @@
 import logging
 import questionary
 
-from meal_plan.repository import Repository
-from recipes.repository import Repository as RecipesRepository
 from common.terminal import terminal
 from rich.table import Table
 from meal_plan.meal_planner import MealPlanner
 from meal_plan.meal_plan import MealPlan
-from persistence.database_engine_factory import database_engine
-from persons.person_repository import PersonRepository as PersonsRepository
+from persistence.unit_of_work import UnitOfWork
 
 log = logging.getLogger(__name__)
 
@@ -25,15 +22,8 @@ class CommandLineHandler:
 
         :param self: This instance of the CommandLineHandler class.
         """
-
-        self._repository = Repository(next(database_engine.get_db()))
-        self._meal_plan = self._repository.get() or MealPlan()
-        self._recipe_repository = RecipesRepository(next(database_engine.get_db()))
-        self._persons_repository = PersonsRepository(next(database_engine.get_db()))
-
-        self._meal_planner = MealPlanner(
-            self._meal_plan, self._recipe_repository, self._persons_repository
-        )
+        with UnitOfWork() as uow:
+            self._meal_plan = uow.meal_plans.get() or MealPlan()
 
     def show(self):
         """
@@ -116,7 +106,15 @@ class CommandLineHandler:
 
         :param self: This instance of the CommandLineHandler class.
         """
+        with UnitOfWork() as uow:
+            meal_planner = MealPlanner(
+                self._meal_plan,
+                uow.recipes,
+                uow.persons,
+            )
 
-        self._meal_planner.generate()
-        self._repository.create(self._meal_plan)
+            meal_planner.generate()
+            uow.meal_plans.create(self._meal_plan)
+            uow.commit()
+
         terminal.print_info("A new meal plan has been generated and saved.")

@@ -4,10 +4,8 @@ import questionary
 from persons.person import Gender, Person
 from rich.table import Table
 from common.terminal import terminal
-from persons.person_repository import PersonRepository
 from typing import Any
-from persistence.database_engine_factory import database_engine
-from persons.activity_level_repository import ActivityLevelRepository
+from persistence.unit_of_work import UnitOfWork
 
 log = logging.getLogger(__name__)
 
@@ -26,13 +24,8 @@ class CommandLineHandler:
 
         :param self: This instance of the CommandLineHandler class.
         """
-        self._repository = PersonRepository(next(database_engine.get_db()))
-
-        self._activity_level_repository = ActivityLevelRepository(
-            next(database_engine.get_db())
-        )
-
-        self._activity_levels = self._activity_level_repository.get_all()
+        with UnitOfWork() as uow:
+            self._activity_levels = uow.activity_levels.get_all()
 
     def show(self):
         """
@@ -163,7 +156,12 @@ class CommandLineHandler:
             :return: True if the person was successfully added, False if the operation was cancelled.
             :rtype: bool
             """
-            while not self._repository.try_add(person):
+            while True:
+                with UnitOfWork() as uow:
+                    if uow.persons.try_add(person):
+                        uow.commit()
+                        return True
+
                 log.warning(f"A person with the name '{person.name}' already exists.")
 
                 if questionary.confirm(
@@ -175,8 +173,6 @@ class CommandLineHandler:
                     ).ask()
                 else:
                     return False
-
-            return True
 
         answers = _ask_personal_information()
 
@@ -219,18 +215,19 @@ class CommandLineHandler:
             :return: The name of the person selected for deletion.
             :rtype: Any
             """
-            if not self._repository.get_all():
+            with UnitOfWork() as uow:
+                persons = uow.persons.get_all()
+
+            if not persons:
                 terminal.print_info("No persons available to delete.")
                 return
 
             return questionary.autocomplete(
                 "Select the person you want to delete:",
-                choices=[person.name for person in self._repository.get_all()],
+                choices=[person.name for person in persons],
                 ignore_case=True,
                 validate=lambda text: text
-                in [
-                    person.name for person in self._repository.get_all()
-                ]  # Only existing names are valid
+                in [person.name for person in persons]  # Only existing names are valid
                 or "Please select an existing person to delete.",
             ).ask()
 
@@ -240,7 +237,10 @@ class CommandLineHandler:
             if questionary.confirm(
                 f"Are you sure you want to delete the person '{person_name}'?"
             ).ask():
-                self._repository.delete(person_name)
+                with UnitOfWork() as uow:
+                    uow.persons.delete(person_name)
+                    uow.commit()
+
                 terminal.print_info(f"Person '{person_name}' has been deleted.")
 
     def _view_persons(self):
@@ -249,7 +249,10 @@ class CommandLineHandler:
 
         :param self: This instance of the CommandLineHandler class.
         """
-        if not self._repository.get_all():
+        with UnitOfWork() as uow:
+            persons = uow.persons.get_all()
+
+        if not persons:
             terminal.print_info("No persons available to display.")
             return
 
@@ -262,7 +265,7 @@ class CommandLineHandler:
         table.add_column("Activity Level")
         table.add_column("Needed Calories (kcal)", justify="right")
 
-        for person in self._repository.get_all():
+        for person in persons:
             table.add_row(
                 person.name,
                 person.gender.value,
