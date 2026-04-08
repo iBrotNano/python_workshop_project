@@ -1,13 +1,11 @@
 import logging
 import questionary
 
-from persons.activity_levels import ACTIVITY_LEVELS
 from persons.person import Gender, Person
 from rich.table import Table
 from common.terminal import terminal
-from persons.repository import Repository
-from config.configuration import configuration
 from typing import Any
+from persistence.unit_of_work import UnitOfWork
 
 log = logging.getLogger(__name__)
 
@@ -26,7 +24,8 @@ class CommandLineHandler:
 
         :param self: This instance of the CommandLineHandler class.
         """
-        self._repository = Repository(configuration)
+        with UnitOfWork() as uow:
+            self._activity_levels = uow.activity_levels.get_all()
 
     def show(self):
         """
@@ -90,7 +89,8 @@ class CommandLineHandler:
             return questionary.form(
                 name=questionary.text(
                     "Enter the person's name: ",
-                    validate=lambda text: text != "" or "Name cannot be empty.",
+                    validate=lambda text: 1 <= len(text) <= 100
+                    or "The name must be between 1 and 100 characters long.",
                 ),
                 gender=questionary.select(
                     "Enter a biological gender: ", choices=[g.value for g in Gender]
@@ -113,8 +113,8 @@ class CommandLineHandler:
                 activity_level=questionary.select(
                     "What is your activity level?",
                     choices=[
-                        questionary.Choice(v[0], value=k)
-                        for k, v in ACTIVITY_LEVELS.items()
+                        questionary.Choice(al.name, value=al.id)
+                        for al in self._activity_levels
                     ],
                 ),
             ).ask()
@@ -126,25 +126,42 @@ class CommandLineHandler:
             :return: A new Person instance with the provided information.
             :rtype: Person
             """
-            return Person(
-                answers["name"],
-                answers["gender"],
-                float(answers["weight"]),
-                float(answers["height"]),
-                int(answers["birth_year"]),
-                answers["activity_level"],
+            selected_activity_level_id = int(answers["activity_level"])
+
+            selected_activity_level = next(
+                (
+                    activity_level
+                    for activity_level in self._activity_levels
+                    if activity_level.id == selected_activity_level_id
+                ),
+                None,
             )
 
-        def _try_add_person_to_repository(person: Person):
+            return Person(
+                name=answers["name"],
+                gender=answers["gender"],
+                weight=float(answers["weight"]),
+                height=float(answers["height"]),
+                birth_year=int(answers["birth_year"]),
+                activity_level=selected_activity_level,
+            )
+
+        def _try_add_person_to_repository(person: Person) -> bool:
             """
             Tries to add the person to the repository. If a person with the same name
             already exists, prompts the user to enter a different name or cancel the operation.
 
             :param person: The Person instance to be added to the repository.
             :type person: Person
-
+            :return: True if the person was successfully added, False if the operation was cancelled.
+            :rtype: bool
             """
-            while not self._repository.try_add(person):
+            while True:
+                with UnitOfWork() as uow:
+                    if uow.persons.try_add(person):
+                        uow.commit()
+                        return True
+
                 log.warning(f"A person with the name '{person.name}' already exists.")
 
                 if questionary.confirm(
@@ -155,7 +172,7 @@ class CommandLineHandler:
                         validate=lambda text: text != "" or "Name cannot be empty.",
                     ).ask()
                 else:
-                    return
+                    return False
 
         answers = _ask_personal_information()
 
@@ -164,7 +181,9 @@ class CommandLineHandler:
             return
 
         person = _create_person()
-        _try_add_person_to_repository(person)
+
+        if not _try_add_person_to_repository(person):
+            return
 
         terminal.print_dict_as_table(
             {
@@ -173,7 +192,9 @@ class CommandLineHandler:
                 "Weight (kg)": f"{person.weight:.0f}",
                 "Height (cm)": f"{person.height:.0f}",
                 "Birth Year": f"{person.birth_year}",
-                "Activity Level": ACTIVITY_LEVELS[person.activity_level][0],
+                "Activity Level": (
+                    person.activity_level.name if person.activity_level else "None"
+                ),
                 "Needed Calories (kcal)": f"{person.calories_needed():.0f}",
             },
             column1_title="Attribute",
@@ -194,16 +215,19 @@ class CommandLineHandler:
             :return: The name of the person selected for deletion.
             :rtype: Any
             """
-            if not self._repository.data:
+            with UnitOfWork() as uow:
+                persons = uow.persons.get_all()
+
+            if not persons:
                 terminal.print_info("No persons available to delete.")
                 return
 
             return questionary.autocomplete(
                 "Select the person you want to delete:",
-                choices=list(self._repository.data.keys()),
+                choices=[person.name for person in persons],
                 ignore_case=True,
                 validate=lambda text: text
-                in self._repository.data.keys()  # Only exiting names are valid
+                in [person.name for person in persons]  # Only existing names are valid
                 or "Please select an existing person to delete.",
             ).ask()
 
@@ -213,7 +237,10 @@ class CommandLineHandler:
             if questionary.confirm(
                 f"Are you sure you want to delete the person '{person_name}'?"
             ).ask():
-                self._repository.delete(person_name)
+                with UnitOfWork() as uow:
+                    uow.persons.delete(person_name)
+                    uow.commit()
+
                 terminal.print_info(f"Person '{person_name}' has been deleted.")
 
     def _view_persons(self):
@@ -222,7 +249,10 @@ class CommandLineHandler:
 
         :param self: This instance of the CommandLineHandler class.
         """
-        if not self._repository.data:
+        with UnitOfWork() as uow:
+            persons = uow.persons.get_all()
+
+        if not persons:
             terminal.print_info("No persons available to display.")
             return
 
@@ -235,15 +265,15 @@ class CommandLineHandler:
         table.add_column("Activity Level")
         table.add_column("Needed Calories (kcal)", justify="right")
 
-        for key, value in self._repository.data.items():
+        for person in persons:
             table.add_row(
-                key,
-                value.gender.value,
-                str(value.age()),
-                f"{value.weight:.0f}",
-                f"{value.height:.0f}",
-                ACTIVITY_LEVELS[value.activity_level][0],
-                f"{value.calories_needed():.0f}",
+                person.name,
+                person.gender.value,
+                str(person.age()),
+                f"{person.weight:.0f}",
+                f"{person.height:.0f}",
+                person.activity_level.name if person.activity_level else "None",
+                f"{person.calories_needed():.0f}",
             )
 
         terminal.print(table)

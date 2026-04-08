@@ -3,8 +3,8 @@ import questionary
 
 from rich.table import Table
 from common.terminal import terminal
-from nutrition.repository import Repository
-from config.openfoodfacts_api_configurator import openfoodfacts_api_configurator
+from nutrition.repository import NutritionRepository
+from nutrition.openfoodfacts_api_factory import api_client
 
 log = logging.getLogger(__name__)
 
@@ -25,12 +25,13 @@ class CommandLineHandler:
 
         :raises RuntimeError: If the API client is not configured.
         """
-        if openfoodfacts_api_configurator.api_client is None:
+
+        if api_client is None:
             raise RuntimeError(
                 "API client is not configured. Please configure it before using the CommandLineHandler."
             )
 
-        self._repository = Repository(openfoodfacts_api_configurator.api_client)
+        self._repository = NutritionRepository(api_client)
 
     def show(self):
         """

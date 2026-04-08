@@ -1,0 +1,175 @@
+from sqlalchemy.orm import Session
+from sqlalchemy.exc import IntegrityError
+from persons.activity_level import ActivityLevel
+from persons.gender import Gender
+from persons.person import Person
+from persons.person_entity import PersonEntity
+from persistence.model_registry import load_model_definitions
+
+
+class PersonRepository:
+    """
+    Repository class for managing database access related to persons. This class provides methods to add, retrieve, update, and delete person records in the database.
+    """
+
+    def __init__(self, session: Session):
+        """
+        Initializes the Repository with the provided SQLAlchemy session.
+
+        :param self: This instance of the Repository class.
+        :param session: The SQLAlchemy session instance.
+        :type session: Session
+        """
+
+        load_model_definitions()
+        self._session = session
+
+    def _entity_to_model(self, entity: PersonEntity) -> Person:
+        """
+        Converts a PersonEntity instance to a Person model instance.
+
+        :param self: This instance of the Repository class.
+        :param entity: The PersonEntity instance to convert.
+        :type entity: PersonEntity
+        :return: A Person model instance representing the same data as the provided entity.
+        :rtype: Person
+        """
+        model_data = {
+            key: value
+            for key, value in entity.__dict__.items()
+            if key in Person.__dataclass_fields__
+        }
+
+        if entity.activity_level is not None:
+            al_data = {
+                key: value
+                for key, value in entity.activity_level.__dict__.items()
+                if key in ActivityLevel.__dataclass_fields__ and key != "persons"
+            }
+
+            model_data["activity_level"] = ActivityLevel(**al_data)
+
+        return Person(**model_data)
+
+    def _model_to_entity(self, model: Person) -> PersonEntity:
+        """
+        Converts a Person model instance to a PersonEntity instance.
+
+        :param self: This instance of the Repository class.
+        :param model: The model to convert.
+        :type model: Person
+        :return: A PersonEntity entity with the data of the model.
+        :rtype: PersonEntity
+        """
+        entity_data = self._get_entity_data(model)
+        return PersonEntity(**entity_data)
+
+    def _get_entity_data(self, model: Person) -> dict:
+        """
+        Normalizes a Person model instance to database column values.
+
+        :param self: This instance of the Repository class.
+        :param model: The model to normalize.
+        :type model: Person
+        :return: The normalized entity data.
+        :rtype: dict
+        """
+        entity_data = {
+            key: value
+            for key, value in model.__dict__.items()
+            if key in Person.__dataclass_fields__ and key != "activity_level"
+        }
+
+        entity_data["gender"] = (
+            model.gender.value if isinstance(model.gender, Gender) else model.gender
+        )
+
+        # Let the database assign the primary key for new entities.
+        if entity_data.get("id") in (None, 0):
+            entity_data.pop("id", None)
+
+        entity_data["activity_level_id"] = (
+            model.activity_level.id if model.activity_level is not None else None
+        )
+
+        return entity_data
+
+    def try_add(self, person: Person) -> bool:
+        """
+        Tries to save a new person.
+
+        :param self: This instance of the Repository class.
+        :param person: The person to store.
+        :type person: Person
+        :return: True if storing succeeded, otherwise False.
+        :rtype: bool
+        """
+        entity = self._model_to_entity(person)
+        self._session.add(entity)
+
+        try:
+            self._session.flush()
+        except IntegrityError as error:
+            self._session.rollback()
+
+            if "UNIQUE constraint failed: persons.name" in str(error.orig):
+                return False
+
+            raise
+
+        return True
+
+    def get_all(self) -> list[Person]:
+        """
+        Gets all persons from the repository.
+
+        :param self: This instance of the Repository class.
+        :return: A list of all persons in the repository.
+        :rtype: list[Person]
+        """
+        return [
+            self._entity_to_model(entity)
+            for entity in self._session.query(PersonEntity).all()
+        ]
+
+    def update(self, person_id: int, person: Person) -> Person:
+        """
+        Updates an existing person in the repository.
+
+        :param self: This instance of the Repository class.
+        :param person_id: The ID of the person to update.
+        :type person_id: int
+        :param person: The updated person data.
+        :type person: Person
+        :return: The updated person.
+        :rtype: Person
+        """
+
+        entity = self._session.get(PersonEntity, person_id)
+
+        if not entity:
+            raise ValueError(f"Person with id {person_id} not found")
+
+        for key, value in self._get_entity_data(person).items():
+            setattr(entity, key, value)
+
+        self._session.flush()
+        self._session.refresh(entity)
+        return self._entity_to_model(entity)
+
+    def delete(self, name: str):
+        """
+        Deletes a person from the repository by name.
+
+        :param self: This instance of the Repository class.
+        :param name: The name of the person to delete.
+        :type name: str
+        :raises ValueError: If the person with the specified name is not found.
+        """
+
+        entity = self._session.query(PersonEntity).filter_by(name=name).first()
+
+        if not entity:
+            raise ValueError(f"Person with name {name} not found")
+
+        self._session.delete(entity)

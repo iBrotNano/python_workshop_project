@@ -1,3 +1,4 @@
+from persons.person import Person
 from recipes.recipe import Recipe
 from dataclasses import dataclass
 
@@ -12,5 +13,7 @@ class Meal:
     """
 
     recipe: Recipe | None = None
+    persons: list[Person] | None = None
+    nutrition: dict[str, float] | None = None
 
     # TODO: Calculate nutrition info based on the recipe and the persons in the household.

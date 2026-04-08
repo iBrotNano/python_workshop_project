@@ -22,7 +22,7 @@ class Configuration:
     )
 
     openfoodfacts_api_country: openfoodfacts.Country = openfoodfacts.Country.de
-    openfoodfacts_api_timeout: int = 60  # seconds
+    openfoodfacts_api_timeout: int = 15  # seconds
 
     # Logging
     logging_folder: str = "logs"
@@ -33,11 +33,15 @@ class Configuration:
     logging_basic_level: int = logging.INFO
     logging_basic_format: str = "%(asctime)s | %(levelname)s | %(message)s"
 
-    # Recipe storage
-    recipes_storage_path: Path = Path("data/recipes.yaml")
+    sqlite_data_folder: str = "data"
+    sqlite_url: str = f"sqlite:///.//{sqlite_data_folder}/data.db"
+    sqlite_echo: bool = False
+    sqlite_auto_flush: bool = False
 
-    # Person storage
-    persons_storage_path: Path = Path("data/persons.yaml")
+    def __init__(self):
+        # Ensure the logging folder exists.
+        Path(self.logging_folder).mkdir(parents=True, exist_ok=True)
+        Path(self.sqlite_data_folder).mkdir(parents=True, exist_ok=True)
 
 
 # Shared instances used across the application.

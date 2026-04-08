@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from datetime import date
+from persons.activity_level import ActivityLevel
 from persons.gender import Gender
-from persons.activity_levels import ACTIVITY_LEVELS
 
 
 @dataclass
@@ -9,20 +9,29 @@ class Person:
     """
     Data class representing a person with attributes relevant for calorie calculation.
 
+    :param id: The unique identifier of the person (optional, default is 0).
+    :type id: int
     :param name: The name of the person.
+    :type name: str
     :param gender: The biological gender of the person.
+    :type gender: Gender
     :param weight: The weight of the person in kilograms.
+    :type weight: float
     :param height: The height of the person in centimeters.
+    :type height: float
     :param birth_year: The birth year of the person.
-    :param activity_level: The activity level of the person, represented as an integer key in the ACTIVITY_LEVELS mapping.
+    :type birth_year: int
+    :param activity_level: The activity level of the person.
+    :type activity_level: ActivityLevel | None
     """
 
+    id: int = 0
     name: str = ""
     gender: Gender = Gender.MALE
     weight: float = 0.0
     height: float = 0.0
     birth_year: int = 0
-    activity_level: int = 0
+    activity_level: ActivityLevel | None = None
 
     def __post_init__(self):
         """
@@ -49,9 +58,12 @@ class Person:
             10 * self.weight + 6.25 * self.height - 5 * self.age()
         )
 
+        if self.activity_level is None:
+            raise ValueError("Activity level is required to calculate calories needed.")
+
         return (
             bmr_without_gender_factor + (5 if self.gender == Gender.MALE else -161)
-        ) * ACTIVITY_LEVELS[self.activity_level][1]
+        ) * self.activity_level.multiplier
 
     def age(self) -> int:
         """
