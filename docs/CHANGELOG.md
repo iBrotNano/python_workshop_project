@@ -15,8 +15,14 @@
 
 ### Updated Dependencies
 
-- rich==14.3.3
-- setuptools==82.0.1
+- rich --> 14.3.3
+- setuptools --> 82.0.1
+- ca-certificates --> pkgs/main/win-64::ca-certificates-2026.3.19-haa95532_0
+- libexpat --> 2.7.5-hd7fb8db_0 
+- pip --> 26.0.1-pyh0d26453_1 
+- sqlite --> 3.51.2-hee5a0db_0 
+- openfoodfacts --> 5.0.1
+- SQLAlchemy --> 2.0.49
 
 ## 0.1.0
 
