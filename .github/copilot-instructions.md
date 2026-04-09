@@ -13,6 +13,7 @@
 ## Project Structure
 - Source code lives in the `src/` directory.
 - Tests live in the `tests/` directory.
+- Every class has its own file named after the class in snake_case. For example, a class named `MyClass` would be in a file named `my_class.py`.
 
 ## Testing
 - Use `pytest` as the test framework.
