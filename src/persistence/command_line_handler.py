@@ -3,13 +3,11 @@ import questionary
 
 from rich.progress import (
     BarColumn,
-    DownloadColumn,
+    MofNCompleteColumn,
     Progress,
     TaskID,
     TextColumn,
     TimeElapsedColumn,
-    TimeRemainingColumn,
-    TransferSpeedColumn,
 )
 
 from common.terminal import terminal
@@ -140,10 +138,8 @@ class CommandLineHandler:
         return Progress(
             TextColumn("[progress.description]{task.description}"),
             BarColumn(bar_width=None, finished_style="green"),
-            DownloadColumn(),
-            TransferSpeedColumn(),
+            MofNCompleteColumn(),
             TimeElapsedColumn(),
-            TimeRemainingColumn(),
             console=terminal.console,
             transient=transient,
         )

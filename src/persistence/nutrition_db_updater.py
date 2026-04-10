@@ -1,7 +1,15 @@
+import os
+
+from dataclasses import fields
+from sqlalchemy import text
 from config.configuration import Configuration
-from common.progress_callback import ProgressCallback
+from common.progress_callback import ProgressCallback, emit_progress
 from persistence.database_engine import DatabaseEngine
 from persistence.openfoodfacts_update_pipeline import OpenFoodFactsUpdatePipeline
+from nutrition.nutrition import Nutrition
+from nutrition.nutrition_repository import NutritionRepository
+from sqlite_rag import SQLiteRag
+from persistence.modell_downloader import ModellDownloader
 
 
 class NutritionDbUpdater:
@@ -18,8 +26,11 @@ class NutritionDbUpdater:
         :param database_engine: The database engine used for importing records.
         :type database_engine: DatabaseEngine
         """
+        self._configuration = configuration
+        self._database_engine = database_engine
+
         self._openfoodfacts_pipeline = OpenFoodFactsUpdatePipeline(
-            configuration, database_engine
+            self._configuration, database_engine
         )
 
         # TODO: Implement SwissNutritionDbUpdatePipeline as a second source for nutrition data and use it in this updater.
@@ -50,4 +61,165 @@ class NutritionDbUpdater:
         # SwissNutritionDbXlsxToCsvConverter(
         #     self._swiss_nutrition_xlsx_path, self._swiss_nutrition_csv_path
         # ).convert(progress_callback)
+        # TODO: Uncomment the pipeline run.
         self._openfoodfacts_pipeline.run(progress_callback)
+        self._create_embeddings(progress_callback)
+
+    def _create_embeddings(self, progress_callback: ProgressCallback | None = None):
+        """
+        Creates embeddings for the nutrition data and stores them in the database.
+
+        :param progress_callback: Optional callback receiving neutral progress updates.
+        :type progress_callback: ProgressCallback | None
+        """
+        os.environ["OMP_NUM_THREADS"] = f"{self._configuration.embedding_threads}"
+        os.environ["LLAMA_THREADS"] = f"{self._configuration.embedding_threads}"
+
+        ModellDownloader(self._configuration).download_model_if_not_exists(
+            self._configuration.used_embedding_model["repo"],
+            self._configuration.used_embedding_model["filename"],
+        )
+
+        batch_size = self._configuration.embedding_batch_size
+        processed_records = 0
+
+        try:
+            rag = self._create_clean_rag()
+
+            with self._database_engine.get_db() as session:
+                repository = NutritionRepository(session)
+                total = repository.count()
+
+                emit_progress(
+                    progress_callback,
+                    phase="create_embeddings",
+                    description=f"Creating embeddings",
+                    completed=processed_records,
+                    total=total,
+                )
+
+                for batch in repository.get_batches(batch_size):
+                    for nutrition in batch:
+                        rag.add_text(
+                            self._build_chunk(nutrition),
+                            uri=self._build_document_uri(nutrition),
+                            metadata=self._build_chunk_metadata(nutrition),
+                        )
+
+                    processed_records += len(batch)
+
+                    emit_progress(
+                        progress_callback,
+                        phase="create_embeddings",
+                        description=f"Creating embeddings",
+                        completed=processed_records,
+                        total=total,
+                    )
+        finally:
+            rag.close()
+
+    def _create_clean_rag(self) -> SQLiteRag:
+        """
+        Drops all sqlite-rag tables and recreates the schema.
+
+        :return: A new sqlite-rag instance with a recreated schema.
+        :rtype: SQLiteRag
+        """
+
+        with self._database_engine.engine.begin() as connection:
+            connection.execute(text("DROP TABLE IF EXISTS _sqliteai_vector"))
+            connection.execute(text("DROP TABLE IF EXISTS chunks"))
+            connection.execute(text("DROP TABLE IF EXISTS chunks_fts"))
+            connection.execute(text("DROP TABLE IF EXISTS chunks_fts_config"))
+            connection.execute(text("DROP TABLE IF EXISTS chunks_fts_data"))
+            connection.execute(text("DROP TABLE IF EXISTS chunks_fts_docsize"))
+            connection.execute(text("DROP TABLE IF EXISTS chunks_fts_idx"))
+            connection.execute(text("DROP TABLE IF EXISTS documents"))
+            connection.execute(text("DROP TABLE IF EXISTS sentences"))
+            connection.execute(text("DROP TABLE IF EXISTS settings"))
+
+        return self._create_rag()
+
+    def _create_rag(self) -> SQLiteRag:
+        """
+        Creates a sqlite-rag instance with the configured embedding settings.
+
+        :return: An initialized sqlite-rag instance.
+        :rtype: SQLiteRag
+        """
+        return SQLiteRag.create(
+            self._configuration.sqlite_file_path,
+            {
+                "model_path": self._configuration.used_embedding_model_path,
+                "chunk_size": self._configuration.embedding_chunk_size,
+                "chunk_overlap": self._configuration.embedding_chunk_overlap,
+            },
+        )
+
+    def _build_chunk(self, nutrition: Nutrition) -> str:
+        """
+        Builds an embedding chunk from a nutrition model.
+
+        :param self: This instance of the NutritionDbUpdater class.
+        :param nutrition: The nutrition model to convert into a chunk.
+        :type nutrition: Nutrition
+        :return: The formatted chunk text.
+        :rtype: str
+        """
+        excluded_fields = {"id"}
+        lines: list[str] = []
+
+        for field_definition in fields(Nutrition):
+            field_name = field_definition.name
+
+            if field_name in excluded_fields:
+                continue
+
+            value = getattr(nutrition, field_name)
+
+            if value is None:
+                continue
+
+            if isinstance(value, list):
+                if not value:
+                    continue
+
+                lines.append(f"{field_name}: {'; '.join(str(item) for item in value)}")
+                continue
+
+            lines.append(f"{field_name}: {value}")
+
+        return "\n".join(lines)
+
+    def _build_document_uri(self, nutrition: Nutrition) -> str:
+        """
+        Builds a stable document URI for a nutrition record.
+
+        :param nutrition: The nutrition model the document belongs to.
+        :type nutrition: Nutrition
+        :return: A stable URI that identifies the nutrition document in sqlite-rag.
+        :rtype: str
+        """
+        return f"nutrition:{nutrition.id}"
+
+    def _build_chunk_metadata(self, nutrition: Nutrition) -> dict[str, int | str]:
+        """
+        Builds sqlite-rag metadata for a nutrition record.
+
+        :param nutrition: The nutrition model the metadata belongs to.
+        :type nutrition: Nutrition
+        :return: Metadata used to resolve the source record after retrieval.
+        :rtype: dict[str, int | str]
+        """
+        metadata: dict[str, int | str] = {
+            "entity_type": "nutrition",
+            "nutrition_id": nutrition.id,
+        }
+
+        if nutrition.code:
+            metadata["external_code"] = nutrition.code
+
+        if nutrition.url:
+            metadata["source_url"] = nutrition.url
+
+        return metadata

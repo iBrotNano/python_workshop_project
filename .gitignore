@@ -218,3 +218,6 @@ export
 
 # Temporary files
 temp
+
+# Models
+models

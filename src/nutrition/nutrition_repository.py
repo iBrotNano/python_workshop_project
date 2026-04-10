@@ -1,3 +1,4 @@
+from collections.abc import Generator
 from sqlalchemy.orm import Session
 from nutrition.nutrition import Nutrition
 from nutrition.nutrition_entity import NutritionEntity
@@ -64,7 +65,7 @@ class NutritionRepository:
 
         :param self: This instance of the Repository class.
         :param nutrition: The nutrition data to store.
-        :type person: Person
+        :type nutrition: Nutrition
         :return: True if storing succeeded, otherwise False.
         :rtype: bool
         """
@@ -78,3 +79,43 @@ class NutritionRepository:
             raise
 
         return True
+
+    def get_batches(
+        self, batch_size: int = 500
+    ) -> Generator[list[Nutrition], None, None]:
+        """
+        Gets nutrition records in stable batches.
+
+        :param self: This instance of the Repository class.
+        :param batch_size: The maximum number of records per batch.
+        :type batch_size: int
+        :return: A generator yielding batches of nutrition records.
+        :rtype: Generator[list[Nutrition], None, None]
+        """
+        offset = 0
+
+        while True:
+            entities = (
+                self._session.query(NutritionEntity)
+                .order_by(NutritionEntity.id)
+                .offset(offset)
+                .limit(batch_size)
+                .all()
+            )
+
+            if not entities:
+                break
+
+            yield [self._entity_to_model(entity) for entity in entities]
+            offset += batch_size
+
+    def count(self) -> int:
+        """
+        Counts the total number of nutrition records in the database.
+
+        :param self: This instance of the Repository class.
+        :return: The total count of nutrition records.
+        :rtype: int
+        """
+
+        return self._session.query(NutritionEntity).count()
