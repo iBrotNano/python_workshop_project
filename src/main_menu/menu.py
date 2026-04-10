@@ -10,6 +10,7 @@ class Menu:
     MANAGE_RECIPES_COMMAND = "MANAGE_RECIPES"
     MANAGE_MEAL_PLAN_COMMAND = "MANAGE_MEAL_PLAN"
     MANAGE_PERSONS_COMMAND = "MANAGE_PERSONS"
+    UPDATE_DATABASE_COMMAND = "UPDATE_DATABASE"
 
     def show(self):
         """
@@ -41,6 +42,9 @@ class Menu:
             questionary.Choice("Manage recipes", value=self.MANAGE_RECIPES_COMMAND),
             questionary.Choice("Manage meal plan", value=self.MANAGE_MEAL_PLAN_COMMAND),
             questionary.Choice("Manage persons", value=self.MANAGE_PERSONS_COMMAND),
+            questionary.Choice(
+                "Update the database", value=self.UPDATE_DATABASE_COMMAND
+            ),
             questionary.Choice(
                 "Exit the application",
                 value=self.EXIT_COMMAND,

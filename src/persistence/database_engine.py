@@ -25,6 +25,16 @@ class DatabaseEngine:
         self.session: sessionmaker = session
         self.Base: Any = base
 
+    @property
+    def engine(self) -> Engine:
+        """
+        Gets the SQLAlchemy engine instance.
+
+        :return: The SQLAlchemy engine.
+        :rtype: Engine
+        """
+        return self._engine
+
     def initialize_schema(self):
         """
         Creates all registered SQLAlchemy tables.

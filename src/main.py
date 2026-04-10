@@ -5,6 +5,7 @@ import nutrition.command_line_handler as nutrition_cli
 import recipes.command_line_handler as recipe_cli
 import meal_plan.command_line_handler as meal_plan_cli
 import persons.command_line_handler as persons_cli
+import persistence.command_line_handler as persistence_cli
 
 from common.terminal import terminal
 from config.configurator import configurator
@@ -34,6 +35,9 @@ try:
 
             if command == main_menu.MANAGE_PERSONS_COMMAND:
                 persons_cli.CommandLineHandler().show()
+
+            if command == main_menu.UPDATE_DATABASE_COMMAND:
+                persistence_cli.CommandLineHandler().show()
 
             if command == main_menu.EXIT_COMMAND:
                 terminal.print("Goodbye! 👋")

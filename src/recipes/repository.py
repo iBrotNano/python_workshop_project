@@ -5,6 +5,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 from recipes.recipe_entity import RecipeEntity
 from recipes.recipe_type import RecipeType
+from persistence.model_registry import load_model_definitions
 
 
 class RecipeRepository:
@@ -19,6 +20,7 @@ class RecipeRepository:
         :param session: The SQLAlchemy session instance.
         :type session: Session
         """
+        load_model_definitions()
         self._session = session
 
     def _entity_to_model(self, entity: RecipeEntity) -> Recipe:

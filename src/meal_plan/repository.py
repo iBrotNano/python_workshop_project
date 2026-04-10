@@ -7,6 +7,7 @@ from recipes.recipe_entity import RecipeEntity
 from recipes.recipe import Recipe
 from persons.person_entity import PersonEntity
 from persons.person import Person
+from persistence.model_registry import load_model_definitions
 
 
 class MealPlanRepository:
@@ -19,9 +20,18 @@ class MealPlanRepository:
         :param session: The SQLAlchemy session instance.
         :type session: Session
         """
+        load_model_definitions()
         self._session = session
 
     def _entity_to_model(self, entity: MealPlanEntity) -> MealPlan:
+        """
+        Converts a MealPlanEntity to a MealPlan model.
+
+        :param entity: The MealPlanEntity instance to convert.
+        :type entity: MealPlanEntity
+        :return: The corresponding MealPlan model.
+        :rtype: MealPlan
+        """
         meal_plan = MealPlan()
 
         for meal_entity in entity.meals:
@@ -56,6 +66,15 @@ class MealPlanRepository:
         return meal_plan
 
     def _model_to_entity(self, model: MealPlan) -> MealPlanEntity:
+        """
+        Converts a MealPlan model to a MealPlanEntity.
+
+        :param model: The MealPlan model instance to convert.
+        :type model: MealPlan
+        :return: The corresponding MealPlanEntity.
+        :rtype: MealPlanEntity
+        """
+
         flattend_plan = [meal for day in model.plan for meal in day]
         meal_entities = []
 

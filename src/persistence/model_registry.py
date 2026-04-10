@@ -12,4 +12,5 @@ def load_model_definitions():
     import_module("meal_plan.meal_entity")
     import_module("persons.activity_level_entity")
     import_module("persons.person_entity")
+    import_module("nutrition.nutrition_entity")
     import_module("recipes.recipe_entity")
