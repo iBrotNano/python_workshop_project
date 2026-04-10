@@ -215,3 +215,6 @@ export
 
 # Local VS Code workspace variants (opt-in, machine specific)
 *.local.code-workspace
+
+# Temporary files
+temp
