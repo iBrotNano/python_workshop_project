@@ -159,7 +159,7 @@ class OpenFoodFactsUpdatePipeline(UpdatePipelineBase):
         total_imported = 0
         total_skipped = 0
 
-        for chunk_number, chunk in enumerate(
+        for _, chunk in enumerate(
             pandas.read_csv(
                 csv_path,
                 chunksize=chunksize,
