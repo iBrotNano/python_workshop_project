@@ -1,10 +1,12 @@
 import logging
+from typing import Any
 import questionary
 
 from rich.table import Table
 from common.terminal import terminal
-from nutrition.repository import NutritionRepository
-from nutrition.openfoodfacts_api_factory import api_client
+from config.configuration import configuration
+from nutrition.prompt import Prompt
+from rich.markdown import Markdown
 
 log = logging.getLogger(__name__)
 
@@ -12,26 +14,10 @@ log = logging.getLogger(__name__)
 class CommandLineHandler:
     """Handles the command line interface for nutrition-related features."""
 
-    NUTRITION_SEARCH_TERM_COMMAND = "NUTRITION_SEARCH_TERM"
+    QUESTION_COMMAND = "QUESTION"
     CANCEL_COMMAND = "CANCEL"
-    PREVIOUS_COMMAND = "PREVIOUS"
-    NEXT_COMMAND = "NEXT"
-
-    def __init__(self):
-        """
-        Initializes the CommandLineHandler and checks if the API client is configured.
-
-        :param self: This instance of the CommandLineHandler class.
-
-        :raises RuntimeError: If the API client is not configured.
-        """
-
-        if api_client is None:
-            raise RuntimeError(
-                "API client is not configured. Please configure it before using the CommandLineHandler."
-            )
-
-        self._repository = NutritionRepository(api_client)
+    # PREVIOUS_COMMAND = "PREVIOUS"
+    # NEXT_COMMAND = "NEXT"
 
     def show(self):
         """
@@ -40,13 +26,13 @@ class CommandLineHandler:
         :param self: This instance of the CommandLineHandler class.
         """
 
-        command, search_term = self._get_nutrition_search_term()
+        command, question = self._get_question()
 
         if command == self.CANCEL_COMMAND:
             return  # User chose to cancel; return to main menu.
 
-        if command == self.NUTRITION_SEARCH_TERM_COMMAND and search_term is not None:
-            result = self._execute_search(search_term)
+        if command == self.QUESTION_COMMAND and question is not None:
+            result = self._prompt(question)
 
             if result is None or result == self.CANCEL_COMMAND:
                 return  # User chose to cancel during search; return to main menu.
@@ -54,9 +40,9 @@ class CommandLineHandler:
                 self._print_nutrition_info(result)
                 return result
 
-    def _get_nutrition_search_term(self) -> tuple[str, str | None]:
+    def _get_question(self) -> tuple[str, str | None]:
         """
-        Prompts the user to enter a search term for nutritional information.
+        Prompts the user to enter a question about nutritional information.
 
         :param self: This instance of the CommandLineHandler class.
 
@@ -64,26 +50,20 @@ class CommandLineHandler:
         :rtype: tuple[str, str | None]
         """
 
-        search_term = questionary.text(
-            "What food product do you want to search for?"
-        ).ask()
+        question = questionary.text("How can I help you?").ask()
 
-        if (
-            search_term is None
-            or type(search_term) is not str
-            or search_term.strip() == ""
-        ):
-            terminal.print_info("No search term entered.")
+        if question is None or type(question) is not str or question.strip() == "":
+            terminal.print_info("Nothing asked.")
             return (self.CANCEL_COMMAND, None)
 
-        return (self.NUTRITION_SEARCH_TERM_COMMAND, search_term.strip())
+        return (self.QUESTION_COMMAND, question.strip())
 
-    def _execute_search(self, search_term: str, page: int = 1) -> dict | str | None:
+    def _prompt(self, query: str, page: int = 1) -> dict | str | None:
         """
         Executes the nutrition search using the provided search term and handles pagination.
 
         :param self: This instance of the CommandLineHandler class.
-        :param search_term: The term to search for in the nutrition repository.
+        :param query: The term to search for in the nutrition repository.
         :type search_term: str
         :param page: The page number to retrieve.
         :type page: int
@@ -91,41 +71,59 @@ class CommandLineHandler:
         :rtype: dict | str | None
         """
 
-        with terminal.console.status("Searching...", spinner="earth"):
-            # Don't change the page_size to more than 7. The index is used for shortcut
-            # keys and more than 9 items would break it.
-            search_result = self._repository.search_products(
-                search_term, page=page, page_size=7
-            )
+        search_result = None
+        command = None
+        messages: list[dict[str, Any]] | None = None
 
-        product_count = search_result["count"]
+        while search_result is None and command != self.CANCEL_COMMAND:
+            prompt = Prompt(configuration)
 
-        if product_count == 0:
-            terminal.print_info(
-                f"No products found for search term: '[yellow]{search_term}[/yellow]'"
-            )
-        else:
-            terminal.print_rule_separated(
-                f"Showing {search_result['skip'] + 1} to {search_result['skip'] + search_result['page_count']} of {product_count} products for search term: '{search_term}'"
-            )
+            with terminal.console.status("Let me think...", spinner="monkey"):
+                response, search_result, messages = prompt.execute(query, 9, messages)
 
-            choices = []
-            self._add_navigation_choices_to_menu(choices, search_result, product_count)
-            self._add_item_choices_to_menu(choices, search_result)
+            terminal.print(Markdown(response))
+            command, next_query = self._get_question()
 
-            selection = questionary.select(
-                "Select a product to view details:",
-                choices=choices,
-                use_shortcuts=True,
-            ).ask()
+            if command == self.CANCEL_COMMAND:
+                break
 
-            if selection == self.PREVIOUS_COMMAND:
-                return self._execute_search(search_term, page=page - 1)
+            if next_query is not None:
+                query = next_query
+                messages = messages
+                # Don't change the page_size to more than 7. The index is used for shortcut
+                # keys and more than 9 items would break it.
+                # search_result = self._repository.search_products(
+                #     search_term, page=page, page_size=7
+                # )
 
-            if selection == self.NEXT_COMMAND:
-                return self._execute_search(search_term, page=page + 1)
+        # TODO: Implement the selection part
+        # product_count = search_result["count"]
+        # product_count = len(search_result)
 
-            return selection  # Return the selected product or cancel command
+        # if product_count == 0:
+        #     terminal.print_info(f"No products found!")
+        # else:
+        #     # terminal.print_rule_separated(
+        #     #     f"Showing {search_result['skip'] + 1} to {search_result['skip'] + search_result['page_count']} of {product_count} products for search term: '{search_term}'"
+        #     # )
+
+        #     choices = []
+        #     self._add_navigation_choices_to_menu(choices, search_result, product_count)
+        # self._add_item_choices_to_menu(choices, search_result)
+
+        # selection = questionary.select(
+        #     "Select a product to view details:",
+        #     choices=choices,
+        #     use_shortcuts=True,
+        # ).ask()
+
+        # if selection == self.PREVIOUS_COMMAND:
+        #     return self._execute_search(search_term, page=page - 1)
+
+        # if selection == self.NEXT_COMMAND:
+        #     return self._execute_search(search_term, page=page + 1)
+
+        # return selection  # Return the selected product or cancel command
 
     def _add_navigation_choices_to_menu(self, choices, products, product_count):
         """
@@ -136,8 +134,8 @@ class CommandLineHandler:
         :param product_count: The total number of products.
         """
 
-        has_next_page = products["skip"] + products["page_count"] < product_count
-        has_previous_page = products["skip"] > 0
+        # has_next_page = products["skip"] + products["page_count"] < product_count
+        # has_previous_page = products["skip"] > 0
 
         choices += [
             questionary.Choice(
@@ -154,36 +152,36 @@ class CommandLineHandler:
                 value=self.CANCEL_COMMAND,
                 shortcut_key=str(0),  # Assign shortcut key '0' to Cancel
             ),
-            questionary.Choice(
-                title=[
-                    (
-                        f"{'fg:ansiblue' if has_previous_page else 'fg:ansibrightblack'} ",
-                        f"{1}) ",  # Shortcut key 1
-                    ),
-                    (
-                        f"bold {'fg:ansiblue' if has_previous_page else 'fg:ansibrightblack'} ",
-                        "Previous",
-                    ),
-                ],
-                value=self.PREVIOUS_COMMAND,
-                shortcut_key=str(1),  # Assign shortcut key '1' to Previous
-                disabled=None if has_previous_page else "No previous page",
-            ),
-            questionary.Choice(
-                title=[
-                    (
-                        f"{'fg:ansigreen' if has_next_page else 'fg:ansibrightblack'} ",
-                        f"{2}) ",  # Shortcut key 2
-                    ),
-                    (
-                        f"bold {'fg:ansigreen' if has_next_page else 'fg:ansibrightblack'} ",
-                        "Next",
-                    ),
-                ],
-                value=self.NEXT_COMMAND,
-                shortcut_key=str(2),  # Assign shortcut key '2' to Next
-                disabled=None if has_next_page else "No next page",
-            ),
+            # questionary.Choice(
+            #     title=[
+            #         (
+            #             f"{'fg:ansiblue' if has_previous_page else 'fg:ansibrightblack'} ",
+            #             f"{1}) ",  # Shortcut key 1
+            #         ),
+            #         (
+            #             f"bold {'fg:ansiblue' if has_previous_page else 'fg:ansibrightblack'} ",
+            #             "Previous",
+            #         ),
+            #     ],
+            #     value=self.PREVIOUS_COMMAND,
+            #     shortcut_key=str(1),  # Assign shortcut key '1' to Previous
+            #     disabled=None if has_previous_page else "No previous page",
+            # ),
+            # questionary.Choice(
+            #     title=[
+            #         (
+            #             f"{'fg:ansigreen' if has_next_page else 'fg:ansibrightblack'} ",
+            #             f"{2}) ",  # Shortcut key 2
+            #         ),
+            #         (
+            #             f"bold {'fg:ansigreen' if has_next_page else 'fg:ansibrightblack'} ",
+            #             "Next",
+            #         ),
+            #     ],
+            #     value=self.NEXT_COMMAND,
+            #     shortcut_key=str(2),  # Assign shortcut key '2' to Next
+            #     disabled=None if has_next_page else "No next page",
+            # ),
         ]
 
     def _add_item_choices_to_menu(self, choices, products):
@@ -194,7 +192,7 @@ class CommandLineHandler:
         :param products: The products search results.
         """
 
-        for index, product in enumerate(products["products"], start=3):
+        for index, product in enumerate(products, start=1):
             choices.append(
                 questionary.Choice(
                     title=[

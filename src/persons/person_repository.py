@@ -4,7 +4,7 @@ from persons.activity_level import ActivityLevel
 from persons.gender import Gender
 from persons.person import Person
 from persons.person_entity import PersonEntity
-from persistence.model_registry import load_model_definitions
+from persistence.db_schema_registry import load_db_schema_definitions
 
 
 class PersonRepository:
@@ -21,7 +21,7 @@ class PersonRepository:
         :type session: Session
         """
 
-        load_model_definitions()
+        load_db_schema_definitions()
         self._session = session
 
     def _entity_to_model(self, entity: PersonEntity) -> Person:

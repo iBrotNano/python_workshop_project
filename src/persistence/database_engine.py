@@ -2,7 +2,7 @@ from contextlib import contextmanager
 from sqlalchemy import Engine
 from sqlalchemy.orm import sessionmaker, Session
 from typing import Any, Generator
-from persistence.model_registry import load_model_definitions
+from persistence.db_schema_registry import load_db_schema_definitions
 
 
 class DatabaseEngine:
@@ -41,7 +41,7 @@ class DatabaseEngine:
 
         :param self: The instance of the DatabaseEngine class.
         """
-        load_model_definitions()
+        load_db_schema_definitions()
         self.Base.metadata.create_all(bind=self._engine)
         self._seed_activity_levels()
 

@@ -7,7 +7,7 @@ from recipes.recipe_entity import RecipeEntity
 from recipes.recipe import Recipe
 from persons.person_entity import PersonEntity
 from persons.person import Person
-from persistence.model_registry import load_model_definitions
+from persistence.db_schema_registry import load_db_schema_definitions
 
 
 class MealPlanRepository:
@@ -20,7 +20,7 @@ class MealPlanRepository:
         :param session: The SQLAlchemy session instance.
         :type session: Session
         """
-        load_model_definitions()
+        load_db_schema_definitions()
         self._session = session
 
     def _entity_to_model(self, entity: MealPlanEntity) -> MealPlan:

@@ -1,7 +1,7 @@
 
-name: fat_cat
+name: fat_cat_2
 channels:
   - defaults
 dependencies:
-  - python=3.14
+  - python=3.12
 

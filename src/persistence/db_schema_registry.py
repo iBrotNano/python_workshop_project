@@ -1,7 +1,7 @@
 from importlib import import_module
 
 
-def load_model_definitions():
+def load_db_schema_definitions():
     """
     Imports ORM model modules so SQLAlchemy metadata knows all table mappings.
 

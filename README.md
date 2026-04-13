@@ -46,6 +46,16 @@ conda env update -f environment.yml -n fat_cat
 pip install -r requirements.txt --upgrade
 ```
 
+> [!Warning]
+> If there is not wheel for **llama-cpp-python** you can install it might be necessary to compile it. Run those from a Developer PowerShell.
+> ```
+> winget install -e --id Ninja-build.Ninja
+> winget install -e --id LunarG.VulkanSDK
+> cd <PROJECT_FOLDER>
+>
+> conda activate <ENVIRONMENT>; cl; cmake --version; ninja --version; pip uninstall -y llama-cpp-python; pip cache purge; $env:FORCE_CMAKE="1"; $env:CMAKE_ARGS="-DGGML_VULKAN=ON -DLLAMA_VULKAN=ON"; $env:CMAKE_GENERATOR="Ninja"; pip install llama-cpp-python==0.3.20 --no-binary llama-cpp-python --no-cache-dir --force-reinstall -v
+> ```
+
 ## Updating Dependencies
 
 You can check if there are outdated packages with:

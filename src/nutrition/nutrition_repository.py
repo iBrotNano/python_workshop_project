@@ -2,7 +2,7 @@ from collections.abc import Generator
 from sqlalchemy.orm import Session
 from nutrition.nutrition import Nutrition
 from nutrition.nutrition_entity import NutritionEntity
-from persistence.model_registry import load_model_definitions
+from persistence.db_schema_registry import load_db_schema_definitions
 
 
 class NutritionRepository:
@@ -17,7 +17,7 @@ class NutritionRepository:
         :param session: The SQLAlchemy session instance.
         :type session: Session
         """
-        load_model_definitions()
+        load_db_schema_definitions()
         self._session = session
 
     def _entity_to_model(self, entity: NutritionEntity) -> Nutrition:

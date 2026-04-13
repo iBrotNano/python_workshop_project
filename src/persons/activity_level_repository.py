@@ -2,7 +2,7 @@ from sqlalchemy.orm import Session
 from persons.activity_level import ActivityLevel
 from persons.activity_level_entity import ActivityLevelEntity
 from persons.person import Person
-from persistence.model_registry import load_model_definitions
+from persistence.db_schema_registry import load_db_schema_definitions
 
 
 class ActivityLevelRepository:
@@ -15,7 +15,7 @@ class ActivityLevelRepository:
         :type session: Session
         """
 
-        load_model_definitions()
+        load_db_schema_definitions()
         self._session = session
 
     def _entity_to_model(self, entity: ActivityLevelEntity) -> ActivityLevel:

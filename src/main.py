@@ -6,6 +6,7 @@ import recipes.command_line_handler as recipe_cli
 import meal_plan.command_line_handler as meal_plan_cli
 import persons.command_line_handler as persons_cli
 import persistence.command_line_handler as persistence_cli
+from prompt_toolkit.output.win32 import NoConsoleScreenBufferError
 
 from common.terminal import terminal
 from config.configurator import configurator
@@ -42,7 +43,12 @@ try:
             if command == main_menu.EXIT_COMMAND:
                 terminal.print("Goodbye! 👋")
                 sys.exit(0)
-
+        except NoConsoleScreenBufferError as e:
+            terminal.print(
+                "No interactive Windows console was detected. Start the app from cmd.exe, "
+                "PowerShell, or the VS Code integrated terminal."
+            )
+            sys.exit(1)
         except Exception as e:
             log.exception(f"An error of type {type(e)} occurred. Message: {e}")
 

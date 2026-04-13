@@ -1,7 +1,7 @@
 import openfoodfacts
 import logging
 from pathlib import Path
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
@@ -59,40 +59,61 @@ class Configuration:
 
     models_folder: str = "models"
 
-    embedding_models = {
-        "embeddinggemma-300m-GGUF-Q8_0": {
-            "repo": "unsloth/embeddinggemma-300m-GGUF",
-            "filename": "embeddinggemma-300M-Q8_0.gguf",
-        },
-        "embeddinggemma-300m-GGUF-Q4_0": {
-            "repo": "unsloth/embeddinggemma-300m-GGUF",
-            "filename": "embeddinggemma-300m-Q4_0.gguf",
-        },
-        "nomic-embed-text-v1.5-Q2_K": {
-            "repo": "nomic-ai/nomic-embed-text-v1.5-GGUF",
-            "filename": "nomic-embed-text-v1.5.Q2_K.gguf",
-        },
-        "nomic-embed-text-v1.5-Q4_K_S": {
-            "repo": "nomic-ai/nomic-embed-text-v1.5-GGUF",
-            "filename": "nomic-embed-text-v1.5.Q4_K_S.gguf",
-        },
-        "bge-small-en-v1.5": {
-            "repo": "BAAI/bge-small-en-v1.5",
-            "filename": "bge-small-en-v1.5.gguf",
-        },
-        "bge-micro-en-v1.5": {
-            "repo": "BAAI/bge-micro-en-v1.5",
-            "filename": "bge-micro-en-v1.5.gguf",
-        },
-    }
+    embedding_models: dict[str, dict[str, str]] = field(
+        default_factory=lambda: {
+            "embeddinggemma-300m-GGUF-Q8_0": {
+                "repo": "unsloth/embeddinggemma-300m-GGUF",
+                "filename": "embeddinggemma-300M-Q8_0.gguf",
+            },
+            "embeddinggemma-300m-GGUF-Q4_0": {
+                "repo": "unsloth/embeddinggemma-300m-GGUF",
+                "filename": "embeddinggemma-300m-Q4_0.gguf",
+            },
+            "nomic-embed-text-v1.5-Q2_K": {
+                "repo": "nomic-ai/nomic-embed-text-v1.5-GGUF",
+                "filename": "nomic-embed-text-v1.5.Q2_K.gguf",
+            },
+            "nomic-embed-text-v1.5-Q4_K_S": {
+                "repo": "nomic-ai/nomic-embed-text-v1.5-GGUF",
+                "filename": "nomic-embed-text-v1.5.Q4_K_S.gguf",
+            },
+            "bge-small-en-v1.5": {
+                "repo": "BAAI/bge-small-en-v1.5",
+                "filename": "bge-small-en-v1.5.gguf",
+            },
+            "bge-micro-en-v1.5": {
+                "repo": "BAAI/bge-micro-en-v1.5",
+                "filename": "bge-micro-en-v1.5.gguf",
+            },
+        }
+    )
 
-    used_embedding_model = embedding_models["nomic-embed-text-v1.5-Q2_K"]
     embedding_chunk_size: int = 2024
     embedding_chunk_overlap: int = 256
     embedding_threads: int = 8
     embedding_batch_size: int = 10
 
-    def __init__(self):
+    prompting_models: dict[str, dict[str, str]] = field(
+        default_factory=lambda: {
+            "gemma-4-E2B-it-GGUF": {
+                "repo": "unsloth/gemma-4-E2B-it-GGUF",
+                "filename": "gemma-4-E2B-it-Q4_0.gguf",
+                "chat_format": "chatml",
+            },
+            "gemma-4-E4B-it-GGUF": {
+                "repo": "unsloth/gemma-4-E4B-it-GGUF",
+                "filename": "gemma-4-E4B-it-Q4_0.gguf",
+                "chat_format": "chatml",
+            },
+            "Qwen3-1.7B-GGUF": {
+                "repo": "unsloth/Qwen3-1.7B-GGUF",
+                "filename": "Qwen3-1.7B-Q4_0.gguf",
+                "chat_format": "chatml",
+            },
+        }
+    )
+
+    def __post_init__(self):
         """
         Initializes the Configuration object and sets up the necessary folders.
 
@@ -104,11 +125,20 @@ class Configuration:
         self.sqlite_file_path = str(PROJECT_ROOT / type(self).sqlite_file_path)
         self.sqlite_url = f"sqlite:///{Path(self.sqlite_file_path).as_posix()}"
         self.models_folder = str(PROJECT_ROOT / type(self).models_folder)
+        self.used_embedding_model = self.embedding_models["nomic-embed-text-v1.5-Q2_K"]
+        self.used_prompting_model = self.prompting_models["gemma-4-E2B-it-GGUF"]
+        self.used_prompting_model_chat_format = self.used_prompting_model["chat_format"]
 
         self.used_embedding_model_path = str(
             PROJECT_ROOT
             / type(self).models_folder
             / self.used_embedding_model["filename"]
+        )
+
+        self.used_prompting_model_path = str(
+            PROJECT_ROOT
+            / type(self).models_folder
+            / self.used_prompting_model["filename"]
         )
 
         # Ensure the logging folder exists.
