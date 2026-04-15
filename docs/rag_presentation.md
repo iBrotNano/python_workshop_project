@@ -10,6 +10,14 @@ transition: drop
 backgroundColor: #111
 ---
 
+
+# Stand meines Projekts
+
+1. App fragte Daten von einer API ab (OpenFoodFacts, Full Text Search)
+2. App auf ORM und SQLite umgebaut
+
+---
+
 # RAG 
 
 (Retrieval-Augmented Generation)
@@ -29,13 +37,6 @@ Es hat **keine**:
     - Daten
     - Dokumente
     - Wissen
-
----
-
-## Stand meines Projekts
-
-1. App fragte Daten von einer API ab (OpenFoodFacts, Full Text Search)
-2. App auf ORM und SQLite umgebaut
 
 ---
 
