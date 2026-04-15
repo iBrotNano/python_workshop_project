@@ -10,6 +10,7 @@ from prompt_toolkit.output.win32 import NoConsoleScreenBufferError
 
 from common.terminal import terminal
 from config.configurator import configurator
+from config.configuration import configuration
 from persistence.database_engine_factory import database_engine
 
 
@@ -17,7 +18,10 @@ log = logging.getLogger(__name__)
 
 # Encapsulates the whole application logic and displays any errors encountered.
 try:
-    configurator.configure()  # First step configures the app (e.g., logging, console).
+    configurator.configure(
+        configuration
+    )  # First step configures the app (e.g., logging, console).
+
     database_engine.initialize_schema()
     main_menu = menu.Menu()
 

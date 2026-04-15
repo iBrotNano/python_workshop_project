@@ -57,6 +57,7 @@ class Configuration:
     sqlite_echo: bool = False
     sqlite_auto_flush: bool = False
 
+    use_vulcan_llama_backend: bool = True
     models_folder: str = "models"
 
     embedding_models: dict[str, dict[str, str]] = field(
@@ -98,17 +99,17 @@ class Configuration:
             "gemma-4-E2B-it-GGUF": {
                 "repo": "unsloth/gemma-4-E2B-it-GGUF",
                 "filename": "gemma-4-E2B-it-Q4_0.gguf",
-                "chat_format": "chatml",
+                "chat_format": "chatml-function-calling",
             },
             "gemma-4-E4B-it-GGUF": {
                 "repo": "unsloth/gemma-4-E4B-it-GGUF",
                 "filename": "gemma-4-E4B-it-Q4_0.gguf",
-                "chat_format": "chatml",
+                "chat_format": "chatml-function-calling",
             },
             "Qwen3-1.7B-GGUF": {
                 "repo": "unsloth/Qwen3-1.7B-GGUF",
                 "filename": "Qwen3-1.7B-Q4_0.gguf",
-                "chat_format": "chatml",
+                "chat_format": "chatml-function-calling",
             },
         }
     )

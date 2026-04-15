@@ -72,9 +72,6 @@ class NutritionDbUpdater:
         :param progress_callback: Optional callback receiving neutral progress updates.
         :type progress_callback: ProgressCallback | None
         """
-        os.environ["OMP_NUM_THREADS"] = f"{self._configuration.embedding_threads}"
-        os.environ["LLAMA_THREADS"] = f"{self._configuration.embedding_threads}"
-        os.environ["LLAMA_VULKAN"] = "1"
 
         ModellDownloader(self._configuration).download_model_if_not_exists(
             self._configuration.used_embedding_model["repo"],
