@@ -1,7 +1,15 @@
+import questionary
+import logging
+
 from rich.panel import Panel
 from rich.table import Table
 from rich.console import Console
 from rich.theme import Theme
+from prompt_toolkit.input.defaults import create_input
+from prompt_toolkit.output.defaults import create_output
+from prompt_toolkit.output.win32 import NoConsoleScreenBufferError
+
+log = logging.getLogger(__name__)
 
 
 class Terminal:
@@ -93,6 +101,85 @@ class Terminal:
             table.add_row(key, str(value))
 
         self._console.print(table)
+
+    def safe_ask(self, message: str) -> str:
+        """
+        Asks a free-text question using Questionary with a TTY-preferred backend.
+
+        :param self: This instance of the Terminal class.
+        :param message: The message shown to the user.
+        :type message: str
+        :return: The entered text or None if the prompt was cancelled.
+        :rtype: str | None
+        """
+        for _ in range(2):
+            try:
+                return questionary.text(
+                    message,
+                    input=create_input(always_prefer_tty=True),
+                    output=create_output(always_prefer_tty=True),
+                ).ask()
+            except NoConsoleScreenBufferError:
+                log.warning(
+                    "Questionary could not access the Windows console buffer. Retrying."
+                )
+
+        log.error("The interactive prompt could not be reopened in this terminal.")
+
+        raise RuntimeError(
+            "Failed to display interactive prompt after multiple attempts."
+        )
+
+    def safe_select(self, message: str, choices):
+        """
+        Displays a Questionary select prompt with a TTY-preferred backend.
+
+        :param message: The menu question shown to the user.
+        :param choices: The selectable choices.
+        :return: The selected value or None.
+        """
+        for _ in range(2):
+            try:
+                return questionary.select(
+                    message,
+                    choices=choices,
+                    use_shortcuts=True,
+                    input=create_input(always_prefer_tty=True),
+                    output=create_output(always_prefer_tty=True),
+                ).ask()
+            except NoConsoleScreenBufferError:
+                log.warning(
+                    "Questionary could not access the Windows console buffer. Retrying."
+                )
+
+        raise RuntimeError(
+            "Failed to display interactive select prompt after multiple attempts."
+        )
+
+    def safe_confirm(self, message: str, default: bool = False):
+        """
+        Displays a Questionary confirmation prompt with a TTY-preferred backend.
+
+        :param message: The confirmation question shown to the user.
+        :param default: The default confirmation value.
+        :return: True, False, or None if the prompt could not be shown.
+        """
+        for _ in range(2):
+            try:
+                return questionary.confirm(
+                    message,
+                    default=default,
+                    input=create_input(always_prefer_tty=True),
+                    output=create_output(always_prefer_tty=True),
+                ).ask()
+            except NoConsoleScreenBufferError:
+                log.warning(
+                    "Questionary could not access the Windows console buffer. Retrying."
+                )
+
+        raise RuntimeError(
+            "Failed to display interactive confirmation prompt after multiple attempts."
+        )
 
 
 # Shared instances used across the application.

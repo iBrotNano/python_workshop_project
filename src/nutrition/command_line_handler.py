@@ -1,7 +1,7 @@
 import logging
-from typing import Any
 import questionary
 
+from typing import Any
 from rich.table import Table
 from common.terminal import terminal
 from config.configuration import configuration
@@ -50,7 +50,7 @@ class CommandLineHandler:
         :rtype: tuple[str, str | None]
         """
 
-        question = questionary.text("How can I help you?").ask()
+        question = terminal.safe_ask("How can I help you?")
 
         if question is None or type(question) is not str or question.strip() == "":
             terminal.print_info("Nothing asked.")
@@ -58,43 +58,30 @@ class CommandLineHandler:
 
         return (self.QUESTION_COMMAND, question.strip())
 
-    def _prompt(self, query: str, page: int = 1) -> dict | str | None:
+    def _prompt(self, query: str) -> dict | str | None:
         """
-        Executes the nutrition search using the provided search term and handles pagination.
+        Executes the nutrition chat using the provided query and keeps the conversation open.
 
         :param self: This instance of the CommandLineHandler class.
         :param query: The term to search for in the nutrition repository.
         :type search_term: str
-        :param page: The page number to retrieve.
-        :type page: int
         :return: The selected product, next/previous command, or cancel command.
         :rtype: dict | str | None
         """
 
-        search_result = None
-        command = None
         messages: list[dict[str, Any]] | None = None
 
-        while search_result is None and command != self.CANCEL_COMMAND:
+        while True:
             prompt = Prompt(configuration)
-
-            with terminal.console.status("Let me think...", spinner="monkey"):
-                response, search_result, messages = prompt.execute(query, 9, messages)
-
+            response, _search_result, messages = prompt.execute(query, 9, messages)
             terminal.print(Markdown(response))
             command, next_query = self._get_question()
 
             if command == self.CANCEL_COMMAND:
-                break
+                return self.CANCEL_COMMAND
 
             if next_query is not None:
                 query = next_query
-                messages = messages
-                # Don't change the page_size to more than 7. The index is used for shortcut
-                # keys and more than 9 items would break it.
-                # search_result = self._repository.search_products(
-                #     search_term, page=page, page_size=7
-                # )
 
         # TODO: Implement the selection part
         # product_count = search_result["count"]

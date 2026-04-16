@@ -1,6 +1,8 @@
 import logging
 import questionary
 
+from common.terminal import terminal
+
 log = logging.getLogger(__name__)
 
 
@@ -51,9 +53,7 @@ class Menu:
             ),
         ]
 
-        return questionary.select(
-            "What do you want to do?", choices=choices, use_shortcuts=True
-        ).ask()
+        return terminal.safe_select("What do you want to do?", choices)
 
     def _confirm_exit(self):
         """
@@ -62,9 +62,9 @@ class Menu:
         :return: The exit command if the user confirms, otherwise None.
         """
 
-        exit_app = questionary.confirm(
+        exit_app = terminal.safe_confirm(
             "Are you sure you want to exit?", default=False
-        ).ask()
+        )
 
         if exit_app:
             return self.EXIT_COMMAND
