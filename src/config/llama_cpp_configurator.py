@@ -19,10 +19,10 @@ class LlamaCppConfigurator:
         Configures environment variables for Llama.cpp based on the configuration settings.
         This includes enabling Vulkan GPU acceleration and setting the number of threads for embeddings.
         """
-        os.environ["OMP_NUM_THREADS"] = f"{self._configuration.embedding_threads}"
-        os.environ["LLAMA_THREADS"] = f"{self._configuration.embedding_threads}"
+        os.environ["OMP_NUM_THREADS"] = f"{self._configuration.ai_embedding_threads}"
+        os.environ["LLAMA_THREADS"] = f"{self._configuration.ai_embedding_threads}"
 
-        if self._configuration.use_vulcan_llama_backend:
+        if self._configuration.ai_use_vulcan_llama_backend:
             os.environ["LLAMA_VULKAN"] = "1"
 
 

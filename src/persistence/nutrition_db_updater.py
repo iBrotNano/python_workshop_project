@@ -74,11 +74,11 @@ class NutritionDbUpdater:
         """
 
         ModellDownloader(self._configuration).download_model_if_not_exists(
-            self._configuration.used_embedding_model["repo"],
-            self._configuration.used_embedding_model["filename"],
+            self._configuration.ai_used_embedding_model["repo"],
+            self._configuration.ai_used_embedding_model["filename"],
         )
 
-        batch_size = self._configuration.embedding_batch_size
+        batch_size = self._configuration.ai_embedding_batch_size
         processed_records = 0
 
         try:
@@ -148,9 +148,9 @@ class NutritionDbUpdater:
         return SQLiteRag.create(
             self._configuration.sqlite_file_path,
             {
-                "model_path": self._configuration.used_embedding_model_path,
-                "chunk_size": self._configuration.embedding_chunk_size,
-                "chunk_overlap": self._configuration.embedding_chunk_overlap,
+                "model_path": self._configuration.ai_used_embedding_model_path,
+                "chunk_size": self._configuration.ai_embedding_chunk_size,
+                "chunk_overlap": self._configuration.ai_embedding_chunk_overlap,
             },
         )
 

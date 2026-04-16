@@ -6,7 +6,7 @@ import llama_cpp
 from config.configuration import Configuration
 from nutrition.retriever import Retriever
 from persistence.modell_downloader import ModellDownloader
-from typing import Any
+from typing import Any, Sequence
 
 
 log = logging.getLogger(__name__)
@@ -31,7 +31,6 @@ class Prompt:
     Handles the generation of nutrition information based on user queries.
     """
 
-    _MAX_TOOL_CALL_ROUNDS = 4
     _shared_llm: llama_cpp.Llama | None = None
     _llama_log_callback_configured = False
 
@@ -51,6 +50,8 @@ class Prompt:
         """
         Generates nutrition information based on the provided query.
 
+        The configured model is automatically downloaded if not already present.
+
         :param query: The search query to generate nutrition information for.
         :type query: str
         :param top_k: The number of top results to return, default is 10.
@@ -61,8 +62,8 @@ class Prompt:
         :rtype: tuple[str, dict | None, list[dict[str, Any]]]
         """
         ModellDownloader(self._configuration).download_model_if_not_exists(
-            self._configuration.used_prompting_model["repo"],
-            self._configuration.used_prompting_model["filename"],
+            self._configuration.ai_used_prompting_model["repo"],
+            self._configuration.ai_used_prompting_model["filename"],
         )
 
         if not Prompt._llama_log_callback_configured:
@@ -70,8 +71,6 @@ class Prompt:
             Prompt._llama_log_callback_configured = True
 
         llm = self._get_or_create_llm()
-        retrieved_results = self._retrieve_nutrition_data(query, top_k=top_k)
-        retrieval_context = self._build_retrieval_context(retrieved_results)
 
         role_prompt = {
             "role": "system",
@@ -82,13 +81,11 @@ class Prompt:
                 "Always recommend a healthy and balanced diet based on the retrieved nutrition data. "
                 "Only use product details that are present in the retrieval context. "
                 "Keep your answers concise and focused on the most relevant information. "
-                "You can use a function call tool to retrieve additional nutrition data if needed, but try to answer based on the initial retrieval results first. "
+                "Always use the retrieve_nutrition_data function to look up nutrition data before answering. "
                 "If the retrieval results are insufficient or no relevant results were found, say that clearly. "
                 "Answer in the language of the query. "
                 "Format the answer as Markdown. "
-                f"List up to {top_k} relevant results in your answer and include the URL when available. "
-                "\n\n"
-                f"Retrieved nutrition data:\n{retrieval_context}",
+                f"List up to {top_k} relevant results in your answer and include the URL when available."
             ),
         }
 
@@ -112,18 +109,25 @@ class Prompt:
         :rtype: llama_cpp.Llama
         """
         if Prompt._shared_llm is None:
-            import os
-
-            # Enable Vulkan GPU acceleration for better performance
-            os.environ["LLAMA_VULKAN"] = "1"
-
-            Prompt._shared_llm = llama_cpp.Llama(
-                model_path=str(self._configuration.used_prompting_model_path),
-                chat_format=self._configuration.used_prompting_model_chat_format,
-                n_ctx=0,
-                verbose=False,
-                n_gpu_layers=-1,
-            )
+            try:
+                Prompt._shared_llm = llama_cpp.Llama(
+                    model_path=str(self._configuration.ai_used_prompting_model_path),
+                    chat_format=self._configuration.ai_used_prompting_model_chat_format,
+                    n_ctx=0,
+                    verbose=False,
+                    n_gpu_layers=-1,
+                )
+            except ValueError:
+                log.warning(
+                    "GPU model initialization failed. Falling back to CPU inference."
+                )
+                Prompt._shared_llm = llama_cpp.Llama(
+                    model_path=str(self._configuration.ai_used_prompting_model_path),
+                    chat_format=self._configuration.ai_used_prompting_model_chat_format,
+                    n_ctx=0,
+                    verbose=False,
+                    n_gpu_layers=0,
+                )
 
         return Prompt._shared_llm
 
@@ -135,6 +139,10 @@ class Prompt:
         """
         Completes a chat request and handles optional nutrition retrieval tool calls.
 
+        The method handles multiple rounds of tool calls if the model decides to call tools again after receiving tool results,
+        up to a maximum number of rounds defined in the configuration. When an answer is generated without tool calls or the maximum rounds are reached,
+        the final response is returned.
+
         :param llm: The initialized llama model.
         :type llm: llama_cpp.Llama
         :param messages: The current chat message history.
@@ -142,17 +150,17 @@ class Prompt:
         :return: The final chat completion response.
         :rtype: dict[str, Any]
         """
-        message_payload: Any = messages
         tools: Any = self._get_tool_definitions()
         last_response: dict[str, Any] = {}
+        executed_tool_signatures: set[str] = set()
+        allow_tool_calls = self._configuration.ai_allow_tool_calls
 
-        for _ in range(self._MAX_TOOL_CALL_ROUNDS):
-            response: Any = llm.create_chat_completion(
-                messages=message_payload,
-                stream=False,
-                tools=tools,
-                tool_choice="auto",
+        for _ in range(self._configuration.ai_max_toolcall_rounds):
+            completion_arguments = self._get_completion_arguments(
+                messages, tools, allow_tool_calls
             )
+
+            response: Any = llm.create_chat_completion(**completion_arguments)
 
             if not isinstance(response, dict):
                 return {"choices": [{"message": {"content": str(response)}}]}
@@ -160,26 +168,70 @@ class Prompt:
             last_response = response
             message = self._extract_message(response)
             tool_calls = message.get("tool_calls") or []
+            content = message.get("content")
 
             if not tool_calls:
-                return response
+                if isinstance(content, str) and content.strip():
+                    return response
 
-            messages.append(message)
+                if not allow_tool_calls:
+                    log.warning("Model returned empty content on follow-up call.")
+                    return response
+
+                log.info(
+                    "Model chose to respond without tools but returned empty content. "
+                    "Retrying without tool definitions."
+                )
+
+                allow_tool_calls = False
+                continue
+
+            allow_tool_calls = False
+            tool_results: list[dict[str, Any]] = []
 
             for tool_call in tool_calls:
-                tool_response = self._execute_tool_call(tool_call)
-                tool_call_id = tool_call.get("id", "tool-call")
+                function_payload = tool_call.get("function") or {}
 
-                messages.append(
-                    {
-                        "role": "tool",
-                        "tool_call_id": tool_call_id,
-                        "content": json.dumps(tool_response, ensure_ascii=False),
-                    }
+                signature = json.dumps(
+                    function_payload, sort_keys=True, ensure_ascii=False
                 )
+
+                if signature in executed_tool_signatures:
+                    tool_results.append({"error": "Duplicate tool call skipped."})
+                else:
+                    executed_tool_signatures.add(signature)
+                    tool_results.append(self._execute_tool_call(tool_call))
+
+            messages.append(self._build_tool_result_message(tool_results))
 
         log.warning("Maximum tool-call rounds reached without final model answer.")
         return last_response
+
+    def _get_completion_arguments(
+        self, messages: list[dict[str, Any]], tools: Any, allow_tool_calls: bool
+    ) -> dict[str, Any]:
+        """
+        Constructs the arguments for the chat completion request.
+
+        :param messages: The current chat message history.
+        :type messages: list[dict[str, Any]]
+        :param tools: The available tool definitions.
+        :type tools: list[dict[str, Any]]
+        :param allow_tool_calls: Whether tool calls are allowed in this completion.
+        :type allow_tool_calls: bool
+        :return: The completion arguments.
+        :rtype: dict[str, Any]
+        """
+        completion_arguments: dict[str, Any] = {
+            "messages": messages,
+            "stream": self._configuration.ai_stream_llm_responses,
+        }
+
+        if allow_tool_calls:
+            completion_arguments["tools"] = tools
+            completion_arguments["tool_choice"] = self._configuration.ai_tool_choice
+
+        return completion_arguments
 
     def _get_tool_definitions(self) -> list[dict[str, Any]]:
         """
@@ -211,6 +263,38 @@ class Prompt:
                 },
             }
         ]
+
+    def _build_tool_result_message(
+        self, tool_results: Sequence[dict[str, Any]]
+    ) -> dict[str, str]:
+        """
+        Builds a user message containing aggregated tool results.
+
+        The chatml-function-calling handler does not support role 'tool' messages,
+        so tool results are injected as a follow-up user message instead.
+
+        :param tool_results: The list of tool result payloads.
+        :type tool_results: Sequence[dict[str, Any]]
+        :return: A user message dict with the formatted tool results.
+        :rtype: dict[str, str]
+        """
+        parts: list[str] = []
+
+        for index, result in enumerate(tool_results, start=1):
+            parts.append(
+                f"Tool result {index}:\n{json.dumps(result, ensure_ascii=False)}"
+            )
+
+        body = "\n\n".join(parts)
+
+        return {
+            "role": "user",
+            "content": (
+                f"Here are the results from the nutrition data retrieval:\n\n"
+                f"{body}\n\n"
+                f"Please answer the original question based on all available data."
+            ),
+        }
 
     def _execute_tool_call(self, tool_call: dict[str, Any]) -> dict[str, Any]:
         """
@@ -359,5 +443,10 @@ class Prompt:
         :return: A list of nutrition data for the given products.
         :rtype: list
         """
+        from common.terminal import terminal
+
+        terminal.print(
+            f"Retrieving nutrition data for query: '{query}' with top_k={top_k}..."
+        )
         with Retriever(self._configuration) as retriever:
             return retriever.retrieve(query, top_k=top_k)

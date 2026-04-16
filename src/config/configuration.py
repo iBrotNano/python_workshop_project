@@ -57,10 +57,14 @@ class Configuration:
     sqlite_echo: bool = False
     sqlite_auto_flush: bool = False
 
-    use_vulcan_llama_backend: bool = True
-    models_folder: str = "models"
+    ai_use_vulcan_llama_backend: bool = True
+    ai_allow_tool_calls: bool = True
+    ai_tool_choice: str = "auto"  # Options: "auto", "none"
+    ai_max_toolcall_rounds: int = 3
+    ai_stream_llm_responses: bool = False
+    ai_models_folder: str = "models"
 
-    embedding_models: dict[str, dict[str, str]] = field(
+    ai_embedding_models: dict[str, dict[str, str]] = field(
         default_factory=lambda: {
             "embeddinggemma-300m-GGUF-Q8_0": {
                 "repo": "unsloth/embeddinggemma-300m-GGUF",
@@ -89,12 +93,12 @@ class Configuration:
         }
     )
 
-    embedding_chunk_size: int = 2024
-    embedding_chunk_overlap: int = 256
-    embedding_threads: int = 8
-    embedding_batch_size: int = 10
+    ai_embedding_chunk_size: int = 2024
+    ai_embedding_chunk_overlap: int = 256
+    ai_embedding_threads: int = 8
+    ai_embedding_batch_size: int = 10
 
-    prompting_models: dict[str, dict[str, str]] = field(
+    ai_prompting_models: dict[str, dict[str, str]] = field(
         default_factory=lambda: {
             "gemma-4-E2B-it-GGUF": {
                 "repo": "unsloth/gemma-4-E2B-it-GGUF",
@@ -125,28 +129,35 @@ class Configuration:
         self.sqlite_data_folder = str(PROJECT_ROOT / type(self).sqlite_data_folder)
         self.sqlite_file_path = str(PROJECT_ROOT / type(self).sqlite_file_path)
         self.sqlite_url = f"sqlite:///{Path(self.sqlite_file_path).as_posix()}"
-        self.models_folder = str(PROJECT_ROOT / type(self).models_folder)
-        self.used_embedding_model = self.embedding_models["nomic-embed-text-v1.5-Q2_K"]
-        self.used_prompting_model = self.prompting_models["gemma-4-E2B-it-GGUF"]
-        self.used_prompting_model_chat_format = self.used_prompting_model["chat_format"]
+        self.ai_models_folder = str(PROJECT_ROOT / type(self).ai_models_folder)
 
-        self.used_embedding_model_path = str(
+        self.ai_used_embedding_model = self.ai_embedding_models[
+            "nomic-embed-text-v1.5-Q2_K"
+        ]
+
+        self.ai_used_prompting_model = self.ai_prompting_models["gemma-4-E4B-it-GGUF"]
+
+        self.ai_used_prompting_model_chat_format = self.ai_used_prompting_model[
+            "chat_format"
+        ]
+
+        self.ai_used_embedding_model_path = str(
             PROJECT_ROOT
-            / type(self).models_folder
-            / self.used_embedding_model["filename"]
+            / type(self).ai_models_folder
+            / self.ai_used_embedding_model["filename"]
         )
 
-        self.used_prompting_model_path = str(
+        self.ai_used_prompting_model_path = str(
             PROJECT_ROOT
-            / type(self).models_folder
-            / self.used_prompting_model["filename"]
+            / type(self).ai_models_folder
+            / self.ai_used_prompting_model["filename"]
         )
 
         # Ensure the logging folder exists.
         Path(self.logging_folder).mkdir(parents=True, exist_ok=True)
         Path(self.sqlite_data_folder).mkdir(parents=True, exist_ok=True)
         Path(self.temp_folder).mkdir(parents=True, exist_ok=True)
-        Path(self.models_folder).mkdir(parents=True, exist_ok=True)
+        Path(self.ai_models_folder).mkdir(parents=True, exist_ok=True)
 
 
 # Shared instances used across the application.
