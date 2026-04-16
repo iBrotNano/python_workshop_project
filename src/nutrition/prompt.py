@@ -443,10 +443,5 @@ class Prompt:
         :return: A list of nutrition data for the given products.
         :rtype: list
         """
-        from common.terminal import terminal
-
-        terminal.print(
-            f"Retrieving nutrition data for query: '{query}' with top_k={top_k}..."
-        )
         with Retriever(self._configuration) as retriever:
             return retriever.retrieve(query, top_k=top_k)
