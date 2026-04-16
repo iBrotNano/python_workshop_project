@@ -113,18 +113,25 @@ class Prompt:
                 Prompt._shared_llm = llama_cpp.Llama(
                     model_path=str(self._configuration.ai_used_prompting_model_path),
                     chat_format=self._configuration.ai_used_prompting_model_chat_format,
-                    n_ctx=0,
+                    n_ctx=8192,
                     verbose=False,
                     n_gpu_layers=-1,
+                    n_threads=12,
+                    n_batch=1024,
+                    flash_attn=True,
+                    rope_scaling={"type": "dynamic"},
+                    gpu_split_mode="layer",
                 )
             except ValueError:
                 log.warning(
                     "GPU model initialization failed. Falling back to CPU inference."
                 )
+
                 Prompt._shared_llm = llama_cpp.Llama(
                     model_path=str(self._configuration.ai_used_prompting_model_path),
                     chat_format=self._configuration.ai_used_prompting_model_chat_format,
-                    n_ctx=0,
+                    n_ctx=8192,
+                    n_threads=12,
                     verbose=False,
                     n_gpu_layers=0,
                 )

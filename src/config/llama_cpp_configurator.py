@@ -21,6 +21,11 @@ class LlamaCppConfigurator:
         """
         os.environ["OMP_NUM_THREADS"] = f"{self._configuration.ai_embedding_threads}"
         os.environ["LLAMA_THREADS"] = f"{self._configuration.ai_embedding_threads}"
+        os.environ["GGML_VULKAN_RUNNER"] = "1"
+        os.environ["GGML_VULKAN_FENCE_TYPE"] = "2"
+        os.environ["GGML_VULKAN_MAX_HEAP_SIZE"] = "0"
+        os.environ["GGML_VULKAN_DISABLE"] = "0"
+        os.environ["GGML_VULKAN_DEBUG"] = "0"
 
         if self._configuration.ai_use_vulcan_llama_backend:
             os.environ["LLAMA_VULKAN"] = "1"
