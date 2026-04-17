@@ -29,8 +29,16 @@ def _suppress_llama_console_logs(
 class Prompt:
     """
     Handles the generation of nutrition information based on user queries.
+
+    The prompt class uses a single shared llama model instance for all Prompt instances,
+    which is initialized lazily on the first call to execute().
+    The model is just loaded once and reused for subsequent calls,
+    ensuring efficient resource usage. The class also manages the interaction flow with
+    the model, including handling tool calls for nutrition data retrieval and constructing
+    the appropriate messages for the chat completion requests.
     """
 
+    # Single shared llama model instance for all Prompt instances, initialized lazily. The model is just loaded once.
     _shared_llm: llama_cpp.Llama | None = None
     _llama_log_callback_configured = False
 
