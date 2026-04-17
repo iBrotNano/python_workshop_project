@@ -7,13 +7,14 @@ from config.configuration import Configuration
 from nutrition.retriever import Retriever
 from persistence.modell_downloader import ModellDownloader
 from typing import Any, Sequence
+from sqlite_rag.models.document_result import DocumentResult
 
 
 log = logging.getLogger(__name__)
 
 
 @llama_cpp.llama_log_callback
-def __suppress_llama_console_logs(
+def suppress_llama_console_logs(
     level: int,
     text: bytes,
     user_data: ctypes.c_void_p,
@@ -75,7 +76,7 @@ class Prompt:
         )
 
         if not Prompt.__llama_log_callback_configured:
-            llama_cpp.llama_log_set(__suppress_llama_console_logs, ctypes.c_void_p(0))
+            llama_cpp.llama_log_set(suppress_llama_console_logs, ctypes.c_void_p(0))
             Prompt.__llama_log_callback_configured = True
 
         llm = self.__get_or_create_llm()
@@ -220,6 +221,10 @@ class Prompt:
                     executed_tool_signatures.add(signature)
                     tool_results.append(self.__execute_tool_call(tool_call))
 
+            # TODO: Remove the test output.
+            # from common.terminal import terminal
+
+            # terminal.print(tool_results)
             messages.append(self.__build_tool_result_message(tool_results))
 
         log.warning("Maximum tool-call rounds reached without final model answer.")
@@ -342,14 +347,17 @@ class Prompt:
             "query": query,
             "top_k": top_k,
             "results": self.__build_retrieval_context(retrieved_results),
+            "retrieved_results": [
+                result.__dict__ for result in retrieved_results
+            ],  # TODO: Check the result and proof where the id of the original data in my database is.
         }
 
-    def __build_retrieval_context(self, retrieved_results) -> str:
+    def __build_retrieval_context(self, retrieved_results: list[DocumentResult]) -> str:
         """
         Builds a plain text context block from retrieved nutrition results.
 
         :param retrieved_results: The retrieved nutrition results.
-        :type retrieved_results: list
+        :type retrieved_results: list[DocumentResult]
         :return: The formatted retrieval context.
         :rtype: str
         """
@@ -454,12 +462,18 @@ class Prompt:
 
         return max(1, min(value, 50))
 
-    def __retrieve_nutrition_data(self, query: str, top_k: int = 10):
+    def __retrieve_nutrition_data(
+        self, query: str, top_k: int = 10
+    ) -> list[DocumentResult]:
         """
         Retrieves nutrition data for the given products.
 
+        :param query: The query string for the nutrition data.
+        :type query: str
+        :param top_k: The number of top results to retrieve.
+        :type top_k: int
         :return: A list of nutrition data for the given products.
-        :rtype: list
+        :rtype: list[DocumentResult]
         """
         with Retriever(self.__configuration) as retriever:
             return retriever.retrieve(query, top_k=top_k)

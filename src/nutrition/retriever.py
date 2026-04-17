@@ -1,5 +1,6 @@
 from sqlite_rag import SQLiteRag
 from config.configuration import Configuration
+from sqlite_rag.models.document_result import DocumentResult
 
 
 class Retriever:
@@ -42,7 +43,7 @@ class Retriever:
         """
         self.close()
 
-    def retrieve(self, query: str, top_k: int = 10):
+    def retrieve(self, query: str, top_k: int = 10) -> list[DocumentResult]:
         """
         Retrieves relevant nutrition information based on the provided query.
 
@@ -51,6 +52,6 @@ class Retriever:
         :param top_k: The number of top results to return, default is 10.
         :type top_k: int
         :return: A list of retrieved results matching the query.
-        :rtype: list
+        :rtype: list[DocumentResult]
         """
         return self.rag.search(query, top_k=top_k)
