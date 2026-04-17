@@ -13,7 +13,7 @@ log = logging.getLogger(__name__)
 
 
 @llama_cpp.llama_log_callback
-def _suppress_llama_console_logs(
+def __suppress_llama_console_logs(
     level: int,
     text: bytes,
     user_data: ctypes.c_void_p,
@@ -39,8 +39,8 @@ class Prompt:
     """
 
     # Single shared llama model instance for all Prompt instances, initialized lazily. The model is just loaded once.
-    _shared_llm: llama_cpp.Llama | None = None
-    _llama_log_callback_configured = False
+    __shared_llm: llama_cpp.Llama | None = None
+    __llama_log_callback_configured = False
 
     def __init__(self, configuration: Configuration):
         """
@@ -50,7 +50,7 @@ class Prompt:
         :type configuration: Configuration
 
         """
-        self._configuration = configuration
+        self.__configuration = configuration
 
     def execute(
         self, query: str, top_k: int = 10, messages: list[dict[str, Any]] | None = None
@@ -69,18 +69,32 @@ class Prompt:
         :return: A tuple containing the generated message content, search result, and updated messages.
         :rtype: tuple[str, dict | None, list[dict[str, Any]]]
         """
-        ModellDownloader(self._configuration).download_model_if_not_exists(
-            self._configuration.ai_used_prompting_model["repo"],
-            self._configuration.ai_used_prompting_model["filename"],
+        ModellDownloader(self.__configuration).download_model_if_not_exists(
+            self.__configuration.ai_used_prompting_model["repo"],
+            self.__configuration.ai_used_prompting_model["filename"],
         )
 
-        if not Prompt._llama_log_callback_configured:
-            llama_cpp.llama_log_set(_suppress_llama_console_logs, ctypes.c_void_p(0))
-            Prompt._llama_log_callback_configured = True
+        if not Prompt.__llama_log_callback_configured:
+            llama_cpp.llama_log_set(__suppress_llama_console_logs, ctypes.c_void_p(0))
+            Prompt.__llama_log_callback_configured = True
 
-        llm = self._get_or_create_llm()
+        llm = self.__get_or_create_llm()
+        role_prompt = self.__create_role_prompt(top_k)
 
-        role_prompt = {
+        if messages is None:
+            messages = [role_prompt]
+
+        messages += [
+            {"role": "user", "content": query},
+        ]
+
+        response = self.__complete_chat_with_tools(llm, messages)
+        message_content = self.__extract_message_content(response)
+        messages += [{"role": "assistant", "content": message_content}]
+        return (message_content, None, messages)
+
+    def __create_role_prompt(self, top_k):
+        return {
             "role": "system",
             "content": (
                 "You are a professional nutrition assistant. "
@@ -98,30 +112,18 @@ class Prompt:
             ),
         }
 
-        if messages is None:
-            messages = [role_prompt]
-
-        messages += [
-            {"role": "user", "content": query},
-        ]
-
-        response = self._complete_chat_with_tools(llm, messages)
-        message_content = self._extract_message_content(response)
-        messages += [{"role": "assistant", "content": message_content}]
-        return (message_content, None, messages)
-
-    def _get_or_create_llm(self) -> llama_cpp.Llama:
+    def __get_or_create_llm(self) -> llama_cpp.Llama:
         """
         Returns a shared llama model instance and initializes it lazily.
 
         :return: The shared llama model instance.
         :rtype: llama_cpp.Llama
         """
-        if Prompt._shared_llm is None:
+        if Prompt.__shared_llm is None:
             try:
-                Prompt._shared_llm = llama_cpp.Llama(
-                    model_path=str(self._configuration.ai_used_prompting_model_path),
-                    chat_format=self._configuration.ai_used_prompting_model_chat_format,
+                Prompt.__shared_llm = llama_cpp.Llama(
+                    model_path=str(self.__configuration.ai_used_prompting_model_path),
+                    chat_format=self.__configuration.ai_used_prompting_model_chat_format,
                     n_ctx=8192,
                     verbose=False,
                     n_gpu_layers=-1,
@@ -136,18 +138,18 @@ class Prompt:
                     "GPU model initialization failed. Falling back to CPU inference."
                 )
 
-                Prompt._shared_llm = llama_cpp.Llama(
-                    model_path=str(self._configuration.ai_used_prompting_model_path),
-                    chat_format=self._configuration.ai_used_prompting_model_chat_format,
+                Prompt.__shared_llm = llama_cpp.Llama(
+                    model_path=str(self.__configuration.ai_used_prompting_model_path),
+                    chat_format=self.__configuration.ai_used_prompting_model_chat_format,
                     n_ctx=8192,
                     n_threads=12,
                     verbose=False,
                     n_gpu_layers=0,
                 )
 
-        return Prompt._shared_llm
+        return Prompt.__shared_llm
 
-    def _complete_chat_with_tools(
+    def __complete_chat_with_tools(
         self,
         llm: llama_cpp.Llama,
         messages: list[dict[str, Any]],
@@ -166,13 +168,13 @@ class Prompt:
         :return: The final chat completion response.
         :rtype: dict[str, Any]
         """
-        tools: Any = self._get_tool_definitions()
+        tools: Any = self.__get_tool_definitions()
         last_response: dict[str, Any] = {}
         executed_tool_signatures: set[str] = set()
-        allow_tool_calls = self._configuration.ai_allow_tool_calls
+        allow_tool_calls = self.__configuration.ai_allow_tool_calls
 
-        for _ in range(self._configuration.ai_max_toolcall_rounds):
-            completion_arguments = self._get_completion_arguments(
+        for _ in range(self.__configuration.ai_max_toolcall_rounds):
+            completion_arguments = self.__get_completion_arguments(
                 messages, tools, allow_tool_calls
             )
 
@@ -182,7 +184,7 @@ class Prompt:
                 return {"choices": [{"message": {"content": str(response)}}]}
 
             last_response = response
-            message = self._extract_message(response)
+            message = self.__extract_message(response)
             tool_calls = message.get("tool_calls") or []
             content = message.get("content")
 
@@ -216,14 +218,14 @@ class Prompt:
                     tool_results.append({"error": "Duplicate tool call skipped."})
                 else:
                     executed_tool_signatures.add(signature)
-                    tool_results.append(self._execute_tool_call(tool_call))
+                    tool_results.append(self.__execute_tool_call(tool_call))
 
-            messages.append(self._build_tool_result_message(tool_results))
+            messages.append(self.__build_tool_result_message(tool_results))
 
         log.warning("Maximum tool-call rounds reached without final model answer.")
         return last_response
 
-    def _get_completion_arguments(
+    def __get_completion_arguments(
         self, messages: list[dict[str, Any]], tools: Any, allow_tool_calls: bool
     ) -> dict[str, Any]:
         """
@@ -240,16 +242,16 @@ class Prompt:
         """
         completion_arguments: dict[str, Any] = {
             "messages": messages,
-            "stream": self._configuration.ai_stream_llm_responses,
+            "stream": self.__configuration.ai_stream_llm_responses,
         }
 
         if allow_tool_calls:
             completion_arguments["tools"] = tools
-            completion_arguments["tool_choice"] = self._configuration.ai_tool_choice
+            completion_arguments["tool_choice"] = self.__configuration.ai_tool_choice
 
         return completion_arguments
 
-    def _get_tool_definitions(self) -> list[dict[str, Any]]:
+    def __get_tool_definitions(self) -> list[dict[str, Any]]:
         """
         Returns the tool definitions for the nutrition assistant.
 
@@ -280,7 +282,7 @@ class Prompt:
             }
         ]
 
-    def _build_tool_result_message(
+    def __build_tool_result_message(
         self, tool_results: Sequence[dict[str, Any]]
     ) -> dict[str, str]:
         """
@@ -312,7 +314,7 @@ class Prompt:
             ),
         }
 
-    def _execute_tool_call(self, tool_call: dict[str, Any]) -> dict[str, Any]:
+    def __execute_tool_call(self, tool_call: dict[str, Any]) -> dict[str, Any]:
         """
         Executes a tool call requested by the model.
 
@@ -327,22 +329,22 @@ class Prompt:
         if function_name != "retrieve_nutrition_data":
             return {"error": f"Unsupported tool call: {function_name}"}
 
-        arguments = self._parse_tool_arguments(function_payload.get("arguments"))
+        arguments = self.__parse_tool_arguments(function_payload.get("arguments"))
         query = arguments.get("query")
 
         if not isinstance(query, str) or query.strip() == "":
             return {"error": "Missing required tool argument 'query'."}
 
-        top_k = self._sanitize_top_k(arguments.get("top_k", 10))
-        retrieved_results = self._retrieve_nutrition_data(query.strip(), top_k=top_k)
+        top_k = self.__sanitize_top_k(arguments.get("top_k", 10))
+        retrieved_results = self.__retrieve_nutrition_data(query.strip(), top_k=top_k)
 
         return {
             "query": query,
             "top_k": top_k,
-            "results": self._build_retrieval_context(retrieved_results),
+            "results": self.__build_retrieval_context(retrieved_results),
         }
 
-    def _build_retrieval_context(self, retrieved_results) -> str:
+    def __build_retrieval_context(self, retrieved_results) -> str:
         """
         Builds a plain text context block from retrieved nutrition results.
 
@@ -365,7 +367,7 @@ class Prompt:
 
         return "\n\n".join(context_blocks)
 
-    def _extract_message(self, response: dict[str, Any]) -> dict[str, Any]:
+    def __extract_message(self, response: dict[str, Any]) -> dict[str, Any]:
         """
         Extracts a chat message payload from a llama response.
 
@@ -391,7 +393,7 @@ class Prompt:
 
         return message
 
-    def _extract_message_content(self, response: dict[str, Any]) -> str:
+    def __extract_message_content(self, response: dict[str, Any]) -> str:
         """
         Extracts the textual message content from a llama response.
 
@@ -400,7 +402,7 @@ class Prompt:
         :return: The assistant text content.
         :rtype: str
         """
-        message = self._extract_message(response)
+        message = self.__extract_message(response)
         content = message.get("content")
 
         if isinstance(content, str) and content.strip() != "":
@@ -411,7 +413,7 @@ class Prompt:
 
         return "No response content returned by model."
 
-    def _parse_tool_arguments(self, raw_arguments: Any) -> dict[str, Any]:
+    def __parse_tool_arguments(self, raw_arguments: Any) -> dict[str, Any]:
         """
         Parses tool call arguments into a dictionary.
 
@@ -436,7 +438,7 @@ class Prompt:
 
         return parsed
 
-    def _sanitize_top_k(self, top_k: Any) -> int:
+    def __sanitize_top_k(self, top_k: Any) -> int:
         """
         Sanitizes top_k to an integer within a safe range.
 
@@ -452,12 +454,12 @@ class Prompt:
 
         return max(1, min(value, 50))
 
-    def _retrieve_nutrition_data(self, query: str, top_k: int = 10):
+    def __retrieve_nutrition_data(self, query: str, top_k: int = 10):
         """
         Retrieves nutrition data for the given products.
 
         :return: A list of nutrition data for the given products.
         :rtype: list
         """
-        with Retriever(self._configuration) as retriever:
+        with Retriever(self.__configuration) as retriever:
             return retriever.retrieve(query, top_k=top_k)
