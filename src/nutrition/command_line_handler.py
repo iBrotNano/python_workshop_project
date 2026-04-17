@@ -50,7 +50,7 @@ class CommandLineHandler:
         :rtype: tuple[str, str | None]
         """
 
-        question = terminal.safe_ask("How can I help you?")
+        question = terminal.safe_text("How can I help you?")
 
         if question is None or type(question) is not str or question.strip() == "":
             terminal.print_info("Nothing asked.")

@@ -8,6 +8,8 @@ from rich.theme import Theme
 from prompt_toolkit.input.defaults import create_input
 from prompt_toolkit.output.defaults import create_output
 from prompt_toolkit.output.win32 import NoConsoleScreenBufferError
+from typing import Any, Callable, Dict, Sequence, Union
+from common.input_validators import always_true
 
 log = logging.getLogger(__name__)
 
@@ -102,23 +104,48 @@ class Terminal:
 
         self._console.print(table)
 
-    def safe_ask(self, message: str) -> str:
+    def text(
+        self, message: str, default: str = "", validate: Callable = always_true
+    ) -> questionary.Question:
         """
         Asks a free-text question using Questionary with a TTY-preferred backend.
 
         :param self: This instance of the Terminal class.
         :param message: The message shown to the user.
         :type message: str
+        :param default: The default value if the user provides no input.
+        :type default: str
+        :param validate: A callable to validate the input.
+        :type validate: Callable
+        :return: A Questionary text question instance.
+        :rtype: questionary.Question
+
+        """
+        return questionary.text(
+            message,
+            input=create_input(always_prefer_tty=True),
+            output=create_output(always_prefer_tty=True),
+            default=default,
+            validate=validate,
+        )
+
+    def safe_text(
+        self, message: str, default: str = "", validate: Callable = always_true
+    ) -> Any:
+        """
+        Asks a free-text question using Questionary with a TTY-preferred backend.
+
+        :param self: This instance of the Terminal class.
+        :param message: The message shown to the user.
+        :type message: str
+        :param default: The default value if the user provides no input.
+        :type default: str
         :return: The entered text or None if the prompt was cancelled.
-        :rtype: str | None
+        :rtype: Any
         """
         for _ in range(2):
             try:
-                return questionary.text(
-                    message,
-                    input=create_input(always_prefer_tty=True),
-                    output=create_output(always_prefer_tty=True),
-                ).ask()
+                return self.text(message, default, validate).ask()
             except NoConsoleScreenBufferError:
                 log.warning(
                     "Questionary could not access the Windows console buffer. Retrying."
@@ -130,23 +157,47 @@ class Terminal:
             "Failed to display interactive prompt after multiple attempts."
         )
 
-    def safe_select(self, message: str, choices):
+    def select(
+        self,
+        message: str,
+        choices: Sequence[Union[str, questionary.Choice, Dict[str, Any]]],
+    ) -> questionary.Question:
+        """
+        Asks a select question using Questionary with a TTY-preferred backend.
+
+        :param self: This instance of the Terminal class.
+        :param message: The message shown to the user.
+        :type message: str
+        :param choices: The selectable choices.
+        :type choices: Sequence[Union[str, questionary.Choice, Dict[str, Any]]]
+        :return: A Questionary select question instance.
+        :rtype: questionary.Question
+        """
+        return questionary.select(
+            message,
+            choices=choices,
+            use_shortcuts=True,
+            input=create_input(always_prefer_tty=True),
+            output=create_output(always_prefer_tty=True),
+        )
+
+    def safe_select(
+        self,
+        message: str,
+        choices: Sequence[Union[str, questionary.Choice, Dict[str, Any]]],
+    ) -> Any:
         """
         Displays a Questionary select prompt with a TTY-preferred backend.
 
         :param message: The menu question shown to the user.
         :param choices: The selectable choices.
-        :return: The selected value or None.
+        :type choices: Sequence[Union[str, questionary.Choice, Dict[str, Any]]]
+        :return: The selected value or None if the prompt was cancelled.
+        :rtype: Any
         """
         for _ in range(2):
             try:
-                return questionary.select(
-                    message,
-                    choices=choices,
-                    use_shortcuts=True,
-                    input=create_input(always_prefer_tty=True),
-                    output=create_output(always_prefer_tty=True),
-                ).ask()
+                return self.select(message, choices).ask()
             except NoConsoleScreenBufferError:
                 log.warning(
                     "Questionary could not access the Windows console buffer. Retrying."
@@ -156,22 +207,38 @@ class Terminal:
             "Failed to display interactive select prompt after multiple attempts."
         )
 
-    def safe_confirm(self, message: str, default: bool = False):
+    def confirm(self, message: str, default: bool = False) -> questionary.Question:
+        """
+        Asks a confirmation question using Questionary with a TTY-preferred backend.
+
+        :param self: This instance of the Terminal class.
+        :param message: The message shown to the user.
+        :type message: str
+        :param default: The default value if the user provides no input.
+        :type default: bool
+        :return: A Questionary confirmation question instance.
+        :rtype: questionary.Question
+
+        """
+        return questionary.confirm(
+            message,
+            default=default,
+            input=create_input(always_prefer_tty=True),
+            output=create_output(always_prefer_tty=True),
+        )
+
+    def safe_confirm(self, message: str, default: bool = False) -> Any:
         """
         Displays a Questionary confirmation prompt with a TTY-preferred backend.
 
         :param message: The confirmation question shown to the user.
         :param default: The default confirmation value.
         :return: True, False, or None if the prompt could not be shown.
+        :rtype: Any
         """
         for _ in range(2):
             try:
-                return questionary.confirm(
-                    message,
-                    default=default,
-                    input=create_input(always_prefer_tty=True),
-                    output=create_output(always_prefer_tty=True),
-                ).ask()
+                return self.confirm(message, default).ask()
             except NoConsoleScreenBufferError:
                 log.warning(
                     "Questionary could not access the Windows console buffer. Retrying."

@@ -81,7 +81,7 @@ class NutritionRepository:
         return True
 
     def get_batches(
-        self, batch_size: int = 500
+        self, batch_size: int = 500, offset: int = 0
     ) -> Generator[list[Nutrition], None, None]:
         """
         Gets nutrition records in stable batches.
@@ -92,7 +92,6 @@ class NutritionRepository:
         :return: A generator yielding batches of nutrition records.
         :rtype: Generator[list[Nutrition], None, None]
         """
-        offset = 0
 
         while True:
             entities = (

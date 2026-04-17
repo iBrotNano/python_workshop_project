@@ -1,5 +1,4 @@
 import logging
-import questionary
 
 from rich.progress import (
     BarColumn,
@@ -17,6 +16,7 @@ from common.progress_state import ProgressState
 from common.progress_update import ProgressUpdate
 from common.console_logging_suppressor import suppress_console_logging
 from persistence.database_engine_factory import database_engine
+from common.input_validators import non_negative_integer_or_empty
 
 log = logging.getLogger(__name__)
 
@@ -29,7 +29,7 @@ class CommandLineHandler:
         Initializes the persistence command line handler.
 
         :param self: The CommandLineHandler instance being initialized."""
-        self._updater = NutritionDbUpdater(configuration, database_engine)
+        self.__updater = NutritionDbUpdater(configuration, database_engine)
 
     def show(self):
         """
@@ -37,25 +37,50 @@ class CommandLineHandler:
 
         :param self: The CommandLineHandler instance handling the command line flow.
         """
-        if questionary.confirm(
+        if not terminal.safe_confirm(
             "Do you really want to update the database? This may take some time."
-        ).ask():
-            progress_state = ProgressState()
+        ):
+            terminal.print_info("Database update canceled.")
+            return
 
-            with suppress_console_logging():
-                try:
-                    self._updater.update(
-                        progress_callback=lambda update: self._sync_progress_state(
-                            progress_state,
-                            update,
-                        )
-                    )
-                finally:
-                    self._close_progress(progress_state)
+        offset_answer = terminal.safe_text(
+            "Type in the number of already processed records to continue an update (or leave empty to start a new update).",
+            validate=non_negative_integer_or_empty,
+        )
 
-            terminal.print("Database update completed successfully! 🎉")
+        if offset_answer is None:
+            terminal.print_info("Database update canceled.")
+            return
 
-    def _sync_progress_state(
+        try:
+            embedding_creation_offset = int(offset_answer.strip() or "0")
+        except ValueError:
+            terminal.print_info("The offset must be a non-negative integer.")
+            return
+
+        progress_state = ProgressState()
+
+        with suppress_console_logging():
+            try:
+                result = self.__updater.update(
+                    progress_callback=lambda update: self.__sync_progress_state(
+                        progress_state,
+                        update,
+                    ),
+                    embedding_creation_offset=embedding_creation_offset,
+                )
+            finally:
+                self.__close_progress(progress_state)
+
+        if result["cancelled"]:
+            terminal.print_info(
+                f"Embedding creation canceled. Continue next time with start offset {result['next_offset']}."
+            )
+            return
+
+        terminal.print("Database update completed successfully! 🎉")
+
+    def __sync_progress_state(
         self,
         progress_state: ProgressState,
         update: ProgressUpdate,
@@ -69,8 +94,8 @@ class CommandLineHandler:
         :type update: ProgressUpdate
         """
         if progress_state.phase != update.phase:
-            self._close_progress(progress_state)
-            progress_state.progress = self._create_progress(transient=False)
+            self.__close_progress(progress_state)
+            progress_state.progress = self.__create_progress(transient=False)
             progress_state.progress.__enter__()
             progress_state.task_id = progress_state.progress.add_task(
                 update.description,
@@ -83,13 +108,13 @@ class CommandLineHandler:
         if progress_state.progress is None or progress_state.task_id is None:
             raise RuntimeError("Progress state is not initialized.")
 
-        self._handle_progress_update(
+        self.__handle_progress_update(
             progress_state.progress,
             progress_state.task_id,
             update,
         )
 
-    def _handle_progress_update(
+    def __handle_progress_update(
         self,
         progress: Progress,
         task_id: TaskID,
@@ -112,7 +137,7 @@ class CommandLineHandler:
             completed=update.completed,
         )
 
-    def _close_progress(self, progress_state: ProgressState):
+    def __close_progress(self, progress_state: ProgressState):
         """
         Closes the active Rich progress instance and keeps its final line visible.
 
@@ -126,7 +151,7 @@ class CommandLineHandler:
         progress_state.progress = None
         progress_state.task_id = None
 
-    def _create_progress(self, transient: bool) -> Progress:
+    def __create_progress(self, transient: bool) -> Progress:
         """
         Creates a Rich progress view for persistence operations.
 

@@ -1,9 +1,8 @@
-import os
-
 from dataclasses import fields
 from sqlalchemy import text
 from config.configuration import Configuration
 from common.progress_callback import ProgressCallback, emit_progress
+from common.sigint_handler import SigintHandler
 from persistence.database_engine import DatabaseEngine
 from persistence.openfoodfacts_update_pipeline import OpenFoodFactsUpdatePipeline
 from nutrition.nutrition import Nutrition
@@ -26,11 +25,11 @@ class NutritionDbUpdater:
         :param database_engine: The database engine used for importing records.
         :type database_engine: DatabaseEngine
         """
-        self._configuration = configuration
-        self._database_engine = database_engine
+        self.__configuration = configuration
+        self.__database_engine = database_engine
 
-        self._openfoodfacts_pipeline = OpenFoodFactsUpdatePipeline(
-            self._configuration, database_engine
+        self.__openfoodfacts_pipeline = OpenFoodFactsUpdatePipeline(
+            self.__configuration, database_engine
         )
 
         # TODO: Implement SwissNutritionDbUpdatePipeline as a second source for nutrition data and use it in this updater.
@@ -43,12 +42,20 @@ class NutritionDbUpdater:
         #     ".csv"
         # ).resolve()
 
-    def update(self, progress_callback: ProgressCallback | None = None):
+    def update(
+        self,
+        progress_callback: ProgressCallback | None = None,
+        embedding_creation_offset: int = 0,
+    ) -> dict[str, bool | int]:
         """
         Downloads the Open Food Facts gzip export and extracts the CSV file.
 
         :param progress_callback: Optional callback receiving neutral progress updates.
         :type progress_callback: ProgressCallback | None
+        :param embedding_creation_offset: Number of already processed records used to resume embedding creation.
+        :type embedding_creation_offset: int
+        :return: Update status containing cancellation state and the next resume offset.
+        :rtype: dict[str, bool | int]
         :raises OSError: If the download or extraction fails.
         """
 
@@ -62,61 +69,83 @@ class NutritionDbUpdater:
         #     self._swiss_nutrition_xlsx_path, self._swiss_nutrition_csv_path
         # ).convert(progress_callback)
         # TODO: Uncomment the pipeline run.
-        self._openfoodfacts_pipeline.run(progress_callback)
-        self._create_embeddings(progress_callback)
+        # self.__openfoodfacts_pipeline.run(progress_callback)
+        return self.__create_embeddings(progress_callback, embedding_creation_offset)
 
-    def _create_embeddings(self, progress_callback: ProgressCallback | None = None):
+    def __create_embeddings(
+        self, progress_callback: ProgressCallback | None = None, offset: int = 0
+    ) -> dict[str, bool | int]:
         """
         Creates embeddings for the nutrition data and stores them in the database.
 
         :param progress_callback: Optional callback receiving neutral progress updates.
         :type progress_callback: ProgressCallback | None
+        :param offset: Number of already processed records to skip when resuming.
+        :type offset: int
+        :return: Status containing cancellation state and the next resume offset.
+        :rtype: dict[str, bool | int]
         """
 
-        ModellDownloader(self._configuration).download_model_if_not_exists(
-            self._configuration.ai_used_embedding_model["repo"],
-            self._configuration.ai_used_embedding_model["filename"],
+        ModellDownloader(self.__configuration).download_model_if_not_exists(
+            self.__configuration.ai_used_embedding_model["repo"],
+            self.__configuration.ai_used_embedding_model["filename"],
         )
 
-        batch_size = self._configuration.ai_embedding_batch_size
-        processed_records = 0
+        batch_size = self.__configuration.ai_embedding_batch_size
+        processed_records = offset
+        sigint_handler = SigintHandler()
+        rag: SQLiteRag | None = None
 
         try:
-            rag = self._create_clean_rag()
+            with sigint_handler:
+                rag = self.__create_clean_rag() if offset == 0 else self.__create_rag()
 
-            with self._database_engine.get_db() as session:
-                repository = NutritionRepository(session)
-                total = repository.count()
-
-                emit_progress(
-                    progress_callback,
-                    phase="create_embeddings",
-                    description=f"Creating embeddings",
-                    completed=processed_records,
-                    total=total,
-                )
-
-                for batch in repository.get_batches(batch_size):
-                    for nutrition in batch:
-                        rag.add_text(
-                            self._build_chunk(nutrition),
-                            uri=self._build_document_uri(nutrition),
-                            metadata=self._build_chunk_metadata(nutrition),
-                        )
-
-                    processed_records += len(batch)
+                with self.__database_engine.get_db() as session:
+                    repository = NutritionRepository(session)
+                    total = repository.count()
 
                     emit_progress(
                         progress_callback,
                         phase="create_embeddings",
-                        description=f"Creating embeddings",
+                        description="Creating embeddings",
                         completed=processed_records,
                         total=total,
                     )
-        finally:
-            rag.close()
 
-    def _create_clean_rag(self) -> SQLiteRag:
+                    for batch in repository.get_batches(batch_size, offset):
+                        for nutrition in batch:
+                            rag.add_text(
+                                self.__build_chunk(nutrition),
+                                uri=self.__build_document_uri(nutrition),
+                                metadata=self.__build_chunk_metadata(nutrition),
+                            )
+
+                        processed_records += len(batch)
+
+                        emit_progress(
+                            progress_callback,
+                            phase="create_embeddings",
+                            description=(
+                                "Cancellation requested - finishing current batch"
+                                if sigint_handler.is_cancellation_requested
+                                else "Creating embeddings"
+                            ),
+                            completed=processed_records,
+                            total=total,
+                        )
+
+                        if sigint_handler.is_cancellation_requested:
+                            break
+
+            return {
+                "cancelled": sigint_handler.is_cancellation_requested,
+                "next_offset": processed_records,
+            }
+        finally:
+            if rag is not None:
+                rag.close()
+
+    def __create_clean_rag(self) -> SQLiteRag:
         """
         Drops all sqlite-rag tables and recreates the schema.
 
@@ -124,7 +153,7 @@ class NutritionDbUpdater:
         :rtype: SQLiteRag
         """
 
-        with self._database_engine.engine.begin() as connection:
+        with self.__database_engine.engine.begin() as connection:
             connection.execute(text("DROP TABLE IF EXISTS _sqliteai_vector"))
             connection.execute(text("DROP TABLE IF EXISTS chunks"))
             connection.execute(text("DROP TABLE IF EXISTS chunks_fts"))
@@ -136,9 +165,9 @@ class NutritionDbUpdater:
             connection.execute(text("DROP TABLE IF EXISTS sentences"))
             connection.execute(text("DROP TABLE IF EXISTS settings"))
 
-        return self._create_rag()
+        return self.__create_rag()
 
-    def _create_rag(self) -> SQLiteRag:
+    def __create_rag(self) -> SQLiteRag:
         """
         Creates a sqlite-rag instance with the configured embedding settings.
 
@@ -146,15 +175,15 @@ class NutritionDbUpdater:
         :rtype: SQLiteRag
         """
         return SQLiteRag.create(
-            self._configuration.sqlite_file_path,
+            self.__configuration.sqlite_file_path,
             {
-                "model_path": self._configuration.ai_used_embedding_model_path,
-                "chunk_size": self._configuration.ai_embedding_chunk_size,
-                "chunk_overlap": self._configuration.ai_embedding_chunk_overlap,
+                "model_path": self.__configuration.ai_used_embedding_model_path,
+                "chunk_size": self.__configuration.ai_embedding_chunk_size,
+                "chunk_overlap": self.__configuration.ai_embedding_chunk_overlap,
             },
         )
 
-    def _build_chunk(self, nutrition: Nutrition) -> str:
+    def __build_chunk(self, nutrition: Nutrition) -> str:
         """
         Builds an embedding chunk from a nutrition model.
 
@@ -189,7 +218,7 @@ class NutritionDbUpdater:
 
         return "\n".join(lines)
 
-    def _build_document_uri(self, nutrition: Nutrition) -> str:
+    def __build_document_uri(self, nutrition: Nutrition) -> str:
         """
         Builds a stable document URI for a nutrition record.
 
@@ -200,7 +229,7 @@ class NutritionDbUpdater:
         """
         return f"nutrition:{nutrition.id}"
 
-    def _build_chunk_metadata(self, nutrition: Nutrition) -> dict[str, int | str]:
+    def __build_chunk_metadata(self, nutrition: Nutrition) -> dict[str, int | str]:
         """
         Builds sqlite-rag metadata for a nutrition record.
 
