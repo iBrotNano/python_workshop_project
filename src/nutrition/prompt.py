@@ -89,6 +89,7 @@ class Prompt:
                 "Always recommend a healthy and balanced diet based on the retrieved nutrition data. "
                 "Only use product details that are present in the retrieval context. "
                 "Keep your answers concise and focused on the most relevant information. "
+                "Do not output chain-of-thought, hidden reasoning, thinking traces, analysis, or intermediate deliberation. Never expose internal notes or step-by-step thoughts. Return only the final answer for the user, concise, in Markdown, and in the language of the query."
                 "Always use the retrieve_nutrition_data function to look up nutrition data before answering. "
                 "If the retrieval results are insufficient or no relevant results were found, say that clearly. "
                 "Answer in the language of the query. "
@@ -193,7 +194,7 @@ class Prompt:
                     log.warning("Model returned empty content on follow-up call.")
                     return response
 
-                log.info(
+                log.debug(
                     "Model chose to respond without tools but returned empty content. "
                     "Retrying without tool definitions."
                 )
