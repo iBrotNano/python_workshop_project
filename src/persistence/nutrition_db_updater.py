@@ -46,6 +46,8 @@ class NutritionDbUpdater:
         self,
         progress_callback: ProgressCallback | None = None,
         embedding_creation_offset: int = 0,
+        skip_pipelines: bool = False,
+        skip_embedding_creation: bool = False,
     ) -> dict[str, bool | int]:
         """
         Downloads the Open Food Facts gzip export and extracts the CSV file.
@@ -54,6 +56,10 @@ class NutritionDbUpdater:
         :type progress_callback: ProgressCallback | None
         :param embedding_creation_offset: Number of already processed records used to resume embedding creation.
         :type embedding_creation_offset: int
+        :param skip_pipelines: Whether to skip running the update pipelines.
+        :type skip_pipelines: bool
+        :param skip_embedding_creation: Whether to skip creating embeddings.
+        :type skip_embedding_creation: bool
         :return: Update status containing cancellation state and the next resume offset.
         :rtype: dict[str, bool | int]
         :raises OSError: If the download or extraction fails.
@@ -68,9 +74,16 @@ class NutritionDbUpdater:
         # SwissNutritionDbXlsxToCsvConverter(
         #     self._swiss_nutrition_xlsx_path, self._swiss_nutrition_csv_path
         # ).convert(progress_callback)
-        # TODO: Uncomment the pipeline run.
-        # self.__openfoodfacts_pipeline.run(progress_callback)
-        return self.__create_embeddings(progress_callback, embedding_creation_offset)
+
+        if not skip_pipelines:
+            self.__openfoodfacts_pipeline.run(progress_callback)
+
+        if not skip_embedding_creation:
+            return self.__create_embeddings(
+                progress_callback, embedding_creation_offset
+            )
+        else:
+            return {"cancelled": False, "next_offset": embedding_creation_offset}
 
     def __create_embeddings(
         self, progress_callback: ProgressCallback | None = None, offset: int = 0

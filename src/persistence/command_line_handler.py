@@ -37,26 +37,37 @@ class CommandLineHandler:
 
         :param self: The CommandLineHandler instance handling the command line flow.
         """
+        embedding_creation_offset = 0
+
         if not terminal.safe_confirm(
             "Do you really want to update the database? This may take some time."
         ):
             terminal.print_info("Database update canceled.")
             return
 
-        offset_answer = terminal.safe_text(
-            "Type in the number of already processed records to continue an update (or leave empty to start a new update).",
-            validate=non_negative_integer_or_empty,
+        skip_pipelines = not terminal.safe_confirm(
+            "Do you want to run the full update pipelines? Choose 'No' to only run the embedding creation (useful if the pipelines have already been run and you just want to continue with embedding creation)."
         )
 
-        if offset_answer is None:
-            terminal.print_info("Database update canceled.")
-            return
+        skip_embedding_creation = not terminal.safe_confirm(
+            "Do you want to create embeddings? Choose 'No' to skip embedding creation."
+        )
 
-        try:
-            embedding_creation_offset = int(offset_answer.strip() or "0")
-        except ValueError:
-            terminal.print_info("The offset must be a non-negative integer.")
-            return
+        if not skip_embedding_creation:
+            offset_answer = terminal.safe_text(
+                "Type in the number of already processed records to continue an update (or leave empty to start a new update).",
+                validate=non_negative_integer_or_empty,
+            )
+
+            if offset_answer is None:
+                terminal.print_info("Database update canceled.")
+                return
+
+            try:
+                embedding_creation_offset = int(offset_answer.strip() or "0")
+            except ValueError:
+                terminal.print_info("The offset must be a non-negative integer.")
+                return
 
         progress_state = ProgressState()
 
@@ -68,6 +79,8 @@ class CommandLineHandler:
                         update,
                     ),
                     embedding_creation_offset=embedding_creation_offset,
+                    skip_pipelines=skip_pipelines,
+                    skip_embedding_creation=skip_embedding_creation,
                 )
             finally:
                 self.__close_progress(progress_state)
