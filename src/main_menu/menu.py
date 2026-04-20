@@ -8,6 +8,7 @@ log = logging.getLogger(__name__)
 
 class Menu:
     EXIT_COMMAND = "EXIT"
+    OPEN_ASSISTANT_COMMAND = "ASSISTANT"
     SEARCH_NUTRITION_COMMAND = "SEARCH_NUTRITION"
     MANAGE_RECIPES_COMMAND = "MANAGE_RECIPES"
     MANAGE_MEAL_PLAN_COMMAND = "MANAGE_MEAL_PLAN"
@@ -37,6 +38,10 @@ class Menu:
         """
 
         choices = [
+            questionary.Choice(
+                "Open assistant",
+                value=self.OPEN_ASSISTANT_COMMAND,
+            ),
             questionary.Choice(
                 "Search for nutritional information",
                 value=self.SEARCH_NUTRITION_COMMAND,

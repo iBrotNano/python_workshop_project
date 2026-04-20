@@ -1,6 +1,6 @@
 import logging
 import questionary
-import nutrition.command_line_handler as nutrition_cli
+import assistant.command_line_handler as assistant_cli
 
 from rich.markdown import Markdown
 from recipes.recipe import Recipe
@@ -263,7 +263,8 @@ class CommandLineHandler:
         terminal.print_rule_separated(
             "Your recipe needs some ingredients. Let's add them now!"
         )
-        food_search = nutrition_cli.CommandLineHandler()
+
+        food_search = assistant_cli.CommandLineHandler()
         _add_ingredients_to(recipe)
         _add_instructions_to(recipe)
         md = Markdown(recipe.as_markdown())

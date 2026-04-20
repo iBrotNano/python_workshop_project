@@ -1,7 +1,7 @@
 import logging
 import sys
 import main_menu.menu as menu
-import nutrition.command_line_handler as nutrition_cli
+import assistant.command_line_handler as assistant_cli
 import recipes.command_line_handler as recipe_cli
 import meal_plan.command_line_handler as meal_plan_cli
 import persons.command_line_handler as persons_cli
@@ -29,8 +29,12 @@ try:
         try:
             command = main_menu.show()
 
+            if command == main_menu.OPEN_ASSISTANT_COMMAND:
+                assistant_cli.CommandLineHandler().show()
+
+            # TODO: Use the nutritional data search.
             if command == main_menu.SEARCH_NUTRITION_COMMAND:
-                nutrition_cli.CommandLineHandler().show()
+                assistant_cli.CommandLineHandler().show()
 
             if command == main_menu.MANAGE_RECIPES_COMMAND:
                 recipe_cli.CommandLineHandler().show()

@@ -55,7 +55,7 @@ class Prompt:
 
     def execute(
         self, query: str, top_k: int = 10, messages: list[dict[str, Any]] | None = None
-    ):
+    ) -> tuple[str, list[dict[str, Any]]]:
         """
         Generates nutrition information based on the provided query.
 
@@ -67,8 +67,8 @@ class Prompt:
         :type top_k: int
         :param messages: The list of previous messages in the conversation, used for context.
         :type messages: list[dict[str, Any]] | None
-        :return: A tuple containing the generated message content, search result, and updated messages.
-        :rtype: tuple[str, dict | None, list[dict[str, Any]]]
+        :return: A tuple containing the generated message content and updated messages.
+        :rtype: tuple[str, list[dict[str, Any]]]
         """
         ModellDownloader(self.__configuration).download_model_if_not_exists(
             self.__configuration.ai_used_prompting_model["repo"],
@@ -92,7 +92,7 @@ class Prompt:
         response = self.__complete_chat_with_tools(llm, messages)
         message_content = self.__extract_message_content(response)
         messages += [{"role": "assistant", "content": message_content}]
-        return (message_content, None, messages)
+        return (message_content, messages)
 
     def __create_role_prompt(self, top_k):
         return {
@@ -221,10 +221,6 @@ class Prompt:
                     executed_tool_signatures.add(signature)
                     tool_results.append(self.__execute_tool_call(tool_call))
 
-            # TODO: Remove the test output.
-            # from common.terminal import terminal
-
-            # terminal.print(tool_results)
             messages.append(self.__build_tool_result_message(tool_results))
 
         log.warning("Maximum tool-call rounds reached without final model answer.")
@@ -349,9 +345,6 @@ class Prompt:
             "query": query,
             "top_k": top_k,
             "results": self.__build_retrieval_context(retrieved_results),
-            "retrieved_results": self.__make_json_serializable(
-                retrieved_results
-            ),  # TODO: Check the result and proof where the id of the original datain my database is.
         }
 
     def __build_retrieval_context(self, retrieved_results: list[DocumentResult]) -> str:
