@@ -1,7 +1,7 @@
 import logging
 import questionary
 
-from common.terminal import terminal
+from common.terminal.terminal import terminal
 
 log = logging.getLogger(__name__)
 

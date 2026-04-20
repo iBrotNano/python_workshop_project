@@ -8,7 +8,7 @@ import persons.command_line_handler as persons_cli
 import persistence.command_line_handler as persistence_cli
 from prompt_toolkit.output.win32 import NoConsoleScreenBufferError
 
-from common.terminal import terminal
+from common.terminal.terminal import terminal
 from config.configurator import configurator
 from config.configuration import configuration
 from persistence.database_engine_factory import database_engine

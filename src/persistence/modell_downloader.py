@@ -1,7 +1,7 @@
 import os
 
 from huggingface_hub import hf_hub_download
-from common.progress_callback import ProgressCallback
+from common.terminal.progress_callback import ProgressCallback
 from config.configuration import Configuration
 
 

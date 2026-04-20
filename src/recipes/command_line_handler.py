@@ -4,7 +4,7 @@ import nutrition.command_line_handler as nutrition_cli
 
 from rich.markdown import Markdown
 from recipes.recipe import Recipe
-from common.terminal import terminal
+from common.terminal.terminal import terminal
 from recipes.recipe_type import RecipeType
 from recipes.exporter import Exporter
 from persistence.unit_of_work import UnitOfWork

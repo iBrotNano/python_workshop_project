@@ -1,8 +1,8 @@
 from dataclasses import fields
 from sqlalchemy import text
 from config.configuration import Configuration
-from common.progress_callback import ProgressCallback, emit_progress
-from common.sigint_handler import SigintHandler
+from common.terminal.progress_callback import ProgressCallback, emit_progress
+from common.terminal.sigint_handler import SigintHandler
 from persistence.database_engine import DatabaseEngine
 from persistence.openfoodfacts_update_pipeline import OpenFoodFactsUpdatePipeline
 from nutrition.nutrition import Nutrition

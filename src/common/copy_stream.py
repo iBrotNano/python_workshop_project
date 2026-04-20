@@ -1,5 +1,5 @@
 from typing import BinaryIO, Callable
-from common.progress_callback import ProgressCallback, emit_progress
+from common.terminal.progress_callback import ProgressCallback, emit_progress
 
 
 class CopyStream:

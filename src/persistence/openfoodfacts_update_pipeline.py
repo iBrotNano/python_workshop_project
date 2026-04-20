@@ -4,7 +4,7 @@ import pandas
 from pathlib import Path
 from sqlalchemy.engine import Connection
 from common.gzip_extractor import GzipExtractor
-from common.progress_callback import ProgressCallback
+from common.terminal.progress_callback import ProgressCallback
 from config.configuration import Configuration
 from nutrition.nutrition_entity import NutritionEntity
 from persistence.database_engine import DatabaseEngine

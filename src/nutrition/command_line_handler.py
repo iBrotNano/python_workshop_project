@@ -3,7 +3,7 @@ import questionary
 
 from typing import Any
 from rich.table import Table
-from common.terminal import terminal
+from common.terminal.terminal import terminal
 from config.configuration import configuration
 from nutrition.prompt import Prompt
 from rich.markdown import Markdown

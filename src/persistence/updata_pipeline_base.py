@@ -1,7 +1,7 @@
 import logging
 
 from pathlib import Path
-from common.progress_callback import ProgressCallback, emit_progress
+from common.terminal.progress_callback import ProgressCallback, emit_progress
 from urllib.request import urlopen
 from common.copy_stream import CopyStream
 

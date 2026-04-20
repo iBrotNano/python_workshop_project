@@ -3,7 +3,7 @@ import questionary
 
 from persons.person import Gender, Person
 from rich.table import Table
-from common.terminal import terminal
+from common.terminal.terminal import terminal
 from typing import Any
 from persistence.unit_of_work import UnitOfWork
 

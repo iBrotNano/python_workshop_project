@@ -3,7 +3,7 @@ import gzip
 
 from pathlib import Path
 from typing import Callable
-from common.progress_callback import ProgressCallback, emit_progress
+from common.terminal.progress_callback import ProgressCallback, emit_progress
 from common.copy_stream import CopyStream
 
 log = logging.getLogger(__name__)

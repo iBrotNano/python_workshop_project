@@ -9,14 +9,14 @@ from rich.progress import (
     TimeElapsedColumn,
 )
 
-from common.terminal import terminal
+from common.terminal.terminal import terminal
 from config.configuration import configuration
 from persistence.nutrition_db_updater import NutritionDbUpdater
-from common.progress_state import ProgressState
-from common.progress_update import ProgressUpdate
-from common.console_logging_suppressor import suppress_console_logging
+from common.terminal.progress_state import ProgressState
+from common.terminal.progress_update import ProgressUpdate
+from common.terminal.console_logging_suppressor import suppress_console_logging
 from persistence.database_engine_factory import database_engine
-from common.input_validators import non_negative_integer_or_empty
+from common.terminal.input_validators import non_negative_integer_or_empty
 
 log = logging.getLogger(__name__)
 

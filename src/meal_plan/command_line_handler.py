@@ -1,7 +1,7 @@
 import logging
 import questionary
 
-from common.terminal import terminal
+from common.terminal.terminal import terminal
 from rich.table import Table
 from meal_plan.meal_planner import MealPlanner
 from meal_plan.meal_plan import MealPlan

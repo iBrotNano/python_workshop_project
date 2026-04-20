@@ -1,5 +1,5 @@
 from collections.abc import Callable
-from common.progress_update import ProgressUpdate
+from common.terminal.progress_update import ProgressUpdate
 
 
 ProgressCallback = Callable[[ProgressUpdate], None]
