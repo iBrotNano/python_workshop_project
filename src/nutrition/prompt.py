@@ -304,8 +304,10 @@ class Prompt:
         parts: list[str] = []
 
         for index, result in enumerate(tool_results, start=1):
+            serialized_result = self.__make_json_serializable(result)
+
             parts.append(
-                f"Tool result {index}:\n{json.dumps(result, ensure_ascii=False)}"
+                f"Tool result {index}:\n{json.dumps(serialized_result, ensure_ascii=False)}"
             )
 
         body = "\n\n".join(parts)
@@ -347,9 +349,9 @@ class Prompt:
             "query": query,
             "top_k": top_k,
             "results": self.__build_retrieval_context(retrieved_results),
-            "retrieved_results": [
-                result.__dict__ for result in retrieved_results
-            ],  # TODO: Check the result and proof where the id of the original data in my database is.
+            "retrieved_results": self.__make_json_serializable(
+                retrieved_results
+            ),  # TODO: Check the result and proof where the id of the original datain my database is.
         }
 
     def __build_retrieval_context(self, retrieved_results: list[DocumentResult]) -> str:
@@ -374,6 +376,32 @@ class Prompt:
             context_blocks.append(f"Result {index}:\n{text}")
 
         return "\n\n".join(context_blocks)
+
+    def __make_json_serializable(self, value: Any) -> Any:
+        """
+        Converts nested tool results into JSON-serializable data.
+
+        :param value: The value to normalize.
+        :type value: Any
+        :return: A JSON-safe representation.
+        :rtype: Any
+        """
+        if value is None or isinstance(value, (str, int, float, bool)):
+            return value
+
+        if isinstance(value, dict):
+            return {
+                str(key): self.__make_json_serializable(item)
+                for key, item in value.items()
+            }
+
+        if isinstance(value, (list, tuple, set)):
+            return [self.__make_json_serializable(item) for item in value]
+
+        if hasattr(value, "__dict__"):
+            return self.__make_json_serializable(vars(value))
+
+        return str(value)
 
     def __extract_message(self, response: dict[str, Any]) -> dict[str, Any]:
         """
