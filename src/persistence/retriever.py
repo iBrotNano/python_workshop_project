@@ -23,9 +23,16 @@ class Retriever:
             require_existing=True,
         )
 
+        self.__experimental_batched_sentence_scoring = (
+            configuration.experimental_batched_sentence_scoring
+        )
+
         self.__batched_search_supported = version("sqlite-rag") == "0.1.4"
 
-        if not self.__batched_search_supported:
+        if (
+            self.__experimental_batched_sentence_scoring
+            and not self.__batched_search_supported
+        ):
             log.warning(
                 "Batched sentence search supports sqlite-rag 0.1.4; "
                 "using the library's original search implementation."
@@ -71,15 +78,35 @@ class Retriever:
         :rtype: list[DocumentResult]
         :raises RuntimeError: If the retriever is closed.
         """
-        if self.rag is None:
-            raise RuntimeError("The retriever is closed.")
-        
-        if not self.__batched_search_supported or self.rag._settings.top_k_sentences < 0:
-            return self.rag.search(query, top_k=top_k)
-
-        #TODO: Extract the batch sentence scoring logic into a separate method for clarity and to make the code run only if an experimental mode is enabled. The code might change and using the normal logic is more stable.
-        # sqlite-rag 0.1.4 exposes no public API for batch sentence scoring.
         rag = self.rag
+        
+        if rag is None:
+            raise RuntimeError("The retriever is closed.")
+
+        if (
+            not self.__experimental_batched_sentence_scoring
+            or not self.__batched_search_supported
+            or rag._settings.top_k_sentences < 0
+        ):
+            return rag.search(query, top_k=top_k)
+
+        return self.__search_with_batched_sentence_scoring(rag, query, top_k)
+
+    def __search_with_batched_sentence_scoring(
+        self, rag: SQLiteRag, query: str, top_k: int
+    ) -> list[DocumentResult]:
+        """Search using experimental batched sentence scoring.
+
+        :param rag: The SQLiteRag instance used for the search.
+        :type rag: SQLiteRag
+        :param query: The search query.
+        :type query: str
+        :param top_k: The number of top results to return.
+        :type top_k: int
+        :return: Search results with sentence scores.
+        :rtype: list[DocumentResult]
+        """
+        # sqlite-rag 0.1.4 exposes no public API for batch sentence scoring.
         rag._ensure_initialized()
         engine = rag._engine
         settings = rag._settings
@@ -159,5 +186,5 @@ class Retriever:
 
         for result in results:
             result.sentences = list(sentences[result.chunk_id])
-            
+
         return results

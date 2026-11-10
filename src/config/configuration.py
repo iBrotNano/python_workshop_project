@@ -56,6 +56,7 @@ class Configuration:
     sqlite_url: str = f"sqlite:///.//{sqlite_file_path}"
     sqlite_echo: bool = False
     sqlite_auto_flush: bool = False
+    experimental_batched_sentence_scoring: bool = True
 
     ai_use_vulcan_llama_backend: bool = True
     ai_allow_tool_calls: bool = True

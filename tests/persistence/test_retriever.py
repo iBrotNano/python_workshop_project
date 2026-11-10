@@ -50,7 +50,12 @@ def test_batched_search_matches_sqlite_rag_results(tmp_path, monkeypatch, quanti
     finally:
         engine.dispose()
 
-    with Retriever(SimpleNamespace(sqlite_file_path=database_path)) as retriever:
+    with Retriever(
+        SimpleNamespace(
+            sqlite_file_path=database_path,
+            experimental_batched_sentence_scoring=True,
+        )
+    ) as retriever:
         actual = [asdict(item) for item in retriever.retrieve("apple", top_k=2)]
         repeated = [asdict(item) for item in retriever.retrieve("apple", top_k=2)]
 
@@ -134,7 +139,12 @@ def test_unsupported_sqlite_rag_version_uses_library_search(monkeypatch):
     )
     monkeypatch.setattr("persistence.retriever.SQLiteRag.create", lambda *args, **kwargs: rag)
     monkeypatch.setattr("persistence.retriever.version", lambda name: "0.2.0")
-    retriever = Retriever(SimpleNamespace(sqlite_file_path="database.db"))
+    retriever = Retriever(
+        SimpleNamespace(
+            sqlite_file_path="database.db",
+            experimental_batched_sentence_scoring=True,
+        )
+    )
 
     assert retriever.retrieve("apple", 2) == []
     retriever.close()
@@ -143,3 +153,51 @@ def test_unsupported_sqlite_rag_version_uses_library_search(monkeypatch):
         retriever.retrieve("apple")
 
     assert calls == [("apple", 2), "close"]
+
+
+def test_experimental_batched_sentence_scoring_uses_normal_search_when_disabled(
+    monkeypatch,
+):
+    calls = []
+    rag = SimpleNamespace(
+        search=lambda query, top_k: calls.append((query, top_k)) or [],
+        close=lambda: None,
+    )
+    monkeypatch.setattr(
+        "persistence.retriever.SQLiteRag.create", lambda *args, **kwargs: rag
+    )
+    monkeypatch.setattr("persistence.retriever.version", lambda name: "0.1.4")
+    retriever = Retriever(
+        SimpleNamespace(
+            sqlite_file_path="database.db",
+            experimental_batched_sentence_scoring=False,
+        )
+    )
+
+    assert retriever.retrieve("apple", 2) == []
+    assert calls == [("apple", 2)]
+
+
+def test_experimental_batched_sentence_scoring_uses_helper_when_enabled(monkeypatch):
+    expected = [object()]
+    rag = SimpleNamespace(
+        _settings=SimpleNamespace(top_k_sentences=5),
+        close=lambda: None,
+    )
+    monkeypatch.setattr(
+        "persistence.retriever.SQLiteRag.create", lambda *args, **kwargs: rag
+    )
+    monkeypatch.setattr("persistence.retriever.version", lambda name: "0.1.4")
+    monkeypatch.setattr(
+        Retriever,
+        "_Retriever__search_with_batched_sentence_scoring",
+        lambda self, rag, query, top_k: expected,
+    )
+    retriever = Retriever(
+        SimpleNamespace(
+            sqlite_file_path="database.db",
+            experimental_batched_sentence_scoring=True,
+        )
+    )
+
+    assert retriever.retrieve("apple", 2) is expected
