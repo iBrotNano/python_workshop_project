@@ -2,6 +2,7 @@ import logging
 import sys
 import main_menu.menu as menu
 import assistant.command_line_handler as assistant_cli
+import nutrition.command_line_handler as nutrition_cli
 import recipes.command_line_handler as recipe_cli
 import meal_plan.command_line_handler as meal_plan_cli
 import persons.command_line_handler as persons_cli
@@ -12,6 +13,7 @@ from common.terminal.terminal import terminal
 from config.configurator import configurator
 from config.configuration import configuration
 from persistence.database_engine_factory import database_engine
+from persistence.retriever_manager import retriever_manager
 
 
 log = logging.getLogger(__name__)
@@ -32,9 +34,8 @@ try:
             if command == main_menu.OPEN_ASSISTANT_COMMAND:
                 assistant_cli.CommandLineHandler().show()
 
-            # TODO: Use the nutritional data search.
             if command == main_menu.SEARCH_NUTRITION_COMMAND:
-                assistant_cli.CommandLineHandler().show()
+                nutrition_cli.CommandLineHandler().show()
 
             if command == main_menu.MANAGE_RECIPES_COMMAND:
                 recipe_cli.CommandLineHandler().show()
@@ -47,6 +48,9 @@ try:
 
             if command == main_menu.UPDATE_DATABASE_COMMAND:
                 persistence_cli.CommandLineHandler().show()
+
+            if command == main_menu.COMPACT_DATABASE_COMMAND:
+                persistence_cli.CommandLineHandler().compact()
 
             if command == main_menu.EXIT_COMMAND:
                 terminal.print("Goodbye! 👋")
@@ -64,3 +68,5 @@ try:
 except Exception as e:
     log.critical(f"An error of type {type(e)} occurred. Message: {e}", exc_info=True)
     sys.exit(1)  # Exit with error code 1 to indicate failure.
+finally:
+    retriever_manager.close()

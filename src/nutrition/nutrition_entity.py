@@ -18,6 +18,7 @@ class NutritionEntity(database_engine.Base):
     synonyms = Column(JSON, nullable=True)
     categories = Column(JSON, nullable=True)
     quantity = Column(String, nullable=True)
+    last_modified_timestamp = Column(Integer, nullable=True)
     energy_100g_kj = Column(Float, nullable=False)
     fat_100g = Column(Float, nullable=False)
     saturated_fat_100g = Column(Float, nullable=True)

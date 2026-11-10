@@ -14,6 +14,7 @@ class Menu:
     MANAGE_MEAL_PLAN_COMMAND = "MANAGE_MEAL_PLAN"
     MANAGE_PERSONS_COMMAND = "MANAGE_PERSONS"
     UPDATE_DATABASE_COMMAND = "UPDATE_DATABASE"
+    COMPACT_DATABASE_COMMAND = "COMPACT_DATABASE"
 
     def show(self):
         """
@@ -51,6 +52,9 @@ class Menu:
             questionary.Choice("Manage persons", value=self.MANAGE_PERSONS_COMMAND),
             questionary.Choice(
                 "Update the database", value=self.UPDATE_DATABASE_COMMAND
+            ),
+            questionary.Choice(
+                "Compact the database", value=self.COMPACT_DATABASE_COMMAND
             ),
             questionary.Choice(
                 "Exit the application",

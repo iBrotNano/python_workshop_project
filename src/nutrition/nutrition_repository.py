@@ -108,6 +108,27 @@ class NutritionRepository:
             yield [self._entity_to_model(entity) for entity in entities]
             offset += batch_size
 
+    def get_by_ids(self, ids: list[int]) -> dict[int, Nutrition]:
+        """
+        Loads nutrition records by their database identifiers.
+
+        :param ids: Database identifiers to load.
+        :type ids: list[int]
+        :return: Records keyed by their identifiers.
+        :rtype: dict[int, Nutrition]
+        """
+        if not ids:
+            return {}
+
+        entities = (
+            self._session.query(NutritionEntity)
+            .filter(NutritionEntity.id.in_(ids))
+            .all()
+        )
+        
+        models = (self._entity_to_model(entity) for entity in entities)
+        return {model.id: model for model in models}
+
     def count(self) -> int:
         """
         Counts the total number of nutrition records in the database.

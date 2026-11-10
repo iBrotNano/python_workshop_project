@@ -132,7 +132,7 @@ class Configuration:
         self.ai_models_folder = str(PROJECT_ROOT / type(self).ai_models_folder)
 
         self.ai_used_embedding_model = self.ai_embedding_models[
-            "nomic-embed-text-v1.5-Q2_K"
+            "embeddinggemma-300m-GGUF-Q8_0"
         ]
 
         self.ai_used_prompting_model = self.ai_prompting_models["gemma-4-E4B-it-GGUF"]

@@ -68,7 +68,7 @@ class UpdatePipelineBase:
 
         return int(content_length)
 
-    def _prepare(self, progress_callback: ProgressCallback | None = None):
+    def __prepare(self, progress_callback: ProgressCallback | None = None):
         """
         Placeholder for preparation steps before running the pipeline.
 
@@ -79,7 +79,7 @@ class UpdatePipelineBase:
         """
         raise NotImplementedError("Subclasses must implement the _prepare method.")
 
-    def _persist(self, progress_callback: ProgressCallback | None = None):
+    def __persist(self, progress_callback: ProgressCallback | None = None):
         """
         Placeholder for persistence steps to store data into the database.
 

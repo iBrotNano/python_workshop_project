@@ -1,3 +1,5 @@
+import logging
+
 from dataclasses import fields
 from sqlalchemy import text
 from config.configuration import Configuration
@@ -8,7 +10,11 @@ from persistence.openfoodfacts_update_pipeline import OpenFoodFactsUpdatePipelin
 from nutrition.nutrition import Nutrition
 from nutrition.nutrition_repository import NutritionRepository
 from sqlite_rag import SQLiteRag
+from sqlite_rag.settings import Settings
 from persistence.modell_downloader import ModellDownloader
+from persistence.retriever_manager import retriever_manager
+
+log = logging.getLogger(__name__)
 
 
 class NutritionDbUpdater:
@@ -55,6 +61,7 @@ class NutritionDbUpdater:
         :param progress_callback: Optional callback receiving neutral progress updates.
         :type progress_callback: ProgressCallback | None
         :param embedding_creation_offset: Number of already processed records used to resume embedding creation.
+        -1 skips the embedding and quantization starts directly.
         :type embedding_creation_offset: int
         :param skip_pipelines: Whether to skip running the update pipelines.
         :type skip_pipelines: bool
@@ -75,6 +82,9 @@ class NutritionDbUpdater:
         #     self._swiss_nutrition_xlsx_path, self._swiss_nutrition_csv_path
         # ).convert(progress_callback)
 
+        if not skip_pipelines or not skip_embedding_creation:
+            retriever_manager.close()
+
         if not skip_pipelines:
             self.__openfoodfacts_pipeline.run(progress_callback)
 
@@ -83,7 +93,11 @@ class NutritionDbUpdater:
                 progress_callback, embedding_creation_offset
             )
         else:
-            return {"cancelled": False, "next_offset": embedding_creation_offset}
+            return {
+                "cancelled": False,
+                "next_offset": embedding_creation_offset,
+                "quantized": False,
+            }
 
     def __create_embeddings(
         self, progress_callback: ProgressCallback | None = None, offset: int = 0
@@ -111,57 +125,96 @@ class NutritionDbUpdater:
 
         try:
             with sigint_handler:
-                rag = self.__create_clean_rag() if offset == 0 else self.__create_rag()
+                rag = (
+                    self.__create_clean_rag(quantize_scan=False)
+                    if offset == 0
+                    else self.__create_rag(quantize_scan=False)
+                )
 
-                with self.__database_engine.get_db() as session:
-                    repository = NutritionRepository(session)
-                    total = repository.count()
-
-                    emit_progress(
-                        progress_callback,
-                        phase="create_embeddings",
-                        description="Creating embeddings",
-                        completed=processed_records,
-                        total=total,
-                    )
-
-                    for batch in repository.get_batches(batch_size, offset):
-                        for nutrition in batch:
-                            rag.add_text(
-                                self.__build_chunk(nutrition),
-                                uri=self.__build_document_uri(nutrition),
-                                metadata=self.__build_chunk_metadata(nutrition),
-                            )
-
-                        processed_records += len(batch)
+                if offset != -1:
+                    with self.__database_engine.get_db() as session:
+                        repository = NutritionRepository(session)
+                        total = repository.count()
 
                         emit_progress(
                             progress_callback,
                             phase="create_embeddings",
-                            description=(
-                                "Cancellation requested - finishing current batch"
-                                if sigint_handler.is_cancellation_requested
-                                else "Creating embeddings"
-                            ),
+                            description="Creating embeddings",
                             completed=processed_records,
                             total=total,
                         )
 
-                        if sigint_handler.is_cancellation_requested:
-                            break
+                        for batch in repository.get_batches(batch_size, offset):
+                            for nutrition in batch:
+                                rag.add_text(
+                                    self.__build_chunk(nutrition),
+                                    uri=self.__build_document_uri(nutrition),
+                                    metadata=self.__build_chunk_metadata(nutrition),
+                                )
+
+                            processed_records += len(batch)
+
+                            emit_progress(
+                                progress_callback,
+                                phase="create_embeddings",
+                                description=(
+                                    "Cancellation requested - finishing current batch"
+                                    if sigint_handler.is_cancellation_requested
+                                    else "Creating embeddings"
+                                ),
+                                completed=processed_records,
+                                total=total,
+                            )
+
+                            if sigint_handler.is_cancellation_requested:
+                                break
+                else:
+                    log.info(
+                        "Embedding creation skipped as offset is set to -1. Starting directly with quantization."
+                    )
+
+                if not sigint_handler.is_cancellation_requested:
+                    rag.close()
+                    rag = None
+
+                    emit_progress(
+                        progress_callback,
+                        phase="quantize_embeddings",
+                        description="Quantizing embeddings",
+                        completed=0,
+                        total=1,
+                    )
+
+                    quantized_rag = self.__create_rag(quantize_scan=True)
+
+                    try:
+                        quantized_rag.quantize_vectors()
+                    finally:
+                        quantized_rag.close()
+
+                    emit_progress(
+                        progress_callback,
+                        phase="quantize_embeddings",
+                        description="Quantizing embeddings",
+                        completed=1,
+                        total=1,
+                    )
 
             return {
                 "cancelled": sigint_handler.is_cancellation_requested,
                 "next_offset": processed_records,
+                "quantized": not sigint_handler.is_cancellation_requested,
             }
         finally:
             if rag is not None:
                 rag.close()
 
-    def __create_clean_rag(self) -> SQLiteRag:
+    def __create_clean_rag(self, quantize_scan: bool) -> SQLiteRag:
         """
         Drops all sqlite-rag tables and recreates the schema.
 
+        :param quantize_scan: Whether sqlite-rag should use quantized search mode.
+        :type quantize_scan: bool
         :return: A new sqlite-rag instance with a recreated schema.
         :rtype: SQLiteRag
         """
@@ -178,21 +231,26 @@ class NutritionDbUpdater:
             connection.execute(text("DROP TABLE IF EXISTS sentences"))
             connection.execute(text("DROP TABLE IF EXISTS settings"))
 
-        return self.__create_rag()
+        return self.__create_rag(quantize_scan=quantize_scan)
 
-    def __create_rag(self) -> SQLiteRag:
+    def __create_rag(self, quantize_scan: bool) -> SQLiteRag:
         """
         Creates a sqlite-rag instance with the configured embedding settings.
 
+        :param quantize_scan: Whether sqlite-rag should use quantized search mode.
+        :type quantize_scan: bool
         :return: An initialized sqlite-rag instance.
         :rtype: SQLiteRag
         """
+        Settings.use_gpu = self.__configuration.ai_use_vulcan_llama_backend
+
         return SQLiteRag.create(
             self.__configuration.sqlite_file_path,
-            {
+            settings={
                 "model_path": self.__configuration.ai_used_embedding_model_path,
                 "chunk_size": self.__configuration.ai_embedding_chunk_size,
                 "chunk_overlap": self.__configuration.ai_embedding_chunk_overlap,
+                "quantize_scan": quantize_scan,
             },
         )
 

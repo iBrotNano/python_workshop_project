@@ -4,7 +4,7 @@ import logging
 import llama_cpp
 
 from config.configuration import Configuration
-from assistant.retriever import Retriever
+from persistence.retriever_manager import retriever_manager
 from persistence.modell_downloader import ModellDownloader
 from typing import Any, Sequence
 from sqlite_rag.models.document_result import DocumentResult
@@ -496,5 +496,4 @@ class Prompt:
         :return: A list of nutrition data for the given products.
         :rtype: list[DocumentResult]
         """
-        with Retriever(self.__configuration) as retriever:
-            return retriever.retrieve(query, top_k=top_k)
+        return retriever_manager.get(self.__configuration).retrieve(query, top_k=top_k)

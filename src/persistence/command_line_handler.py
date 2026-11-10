@@ -16,7 +16,13 @@ from common.terminal.progress_state import ProgressState
 from common.terminal.progress_update import ProgressUpdate
 from common.terminal.console_logging_suppressor import suppress_console_logging
 from persistence.database_engine_factory import database_engine
-from common.terminal.input_validators import non_negative_integer_or_empty
+from persistence.database_maintenance import DatabaseMaintenance
+from persistence.retriever_manager import retriever_manager
+from sqlalchemy.exc import SQLAlchemyError
+
+from common.terminal.input_validators import (
+    non_negative_integer_and_and_configured_negative_values_or_empty,
+)
 
 log = logging.getLogger(__name__)
 
@@ -30,6 +36,44 @@ class CommandLineHandler:
 
         :param self: The CommandLineHandler instance being initialized."""
         self.__updater = NutritionDbUpdater(configuration, database_engine)
+
+    def compact(self):
+        """
+        Offers explicit SQLite compaction and reports its result.
+        """
+        maintenance = DatabaseMaintenance(database_engine.engine)
+
+        try:
+            before = maintenance.statistics()
+
+            terminal.print_info(
+                f"Database size: {before['database_bytes']:,} bytes. "
+                f"Fully free pages: {before['free_bytes']:,} bytes. "
+                "Compaction can also repack partially filled pages. "
+                "Back up the database and close other applications first; "
+                "compaction requires exclusive access "
+                "and may need up to twice the database size in additional disk space."
+            )
+
+            if not terminal.safe_confirm(
+                "Compact the database now? This may take a long time.", default=False
+            ):
+                terminal.print_info("Database compaction canceled.")
+                return
+
+            with terminal.console.status("Compacting database..."):
+                retriever_manager.close()
+                maintenance.compact()
+
+            after = maintenance.statistics()
+
+            terminal.print_info(
+                f"Database compaction completed. Size: "
+                f"{before['database_bytes']:,} -> {after['database_bytes']:,} bytes."
+            )
+        except (SQLAlchemyError, OSError, RuntimeError) as error:
+            log.exception("Database compaction failed.")
+            terminal.print_info(f"Database compaction failed: {error}")
 
     def show(self):
         """
@@ -56,7 +100,9 @@ class CommandLineHandler:
         if not skip_embedding_creation:
             offset_answer = terminal.safe_text(
                 "Type in the number of already processed records to continue an update (or leave empty to start a new update).",
-                validate=non_negative_integer_or_empty,
+                validate=non_negative_integer_and_and_configured_negative_values_or_empty(
+                    [-1] # Skip embedding creation
+                ),
             )
 
             if offset_answer is None:
@@ -87,7 +133,14 @@ class CommandLineHandler:
 
         if result["cancelled"]:
             terminal.print_info(
-                f"Embedding creation canceled. Continue next time with start offset {result['next_offset']}."
+                "Embedding creation canceled before the final quantization step. "
+                f"Continue next time with start offset {result['next_offset']}."
+            )
+            return
+
+        if result.get("quantized"):
+            terminal.print(
+                "Database update completed successfully, including final embedding quantization! 🎉"
             )
             return
 
