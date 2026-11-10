@@ -76,7 +76,7 @@ class CommandLineHandler:
 
         with terminal.console.status("Searching...", spinner="earth"):
             search_results = retriever_manager.get(configuration).retrieve(
-                search_term, top_k=9
+                search_term, top_k=17 # 2 results per k => 36 results expected. The maximum of results that can be used with shortcuts in the UI.
             )
 
             try:
