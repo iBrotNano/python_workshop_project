@@ -1,6 +1,6 @@
 import logging
 import questionary
-import assistant.command_line_handler as assistant_cli
+import nutrition.command_line_handler as nutrition_cli
 
 from rich.markdown import Markdown
 from recipes.recipe import Recipe
@@ -183,7 +183,7 @@ class CommandLineHandler:
                             # Only show the table if there are ingredients.
                             terminal.print_dict_as_table(
                                 {
-                                    f"[link={ingredient['food']['url']}]{ingredient['food']['brands']} {ingredient['food']['product']}[/link]": f"{ingredient['amount']}g"
+                                    f"[link={ingredient['food'].url or ''}]{', '.join(ingredient['food'].brands or [])} {ingredient['food'].name or 'unknown'}[/link]": f"{ingredient['amount']}g"
                                     for ingredient in recipe.ingredients
                                 },
                                 "Ingredients",
@@ -264,7 +264,7 @@ class CommandLineHandler:
             "Your recipe needs some ingredients. Let's add them now!"
         )
 
-        food_search = assistant_cli.CommandLineHandler()
+        food_search = nutrition_cli.CommandLineHandler()
         _add_ingredients_to(recipe)
         _add_instructions_to(recipe)
         md = Markdown(recipe.as_markdown())

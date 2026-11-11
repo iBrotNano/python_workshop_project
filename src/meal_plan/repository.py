@@ -4,7 +4,7 @@ from meal_plan.meal import Meal
 from sqlalchemy.orm import Session
 from meal_plan.meal_plan_entity import MealPlanEntity
 from recipes.recipe_entity import RecipeEntity
-from recipes.recipe import Recipe
+from recipes.repository import RecipeRepository
 from persons.person_entity import PersonEntity
 from persons.person import Person
 from persistence.db_schema_registry import load_db_schema_definitions
@@ -38,13 +38,9 @@ class MealPlanRepository:
             recipe = None
 
             if meal_entity.recipe:
-                recipe_data = {
-                    key: value
-                    for key, value in meal_entity.recipe.__dict__.items()
-                    if key in Recipe.__dataclass_fields__
-                }
-
-                recipe = Recipe(**recipe_data)
+                recipe = RecipeRepository(self._session)._entity_to_model(
+                    meal_entity.recipe
+                )
 
             persons = []
 

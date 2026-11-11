@@ -2,6 +2,7 @@ import logging
 
 from dataclasses import dataclass, field
 from typing import Any
+from nutrition.nutrition import Nutrition
 from recipes.recipe_type import RecipeType
 
 log = logging.getLogger(__name__)
@@ -43,9 +44,13 @@ class Recipe:
         Adds an ingredient to the recipe.
 
         :param self: This instance of the Recipe class.
-        :param ingredient: The ingredient to add with quantity information.
+        :param ingredient: An ingredient with its amount in grams and a Nutrition food.
         :type ingredient: dict[str, Any]
+        :raises TypeError: If the food is not a Nutrition object.
         """
+        if not isinstance(ingredient["food"], Nutrition):
+            raise TypeError("Recipe ingredient food must be a Nutrition object.")
+
         self.ingredients.append(ingredient)
         self.nutrition = self._calculate_nutrition()
 
@@ -62,7 +67,9 @@ class Recipe:
         md += "## Ingredients\n\n"
 
         for ingredient in self.ingredients:
-            md += f"- {ingredient['amount']}g [{ingredient['food']['brands']} {ingredient['food']['product']}]({ingredient['food']['url']})\n"
+            food: Nutrition = ingredient["food"]
+            brands = ", ".join(food.brands or [])
+            md += f"- {ingredient['amount']}g [{brands} {food.name or 'unknown'}]({food.url or ''})\n"
 
         md += "\n## Instructions\n\n"
         md += self.instructions + "\n"
@@ -113,10 +120,8 @@ class Recipe:
             "salt": 0.0,
         }
 
-        # Map ingredient nutrient keys to recipe nutrition keys
         nutrient_mappings = [
-            ("energy-kcal_100g", "calories"),
-            ("energy-kj_100g", "energy"),
+            ("energy_100g_kj", "energy"),
             ("fat_100g", "fat"),
             ("carbohydrates_100g", "carbohydrates"),
             ("proteins_100g", "protein"),
@@ -125,23 +130,35 @@ class Recipe:
         ]
 
         for ingredient in self.ingredients:
-            factor = ingredient["amount"] / 100.0  # Nutritional information is per 100g
+            food: Nutrition = ingredient["food"]
+            factor = ingredient["amount"] / 100.0
 
-            for ingredient_key, nutrition_key in nutrient_mappings:
-                # Skip calculation if this nutrient is already marked as unavailable
+            values = [
+                (
+                    "energy-kcal_100g",
+                    "calories",
+                    ingredient.get("_legacy_food", {}).get("energy-kcal_100g"),
+                )
+            ]
+
+            values.extend(
+                (attribute, key, getattr(food, attribute))
+                for attribute, key in nutrient_mappings
+            )
+
+            for ingredient_key, nutrition_key, nutrient_value in values:
                 if nutrition[nutrition_key] == "N/A":
                     continue
 
                 try:
-                    value = float(ingredient["food"].get(ingredient_key, "N/A"))
+                    value = float(nutrient_value)
                     nutrition[nutrition_key] += value * factor
                 except (ValueError, TypeError):
-                    # Mark this nutrient as unavailable if conversion fails
                     nutrition[nutrition_key] = "N/A"
 
                     log.warning(
                         f"Missing or invalid value for '{ingredient_key}' "
-                        f"in {ingredient['food'].get('product', 'unknown')}. "
+                        f"in {food.name or 'unknown'}. "
                         f"Nutrient '{nutrition_key}' cannot be calculated."
                     )
 

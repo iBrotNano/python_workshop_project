@@ -1,6 +1,7 @@
 import random
 
 from recipes.recipe import Recipe
+from recipes.ingredient_serializer import deserialize, serialize
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 from recipes.recipe_entity import RecipeEntity
@@ -39,6 +40,7 @@ class RecipeRepository:
             if key in Recipe.__dataclass_fields__
         }
 
+        model_data["ingredients"] = deserialize(model_data["ingredients"])
         return Recipe(**model_data)
 
     def _model_to_entity(self, model: Recipe) -> RecipeEntity:
@@ -59,6 +61,7 @@ class RecipeRepository:
             model.type.value if isinstance(model.type, RecipeType) else model.type
         )
 
+        entity_data["ingredients"] = serialize(model.ingredients)
         return RecipeEntity(**entity_data)
 
     def try_add(self, recipe: Recipe):
