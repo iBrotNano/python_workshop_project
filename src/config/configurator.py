@@ -8,9 +8,10 @@ class Configurator:
 
     def configure(self, configuration: Configuration):
         """
-        Configures the app by setting up logging and the OpenFoodFacts API.
+        Configures the app by setting up the app's configuration.
 
         :param self: The instance of the Configurator class.
+        :param configuration: The configuration settings for the app.
         """
         logger_configurator.configure()
         llama_cpp_configurator.configure()

@@ -1,8 +1,6 @@
-import openfoodfacts
 import logging
 from pathlib import Path
 from dataclasses import dataclass, field
-
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 
@@ -18,16 +16,7 @@ class Configuration:
     # Configuration is hardcoded here for simplicity.
     # TODO: Later, read from a config file or environment variables.
 
-    # OpenFoodFacts API configuration
-    openfoodfacts_api_version: openfoodfacts.APIVersion = openfoodfacts.APIVersion.v3
-
-    openfoodfacts_api_environment: openfoodfacts.Environment = (
-        openfoodfacts.Environment.org
-    )
-
-    openfoodfacts_api_country: openfoodfacts.Country = openfoodfacts.Country.de
-    openfoodfacts_api_timeout: int = 15  # seconds
-
+    # OpenFoodFacts configuration
     openfoodfacts_download_url: str = (
         "https://static.openfoodfacts.org/data/en.openfoodfacts.org.products.csv.gz"
     )
