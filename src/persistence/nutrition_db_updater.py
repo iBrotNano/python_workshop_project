@@ -10,9 +10,9 @@ from persistence.openfoodfacts_update_pipeline import OpenFoodFactsUpdatePipelin
 from nutrition.nutrition import Nutrition
 from nutrition.nutrition_repository import NutritionRepository
 from sqlite_rag import SQLiteRag
-from sqlite_rag.settings import Settings
 from persistence.modell_downloader import ModellDownloader
 from persistence.retriever_manager import retriever_manager
+from persistence.sqlite_rag_factory import SQLiteRagFactory
 
 log = logging.getLogger(__name__)
 
@@ -33,6 +33,7 @@ class NutritionDbUpdater:
         """
         self.__configuration = configuration
         self.__database_engine = database_engine
+        self.__sqlite_rag_factory = SQLiteRagFactory(configuration)
 
         self.__openfoodfacts_pipeline = OpenFoodFactsUpdatePipeline(
             self.__configuration, database_engine
@@ -242,16 +243,8 @@ class NutritionDbUpdater:
         :return: An initialized sqlite-rag instance.
         :rtype: SQLiteRag
         """
-        Settings.use_gpu = self.__configuration.ai_use_vulcan_llama_backend
-
-        return SQLiteRag.create(
-            self.__configuration.sqlite_file_path,
-            settings={
-                "model_path": self.__configuration.ai_used_embedding_model_path,
-                "chunk_size": self.__configuration.ai_embedding_chunk_size,
-                "chunk_overlap": self.__configuration.ai_embedding_chunk_overlap,
-                "quantize_scan": quantize_scan,
-            },
+        return self.__sqlite_rag_factory.create_for_embedding(
+            quantize_scan=quantize_scan
         )
 
     def __build_chunk(self, nutrition: Nutrition) -> str:

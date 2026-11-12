@@ -1,16 +1,71 @@
+import sqlite3
 from dataclasses import asdict
 from pathlib import Path
 from types import SimpleNamespace
 
 import pytest
+from sqlalchemy import create_engine
+from sqlalchemy.orm import declarative_base, sessionmaker
 from sqlite_rag import SQLiteRag
 from sqlite_rag.settings import Settings
-from sqlalchemy import create_engine
-
-from config.configuration import configuration
+from config.configuration import Configuration, configuration
+from persistence.database_engine import DatabaseEngine
 from persistence.database_maintenance import DatabaseMaintenance
 from persistence.retriever import Retriever
 from persistence.retriever_manager import RetrieverManager
+from persistence.sqlite_rag_factory import SQLiteRagFactory
+
+
+def test_sqlite_rag_factory_opens_existing_database(monkeypatch):
+    calls = []
+    rag = object()
+    configuration = SimpleNamespace(sqlite_file_path="nutrition.db")
+
+    monkeypatch.setattr(
+        "persistence.sqlite_rag_factory.SQLiteRag.create",
+        lambda path, **kwargs: calls.append((path, kwargs)) or rag,
+    )
+
+    result = SQLiteRagFactory(configuration).create_for_retrieval()
+    assert result is rag
+    assert calls == [("nutrition.db", {"require_existing": True})]
+
+
+def test_sqlite_rag_factory_configures_embedding_database(monkeypatch):
+    calls = []
+    rag = object()
+
+    configuration = SimpleNamespace(
+        sqlite_file_path="nutrition.db",
+        ai_use_vulcan_llama_backend=False,
+        ai_used_embedding_model_path="model.gguf",
+        ai_embedding_chunk_size=2024,
+        ai_embedding_chunk_overlap=256,
+    )
+
+    monkeypatch.setattr(
+        "persistence.sqlite_rag_factory.SQLiteRag.create",
+        lambda path, **kwargs: calls.append((path, kwargs)) or rag,
+    )
+
+    result = SQLiteRagFactory(configuration).create_for_embedding(quantize_scan=True)
+
+    assert result is rag
+    assert Settings.use_gpu is False
+
+    assert calls == [
+        (
+            "nutrition.db",
+            {
+                "settings": {
+                    "model_path": "model.gguf",
+                    "chunk_size": 2024,
+                    "chunk_overlap": 256,
+                    "quantize_scan": True,
+                }
+            },
+        )
+    ]
 
 
 @pytest.mark.parametrize("quantized", [False, True])
@@ -131,13 +186,61 @@ def test_updater_invalidates_cached_retriever_before_modifying_database(monkeypa
     assert events == ["close", "update"]
 
 
+def test_updater_creates_missing_rag_database_that_retriever_can_open(
+    tmp_path, monkeypatch
+):
+    from persistence.nutrition_db_updater import NutritionDbUpdater
+
+    model_path = Path(configuration.ai_used_embedding_model_path)
+
+    if not model_path.is_file():
+        pytest.skip("The configured embedding model is not available.")
+
+    monkeypatch.setattr(Settings, "use_gpu", False)
+    config = Configuration()
+    config.sqlite_file_path = str(tmp_path / "nutrition.db")
+    config.ai_use_vulcan_llama_backend = False
+
+    engine = create_engine(f"sqlite:///{Path(config.sqlite_file_path).as_posix()}")
+
+    database_engine = DatabaseEngine(
+        engine,
+        sessionmaker(bind=engine),
+        declarative_base(),
+    )
+
+    updater = NutritionDbUpdater(config, database_engine)
+    rag = updater._NutritionDbUpdater__create_clean_rag(quantize_scan=False)
+
+    try:
+        assert Path(config.sqlite_file_path).is_file()
+
+        with sqlite3.connect(config.sqlite_file_path) as connection:
+            tables = {
+                row[0]
+                for row in connection.execute(
+                    "SELECT name FROM sqlite_master WHERE type = 'table'"
+                )
+            }
+
+        assert "documents" in tables
+    finally:
+        rag.close()
+        engine.dispose()
+
+    with Retriever(config) as retriever:
+        assert retriever.rag is not None
+
+
 def test_unsupported_sqlite_rag_version_uses_library_search(monkeypatch):
     calls = []
     rag = SimpleNamespace(
         search=lambda query, top_k: calls.append((query, top_k)) or [],
         close=lambda: calls.append("close"),
     )
-    monkeypatch.setattr("persistence.retriever.SQLiteRag.create", lambda *args, **kwargs: rag)
+    monkeypatch.setattr(
+        "persistence.retriever.SQLiteRag.create", lambda *args, **kwargs: rag
+    )
     monkeypatch.setattr("persistence.retriever.version", lambda name: "0.2.0")
     retriever = Retriever(
         SimpleNamespace(

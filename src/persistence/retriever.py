@@ -6,6 +6,7 @@ from sqlite_rag import SQLiteRag
 from config.configuration import Configuration
 from sqlite_rag.models.document_result import DocumentResult
 from sqlite_rag.models.sentence_result import SentenceResult
+from persistence.sqlite_rag_factory import SQLiteRagFactory
 
 log = logging.getLogger(__name__)
 
@@ -18,10 +19,9 @@ class Retriever:
         :param configuration: The configuration object containing settings for the retriever.
         :type configuration: Configuration
         """
-        self.rag: SQLiteRag | None = SQLiteRag.create(
-            configuration.sqlite_file_path,
-            require_existing=True,
-        )
+        self.rag: SQLiteRag | None = SQLiteRagFactory(
+            configuration
+        ).create_for_retrieval()
 
         self.__experimental_batched_sentence_scoring = (
             configuration.experimental_batched_sentence_scoring
