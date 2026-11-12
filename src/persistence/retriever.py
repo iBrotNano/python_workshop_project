@@ -12,16 +12,19 @@ log = logging.getLogger(__name__)
 
 
 class Retriever:
-    def __init__(self, configuration: Configuration):
+    def __init__(
+        self, configuration: Configuration, database_path: str | None = None
+    ):
         """
         Initializes the Retriever instance with the provided configuration.
 
         :param configuration: The configuration object containing settings for the retriever.
         :type configuration: Configuration
+        :param database_path: Optional path to the existing retrieval database.
+        :type database_path: str | None
         """
-        self.rag: SQLiteRag | None = SQLiteRagFactory(
-            configuration
-        ).create_for_retrieval()
+        factory = SQLiteRagFactory(configuration)
+        self.rag: SQLiteRag | None = factory.create_for_retrieval(database_path)
 
         self.__experimental_batched_sentence_scoring = (
             configuration.experimental_batched_sentence_scoring

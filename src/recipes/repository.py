@@ -130,6 +130,18 @@ class RecipeRepository:
             for entity in self._session.query(RecipeEntity).all()
         ]
 
+    def get_all_with_ids(self) -> list[tuple[int, Recipe]]:
+        """
+        Gets all recipes with their persistent database identifiers.
+
+        :return: Recipe identifiers paired with their models.
+        :rtype: list[tuple[int, Recipe]]
+        """
+        return [
+            (entity.id, self._entity_to_model(entity))
+            for entity in self._session.query(RecipeEntity).order_by(RecipeEntity.id)
+        ]
+
     def get_random_recipe_by(
         self, recipe_type: str, assigned: set[str] | None = None
     ) -> Recipe | None:

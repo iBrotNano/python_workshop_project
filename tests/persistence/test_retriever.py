@@ -161,6 +161,28 @@ def test_retriever_manager_closes_previous_database_on_path_change(monkeypatch):
     manager.close()
 
 
+def test_retriever_manager_switches_to_requested_database_path(monkeypatch):
+    created = []
+
+    class FakeRetriever:
+        def __init__(self, config, database_path=None):
+            self.database_path = database_path
+            self.closed = False
+            created.append(self)
+
+        def close(self):
+            self.closed = True
+
+    monkeypatch.setattr("persistence.retriever_manager.Retriever", FakeRetriever)
+    manager = RetrieverManager()
+    config = SimpleNamespace(sqlite_file_path="nutrition.db")
+    nutrition_retriever = manager.get(config)
+    recipe_retriever = manager.get(config, database_path="nutrition_recipes.db")
+    assert nutrition_retriever.closed
+    assert recipe_retriever.database_path == "nutrition_recipes.db"
+    manager.close()
+
+
 def test_updater_invalidates_cached_retriever_before_modifying_database(monkeypatch):
     from persistence.nutrition_db_updater import NutritionDbUpdater
 

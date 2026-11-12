@@ -5,10 +5,11 @@ import llama_cpp
 
 from config.configuration import Configuration
 from persistence.retriever_manager import retriever_manager
+from persistence.sqlite_rag_factory import SQLiteRagFactory
 from persistence.modell_downloader import ModellDownloader
 from typing import Any, Sequence
 from sqlite_rag.models.document_result import DocumentResult
-
+from pathlib import Path
 
 log = logging.getLogger(__name__)
 
@@ -29,7 +30,7 @@ def suppress_llama_console_logs(
 
 class Prompt:
     """
-    Handles the generation of nutrition information based on user queries.
+    Handles nutrition and recipe assistance based on user queries.
 
     The prompt class uses a single shared llama model instance for all Prompt instances,
     which is initialized lazily on the first call to execute().
@@ -57,7 +58,7 @@ class Prompt:
         self, query: str, top_k: int = 10, messages: list[dict[str, Any]] | None = None
     ) -> tuple[str, list[dict[str, Any]]]:
         """
-        Generates nutrition information based on the provided query.
+        Generates nutrition and recipe assistance based on the provided query.
 
         The configured model is automatically downloaded if not already present.
 
@@ -98,14 +99,15 @@ class Prompt:
         return {
             "role": "system",
             "content": (
-                "You are a professional nutrition assistant. "
-                "Stay in your role as a professional nutrition assistant at all times but answer shortly and talk personally. "
+                "You are a professional nutrition and recipe assistant. "
+                "Stay in your role as a professional assistant at all times but answer shortly and talk personally. "
                 "Always answer based on the provided retrieval results. "
-                "Always recommend a healthy and balanced diet based on the retrieved nutrition data. "
-                "Only use product details that are present in the retrieval context. "
+                "For nutrition questions, recommend a healthy and balanced diet based on retrieved nutrition data. "
+                "Only use recipe and product details that are present in the retrieval context. "
                 "Keep your answers concise and focused on the most relevant information. "
                 "Do not output chain-of-thought, hidden reasoning, thinking traces, analysis, or intermediate deliberation. Never expose internal notes or step-by-step thoughts. Return only the final answer for the user, concise, in Markdown, and in the language of the query."
-                "Always use the retrieve_nutrition_data function to look up nutrition data before answering. "
+                "For nutrition questions, always use retrieve_nutrition_data. "
+                "For recipe questions, always use retrieve_recipe_data. Use both functions when a question requires both types of information. "
                 "If the retrieval results are insufficient or no relevant results were found, say that clearly. "
                 "Answer in the language of the query. "
                 "Format the answer as Markdown. "
@@ -280,7 +282,28 @@ class Prompt:
                         "required": ["query"],
                     },
                 },
-            }
+            },
+            {
+                "type": "function",
+                "function": {
+                    "name": "retrieve_recipe_data",
+                    "description": "Retrieves stored recipe details for a user query.",
+                    "parameters": {
+                        "type": "object",
+                        "properties": {
+                            "query": {
+                                "type": "string",
+                                "description": "The recipe search query.",
+                            },
+                            "top_k": {
+                                "type": "integer",
+                                "description": "The maximum number of recipes to return.",
+                            },
+                        },
+                        "required": ["query"],
+                    },
+                },
+            },
         ]
 
     def __build_tool_result_message(
@@ -311,7 +334,7 @@ class Prompt:
         return {
             "role": "user",
             "content": (
-                f"Here are the results from the nutrition data retrieval:\n\n"
+                f"Here are the retrieval results:\n\n"
                 f"{body}\n\n"
                 f"Please answer the original question based on all available data."
             ),
@@ -329,7 +352,10 @@ class Prompt:
         function_payload = tool_call.get("function") or {}
         function_name = function_payload.get("name")
 
-        if function_name != "retrieve_nutrition_data":
+        if function_name not in {
+            "retrieve_nutrition_data",
+            "retrieve_recipe_data",
+        }:
             return {"error": f"Unsupported tool call: {function_name}"}
 
         arguments = self.__parse_tool_arguments(function_payload.get("arguments"))
@@ -339,25 +365,55 @@ class Prompt:
             return {"error": "Missing required tool argument 'query'."}
 
         top_k = self.__sanitize_top_k(arguments.get("top_k", 10))
-        retrieved_results = self.__retrieve_nutrition_data(query.strip(), top_k=top_k)
+        is_recipe_query = function_name == "retrieve_recipe_data"
+
+        if is_recipe_query:
+            recipe_database_path = SQLiteRagFactory(
+                self.__configuration
+            ).recipe_database_path
+
+            if not Path(recipe_database_path).is_file():
+                log.info("Recipe retrieval requested before recipe embeddings exist.")
+
+                return {
+                    "error": (
+                        "Recipe embeddings are not available yet. Use the recipe menu "
+                        "to create embeddings for stored recipes."
+                    )
+                }
+
+        retrieve = (
+            self.__retrieve_recipe_data
+            if is_recipe_query
+            else self.__retrieve_nutrition_data
+        )
+
+        retrieved_results = retrieve(query.strip(), top_k=top_k)
 
         return {
             "query": query,
             "top_k": top_k,
-            "results": self.__build_retrieval_context(retrieved_results),
+            "results": self.__build_retrieval_context(
+                retrieved_results,
+                result_type="recipe" if is_recipe_query else "nutrition",
+            ),
         }
 
-    def __build_retrieval_context(self, retrieved_results: list[DocumentResult]) -> str:
+    def __build_retrieval_context(
+        self, retrieved_results: list[DocumentResult], result_type: str = "nutrition"
+    ) -> str:
         """
         Builds a plain text context block from retrieved nutrition results.
 
-        :param retrieved_results: The retrieved nutrition results.
+        :param retrieved_results: The retrieved results.
         :type retrieved_results: list[DocumentResult]
+        :param result_type: The type of record being retrieved.
+        :type result_type: str
         :return: The formatted retrieval context.
         :rtype: str
         """
         if not retrieved_results:
-            return "No matching nutrition results were found."
+            return f"No matching {result_type} results were found."
 
         context_blocks = []
 
@@ -497,3 +553,25 @@ class Prompt:
         :rtype: list[DocumentResult]
         """
         return retriever_manager.get(self.__configuration).retrieve(query, top_k=top_k)
+
+    def __retrieve_recipe_data(
+        self, query: str, top_k: int = 10
+    ) -> list[DocumentResult]:
+        """
+        Retrieves recipe data from the dedicated recipe vector database.
+
+        :param query: The recipe search query.
+        :type query: str
+        :param top_k: The number of recipe results to retrieve.
+        :type top_k: int
+        :return: Search results for matching recipes.
+        :rtype: list[DocumentResult]
+        """
+        factory = SQLiteRagFactory(self.__configuration)
+
+        retriever = retriever_manager.get(
+            self.__configuration,
+            database_path=factory.recipe_database_path,
+        )
+
+        return retriever.retrieve(query, top_k=top_k)
