@@ -1,11 +1,16 @@
+import logging
+
 from types import TracebackType
 from sqlalchemy.orm import Session
-
 from meal_plan.repository import MealPlanRepository
 from persistence.database_engine_factory import database_engine
 from persons.activity_level_repository import ActivityLevelRepository
 from persons.person_repository import PersonRepository
 from recipes.repository import RecipeRepository
+from config.configuration import configuration
+from persistence.recipe_embedding_indexer import RecipeEmbeddingIndexer
+
+log = logging.getLogger(__name__)
 
 
 class UnitOfWork:
@@ -102,17 +107,38 @@ class UnitOfWork:
 
         return self._meal_plans
 
-    def commit(self):
+    def commit(self) -> list[int]:
         """
         Commits the current transaction of the active unit of work.
 
         :param self: This instance of the UnitOfWork class.
+        :return: IDs of saved recipes whose embeddings could not be created.
+        :rtype: list[int]
         :raises RuntimeError: If the unit of work is not active.
         """
         if self._session is None:
             raise RuntimeError("UnitOfWork is not active.")
 
+        recipes = self.recipes.get_new_recipes()
         self._session.commit()
+        self.recipes.clear_new_recipes()
+        failed = []
+
+        if recipes:
+            indexer = RecipeEmbeddingIndexer(configuration, database_engine)
+
+            for recipe_id, recipe in recipes:
+                try:
+                    indexer.create_embedding(recipe_id, recipe)
+                except Exception:
+                    log.exception(
+                        "Recipe %s was saved but its embedding could not be created.",
+                        recipe_id,
+                    )
+
+                    failed.append(recipe_id)
+
+        return failed
 
     def __exit__(
         self,

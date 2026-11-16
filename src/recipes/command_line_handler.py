@@ -276,10 +276,16 @@ class CommandLineHandler:
                     created = uow.recipes.try_add(recipe)
 
                     if created:
-                        uow.commit()
+                        failed_embeddings = uow.commit()
 
                 if created:
                     terminal.print(f"Recipe '{recipe.name}' saved.")
+
+                    if failed_embeddings:
+                        terminal.print_info(
+                            "The recipe embedding could not be created. "
+                            "Use 'Create embeddings for stored recipes' to retry."
+                        )
                 else:
                     terminal.print_info(
                         f"Recipe '{recipe.name}' already exists and was not saved."

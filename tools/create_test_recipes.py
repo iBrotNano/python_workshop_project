@@ -112,6 +112,12 @@ with UnitOfWork() as uow:
 
         uow.recipes.try_add(recipe)
 
-    uow.commit()
+    failed_embeddings = uow.commit()
 
 print(f"Created test recipes")
+
+if failed_embeddings:
+    print(
+        f"Embedding creation failed for recipe IDs {failed_embeddings}. "
+        "Use 'Create embeddings for stored recipes' to retry."
+    )

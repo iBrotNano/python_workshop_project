@@ -3,6 +3,7 @@ import random
 from recipes.recipe import Recipe
 from recipes.ingredient_serializer import deserialize, serialize
 from sqlalchemy.exc import IntegrityError
+from sqlalchemy import inspect
 from sqlalchemy.orm import Session
 from recipes.recipe_entity import RecipeEntity
 from recipes.recipe_type import RecipeType
@@ -23,6 +24,7 @@ class RecipeRepository:
         """
         load_db_schema_definitions()
         self._session = session
+        self.__added_entities: list[RecipeEntity] = []
 
     def _entity_to_model(self, entity: RecipeEntity) -> Recipe:
         """
@@ -82,7 +84,29 @@ class RecipeRepository:
             self._session.rollback()
             return False
 
+        self.__added_entities.append(entity)
         return True
+
+    def get_new_recipes(self) -> list[tuple[int, Recipe]]:
+        """
+        Returns newly inserted recipes still present in the current transaction.
+
+        :return: Recipe identifiers paired with their models.
+        :rtype: list[tuple[int, Recipe]]
+        """
+        recipes = [
+            (entity.id, self._entity_to_model(entity))
+            for entity in self.__added_entities
+            if inspect(entity).persistent and entity not in self._session.deleted
+        ]
+
+        return recipes
+
+    def clear_new_recipes(self):
+        """
+        Clears the tracked recipes after a successful commit.
+        """
+        self.__added_entities.clear()
 
     def delete(self, recipe_name: str):
         """

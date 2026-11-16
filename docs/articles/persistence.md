@@ -112,6 +112,10 @@ Stored recipes can be indexed from the recipe menu. Their embeddings are kept in
 a separate `data_recipes.db` sidecar database so recipe indexing does not modify
 the nutrition embeddings in `data.db`. Recipe documents use stable recipe IDs;
 running the indexing action again skips documents that are already present.
+Newly saved recipes are indexed automatically after their database transaction
+commits. If embedding creation fails, the recipe remains saved and the error is
+reported; use **Create embeddings for stored recipes** to retry missing documents.
+Existing recipe embeddings are not overwritten.
 
 For performance comparisons, use a read-only database connection or a separate
 copy. Initialize the embedding model once, then time repeated representative

@@ -5,6 +5,7 @@ from persistence.modell_downloader import ModellDownloader
 from persistence.retriever_manager import retriever_manager
 from persistence.sqlite_rag_factory import SQLiteRagFactory
 from recipes.repository import RecipeRepository
+from recipes.recipe import Recipe
 from sqlite_rag import SQLiteRag
 
 
@@ -68,14 +69,7 @@ class RecipeEmbeddingIndexer:
                 )
 
             for completed, (recipe_id, recipe) in enumerate(missing_recipes, start=1):
-                rag.add_text(
-                    recipe.as_markdown(),
-                    uri=self.__build_document_uri(recipe_id),
-                    metadata={
-                        "entity_type": "recipe",
-                        "recipe_id": recipe_id,
-                    },
-                )
+                self.__add_recipe(rag, recipe_id, recipe)
 
                 emit_progress(
                     progress_callback,
@@ -88,6 +82,55 @@ class RecipeEmbeddingIndexer:
             return {"created": len(missing_recipes), "skipped": skipped}
         finally:
             rag.close()
+
+    def create_embedding(self, recipe_id: int, recipe: Recipe):
+        """
+        Creates the embedding for one committed recipe.
+
+        :param recipe_id: Persistent recipe identifier.
+        :type recipe_id: int
+        :param recipe: Recipe to index.
+        :type recipe: Recipe
+        :raises ValueError: If the recipe URI is already present.
+        """
+        retriever_manager.close()
+        rag = self.__sqlite_rag_factory.create_for_recipe_embedding()
+
+        try:
+            if self.__build_document_uri(recipe_id) in self.__get_existing_recipe_uris(
+                rag
+            ):
+                raise ValueError(f"Embedding already exists for recipe {recipe_id}.")
+
+            ModellDownloader(self.__configuration).download_model_if_not_exists(
+                self.__configuration.ai_used_embedding_model["repo"],
+                self.__configuration.ai_used_embedding_model["filename"],
+            )
+
+            self.__add_recipe(rag, recipe_id, recipe)
+        finally:
+            rag.close()
+
+    def __add_recipe(self, rag: SQLiteRag, recipe_id: int, recipe: Recipe):
+        """
+        Adds a recipe document, rolling back incomplete database writes on failure.
+
+        :param rag: Recipe vector database.
+        :type rag: SQLiteRag
+        :param recipe_id: Persistent recipe identifier.
+        :type recipe_id: int
+        :param recipe: Recipe to index.
+        :type recipe: Recipe
+        """
+        try:
+            rag.add_text(
+                recipe.as_markdown(),
+                uri=self.__build_document_uri(recipe_id),
+                metadata={"entity_type": "recipe", "recipe_id": recipe_id},
+            )
+        except Exception:
+            rag._conn.rollback()
+            raise
 
     def __get_existing_recipe_uris(self, rag: SQLiteRag) -> set[str]:
         """
