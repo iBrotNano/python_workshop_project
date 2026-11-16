@@ -29,6 +29,7 @@
 - Use snake_case for functions and variables, and PascalCase for classes.
 - Add type hints for function parameters and return types. Only add None as return type hint if it is returned explicitly. If the function does not return anything, it is not necessary to add a return type hint.
 - Use f-strings for string formatting.
+- Add blank lines after blocks of code for readability.
 
 ## Documentation
 
