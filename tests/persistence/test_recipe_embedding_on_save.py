@@ -27,6 +27,8 @@ def recipe_database(tmp_path, monkeypatch):
         engine, sessionmaker(bind=engine), database_engine.Base
     )
 
+    test_database.initialize_recipe_deletion_tracking()
+
     monkeypatch.setattr("persistence.unit_of_work.database_engine", test_database)
     yield test_database
     engine.dispose()
@@ -180,10 +182,14 @@ def test_single_recipe_failure_rolls_back_partial_document(monkeypatch, tmp_path
         ai_used_embedding_model={"repo": "model", "filename": "model.gguf"}
     )
 
+    recipe_connection = SimpleNamespace(
+        exec_driver_sql=lambda query, params: SimpleNamespace(first=lambda: ("New",))
+    )
+
+    db = SimpleNamespace(recipe_write_lock=lambda: nullcontext(recipe_connection))
+
     with pytest.raises(RuntimeError, match="insertion failed"):
-        RecipeEmbeddingIndexer(config, SimpleNamespace()).create_embedding(
-            2, Recipe(name="New")
-        )
+        RecipeEmbeddingIndexer(config, db).create_embedding(2, Recipe(name="New"))
 
     assert [tuple(row) for row in connection.execute("SELECT * FROM documents")] == [
         ("recipe:1", "unchanged")
@@ -272,11 +278,18 @@ def test_real_sidecar_rolls_back_document_when_chunk_insert_fails(
         ai_used_embedding_model={"repo": "model", "filename": "model.gguf"}
     )
 
+    recipe_connection = SimpleNamespace(
+        exec_driver_sql=lambda query, params: SimpleNamespace(first=lambda: ("New",))
+    )
+
+    db = SimpleNamespace(
+        get_db=lambda: nullcontext(object()),
+        recipe_write_lock=lambda: nullcontext(recipe_connection),
+    )
+
     try:
         with pytest.raises(sqlite3.IntegrityError, match="chunk failure"):
-            RecipeEmbeddingIndexer(config, SimpleNamespace()).create_embedding(
-                2, Recipe(name="New")
-            )
+            RecipeEmbeddingIndexer(config, db).create_embedding(2, Recipe(name="New"))
 
         assert rag._conn.execute("SELECT COUNT(*) FROM documents").fetchone()[0] == 0
         assert rag._conn.execute("SELECT COUNT(*) FROM chunks").fetchone()[0] == 0
@@ -290,9 +303,7 @@ def test_real_sidecar_rolls_back_document_when_chunk_insert_fails(
             ),
         )
 
-        indexer = RecipeEmbeddingIndexer(
-            config, SimpleNamespace(get_db=lambda: nullcontext(object()))
-        )
+        indexer = RecipeEmbeddingIndexer(config, db)
 
         assert indexer.create_embeddings() == {"created": 1, "skipped": 0}
 
@@ -411,3 +422,55 @@ def test_real_sidecar_preserves_existing_vectors_and_ranks_new_recipe(
     assert first_distance is not None
     assert second_distance is not None
     assert first_distance < second_distance
+
+
+def test_deleted_recipe_is_absent_from_real_retrieval_and_ranking(
+    recipe_database, monkeypatch, tmp_path
+):
+    from persistence.retriever import Retriever
+    from persistence.sqlite_rag_factory import SQLiteRagFactory
+
+    if not Path(configuration.ai_used_embedding_model_path).is_file():
+        pytest.skip("The configured embedding model is not available.")
+
+    config = copy(configuration)
+    config.sqlite_file_path = str(tmp_path / "nutrition.db")
+    config.ai_use_vulcan_llama_backend = False
+    config.experimental_batched_sentence_scoring = False
+    monkeypatch.setattr("persistence.unit_of_work.configuration", config)
+
+    monkeypatch.setattr(
+        "persistence.recipe_embedding_indexer.ModellDownloader.download_model_if_not_exists",
+        lambda *args: None,
+    )
+
+    sidecar = SQLiteRagFactory(config).recipe_database_path
+
+    with UnitOfWork() as uow:
+        assert uow.recipes.try_add(
+            Recipe(
+                name="Apple oats", instructions="Cook oats with apples and cinnamon."
+            )
+        )
+
+        assert uow.recipes.try_add(
+            Recipe(name="Beef dinner", instructions="Cook beef and potatoes.")
+        )
+
+        assert uow.commit() == []
+
+    with Retriever(config, sidecar) as retriever:
+        before = retriever.retrieve("apple oats cinnamon", top_k=2)
+
+    assert before[0].document.metadata["recipe_id"] == 1
+
+    with UnitOfWork() as uow:
+        uow.recipes.delete("Apple oats")
+        uow.commit()
+        assert not uow.embedding_cleanup_failed
+
+    with Retriever(config, sidecar) as retriever:
+        after = retriever.retrieve("apple oats cinnamon", top_k=2)
+
+    assert [item.document.metadata["recipe_id"] for item in after] == [2]
+    assert after[0].vec_rank == 1

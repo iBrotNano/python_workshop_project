@@ -117,6 +117,14 @@ commits. If embedding creation fails, the recipe remains saved and the error is
 reported; use **Create embeddings for stored recipes** to retry missing documents.
 Existing recipe embeddings are not overwritten.
 
+Under **Manage recipes**, use **Remove orphaned recipe embeddings** to clean up
+embeddings left by earlier deletions or changes made outside the application.
+Application recipe deletions normally remove their embeddings automatically. If
+cleanup fails, the recipe remains deleted and the application reports the
+failure; run the cleanup action again to retry. Embeddings associated with an
+existing recipe are preserved, including when a recipe ID has been reused.
+Unrecognized recipe document URIs are reported and left untouched.
+
 For performance comparisons, use a read-only database connection or a separate
 copy. Initialize the embedding model once, then time repeated representative
 queries including nutrition-record lookup, separately from first-use model

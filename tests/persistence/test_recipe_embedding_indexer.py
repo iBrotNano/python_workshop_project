@@ -38,8 +38,8 @@ def test_recipe_indexer_adds_only_missing_documents(monkeypatch):
     ]
 
     recipes = [
-        (1, SimpleNamespace(as_markdown=lambda: "Existing recipe")),
-        (2, SimpleNamespace(as_markdown=lambda: "# New recipe")),
+        (1, SimpleNamespace(name="Existing", as_markdown=lambda: "Existing recipe")),
+        (2, SimpleNamespace(name="New", as_markdown=lambda: "# New recipe")),
     ]
 
     monkeypatch.setattr(
@@ -64,7 +64,14 @@ def test_recipe_indexer_adds_only_missing_documents(monkeypatch):
         SimpleNamespace(close=lambda: closed_retrievers.append(True)),
     )
 
-    engine = SimpleNamespace(get_db=lambda: nullcontext(object()))
+    connection = SimpleNamespace(
+        exec_driver_sql=lambda query, params: SimpleNamespace(first=lambda: ("New",))
+    )
+
+    engine = SimpleNamespace(
+        get_db=lambda: nullcontext(object()),
+        recipe_write_lock=lambda: nullcontext(connection),
+    )
 
     configuration = SimpleNamespace(
         ai_used_embedding_model={"repo": "model-repo", "filename": "model.gguf"}
@@ -85,7 +92,10 @@ def test_recipe_indexer_adds_only_missing_documents(monkeypatch):
 
 def test_recipe_indexer_is_idempotent(monkeypatch):
     indexed_documents = []
-    recipes = [(7, SimpleNamespace(as_markdown=lambda: "# Stored recipe"))]
+
+    recipes = [
+        (7, SimpleNamespace(name="Stored", as_markdown=lambda: "# Stored recipe"))
+    ]
 
     monkeypatch.setattr(
         "persistence.recipe_embedding_indexer.RecipeRepository",
@@ -107,7 +117,14 @@ def test_recipe_indexer_is_idempotent(monkeypatch):
         SimpleNamespace(close=lambda: None),
     )
 
-    engine = SimpleNamespace(get_db=lambda: nullcontext(object()))
+    connection = SimpleNamespace(
+        exec_driver_sql=lambda query, params: SimpleNamespace(first=lambda: ("Stored",))
+    )
+
+    engine = SimpleNamespace(
+        get_db=lambda: nullcontext(object()),
+        recipe_write_lock=lambda: nullcontext(connection),
+    )
 
     configuration = SimpleNamespace(
         ai_used_embedding_model={"repo": "model-repo", "filename": "model.gguf"}

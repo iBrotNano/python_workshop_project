@@ -9,6 +9,7 @@ from persons.person_repository import PersonRepository
 from recipes.repository import RecipeRepository
 from config.configuration import configuration
 from persistence.recipe_embedding_indexer import RecipeEmbeddingIndexer
+from persistence.recipe_embedding_cleanup import RecipeEmbeddingCleanup
 
 log = logging.getLogger(__name__)
 
@@ -30,6 +31,7 @@ class UnitOfWork:
         self._persons: PersonRepository | None = None
         self._activity_levels: ActivityLevelRepository | None = None
         self._meal_plans: MealPlanRepository | None = None
+        self.embedding_cleanup_failed = False
 
     def __enter__(self) -> "UnitOfWork":
         """
@@ -123,6 +125,19 @@ class UnitOfWork:
         self._session.commit()
         self.recipes.clear_new_recipes()
         failed = []
+
+        cleanup = RecipeEmbeddingCleanup(configuration, database_engine)
+        self.embedding_cleanup_failed = False
+
+        try:
+            if cleanup.has_pending():
+                cleanup.cleanup_pending()
+        except Exception:
+            self.embedding_cleanup_failed = True
+
+            log.exception(
+                "Recipe deletion was committed, but embedding cleanup failed."
+            )
 
         if recipes:
             indexer = RecipeEmbeddingIndexer(configuration, database_engine)

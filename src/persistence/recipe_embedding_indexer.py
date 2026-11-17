@@ -91,7 +91,7 @@ class RecipeEmbeddingIndexer:
         :type recipe_id: int
         :param recipe: Recipe to index.
         :type recipe: Recipe
-        :raises ValueError: If the recipe URI is already present.
+        :raises ValueError: If the recipe no longer exists or is already indexed.
         """
         retriever_manager.close()
         rag = self.__sqlite_rag_factory.create_for_recipe_embedding()
@@ -121,16 +121,30 @@ class RecipeEmbeddingIndexer:
         :type recipe_id: int
         :param recipe: Recipe to index.
         :type recipe: Recipe
+        :raises ValueError: If the recipe no longer exists or is already indexed.
         """
-        try:
-            rag.add_text(
-                recipe.as_markdown(),
-                uri=self.__build_document_uri(recipe_id),
-                metadata={"entity_type": "recipe", "recipe_id": recipe_id},
-            )
-        except Exception:
-            rag._conn.rollback()
-            raise
+        with self.__database_engine.recipe_write_lock() as connection:
+            row = connection.exec_driver_sql(
+                "SELECT name FROM recipes WHERE id = ?", (recipe_id,)
+            ).first()
+
+            if row is None or row[0] != recipe.name:
+                raise ValueError(f"Recipe {recipe_id} no longer exists.")
+
+            if self.__build_document_uri(recipe_id) in self.__get_existing_recipe_uris(
+                rag
+            ):
+                raise ValueError(f"Embedding already exists for recipe {recipe_id}.")
+
+            try:
+                rag.add_text(
+                    recipe.as_markdown(),
+                    uri=self.__build_document_uri(recipe_id),
+                    metadata={"entity_type": "recipe", "recipe_id": recipe_id},
+                )
+            except Exception:
+                rag._conn.rollback()
+                raise
 
     def __get_existing_recipe_uris(self, rag: SQLiteRag) -> set[str]:
         """

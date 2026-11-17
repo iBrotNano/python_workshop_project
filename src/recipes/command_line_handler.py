@@ -11,6 +11,7 @@ from recipes.exporter import Exporter
 from config.configuration import configuration
 from persistence.database_engine_factory import database_engine
 from persistence.recipe_embedding_indexer import RecipeEmbeddingIndexer
+from persistence.recipe_embedding_cleanup import RecipeEmbeddingCleanup
 from persistence.unit_of_work import UnitOfWork
 
 log = logging.getLogger(__name__)
@@ -26,6 +27,7 @@ class CommandLineHandler:
     DELETE_RECIPE_COMMAND = "DELETE_RECIPE"
     VIEW_RECIPE_COMMAND = "VIEW_RECIPE"
     CREATE_EMBEDDINGS_COMMAND = "CREATE_EMBEDDINGS"
+    CLEANUP_EMBEDDINGS_COMMAND = "CLEANUP_EMBEDDINGS"
 
     def show(self):
         """
@@ -55,6 +57,9 @@ class CommandLineHandler:
             if command == self.CREATE_EMBEDDINGS_COMMAND:
                 self._create_embeddings()
 
+            if command == self.CLEANUP_EMBEDDINGS_COMMAND:
+                self._cleanup_embeddings()
+
     def _get_recipe_menu_selection(self):
         """
         Displays the menu and gets the user's selection.
@@ -80,6 +85,10 @@ class CommandLineHandler:
             questionary.Choice(
                 "Create embeddings for stored recipes",
                 value=self.CREATE_EMBEDDINGS_COMMAND,
+            ),
+            questionary.Choice(
+                "Remove orphaned recipe embeddings",
+                value=self.CLEANUP_EMBEDDINGS_COMMAND,
             ),
             questionary.Choice(
                 "Back to main menu",
@@ -117,6 +126,22 @@ class CommandLineHandler:
         terminal.print_info(
             f"Created embeddings for {result['created']} recipe(s); "
             f"skipped {result['skipped']} already indexed recipe(s)."
+        )
+
+    def _cleanup_embeddings(self):
+        """
+        Removes orphaned recipe embeddings and reports the result.
+        """
+        try:
+            result = RecipeEmbeddingCleanup(configuration, database_engine).cleanup()
+        except Exception as error:
+            log.exception("Recipe embedding cleanup failed.")
+            terminal.print_info(f"Recipe embedding cleanup failed: {error}")
+            return
+
+        terminal.print_info(
+            f"Removed {result['removed']} orphaned recipe embedding(s); "
+            f"preserved {result['unrecognized']} unrecognized recipe document(s)."
         )
 
     def _add_recipe(self):
@@ -334,6 +359,12 @@ class CommandLineHandler:
                     uow.commit()
 
                 terminal.print_info(f"Recipe '{recipe_name}' has been deleted.")
+
+                if uow.embedding_cleanup_failed:
+                    terminal.print_info(
+                        "The recipe embedding could not be removed. "
+                        "Use 'Remove orphaned recipe embeddings' to retry."
+                    )
 
     def _view_recipe(self):
         """

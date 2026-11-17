@@ -1,5 +1,5 @@
 from contextlib import contextmanager
-from sqlalchemy import Engine
+from sqlalchemy import Connection, Engine
 from sqlalchemy.orm import sessionmaker, Session
 from typing import Any, Generator
 from persistence.db_schema_registry import load_db_schema_definitions
@@ -43,7 +43,44 @@ class DatabaseEngine:
         """
         load_db_schema_definitions()
         self.Base.metadata.create_all(bind=self._engine)
+        self.initialize_recipe_deletion_tracking()
         self._seed_activity_levels()
+
+    def initialize_recipe_deletion_tracking(self):
+        """
+        Installs durable tracking for recipe deletions in existing databases.
+        """
+        with self._engine.begin() as connection:
+            connection.exec_driver_sql(
+                "CREATE TABLE IF NOT EXISTS recipe_embedding_deletions "
+                "(recipe_id INTEGER PRIMARY KEY)"
+            )
+
+            connection.exec_driver_sql("""
+                CREATE TRIGGER IF NOT EXISTS track_recipe_embedding_deletion
+                AFTER DELETE ON recipes
+                BEGIN
+                    INSERT OR IGNORE INTO recipe_embedding_deletions (recipe_id)
+                    VALUES (OLD.id);
+                END
+                """)
+
+    @contextmanager
+    def recipe_write_lock(self) -> Generator[Connection, None, None]:
+        """
+        Locks recipe writes while checking and changing the separate vector store.
+
+        :return: A connection holding a SQLite write transaction.
+        :rtype: Generator[Connection, None, None]
+        """
+        with self._engine.connect() as connection:
+            try:
+                connection.exec_driver_sql("BEGIN IMMEDIATE")
+                yield connection
+                connection.commit()
+            except BaseException:
+                connection.rollback()
+                raise
 
     def _seed_activity_levels(self):
         """
