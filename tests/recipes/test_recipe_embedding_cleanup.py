@@ -14,8 +14,8 @@ from sqlite_rag.models.sentence import Sentence
 from config.configuration import configuration
 from persistence.database_engine import DatabaseEngine
 from persistence.database_engine_factory import database_engine
-from persistence.recipe_embedding_cleanup import RecipeEmbeddingCleanup
-from persistence.recipe_embedding_indexer import RecipeEmbeddingIndexer
+from recipes.recipe_embedding_cleanup import RecipeEmbeddingCleanup
+from recipes.recipe_embedding_indexer import RecipeEmbeddingIndexer
 from persistence.unit_of_work import UnitOfWork
 from recipes.recipe import Recipe
 from recipes.recipe_entity import RecipeEntity
@@ -35,7 +35,7 @@ def databases(tmp_path, monkeypatch):
     monkeypatch.setattr("persistence.unit_of_work.configuration", config)
 
     monkeypatch.setattr(
-        "persistence.recipe_embedding_indexer.RecipeEmbeddingIndexer.create_embedding",
+        "recipes.recipe_embedding_indexer.RecipeEmbeddingIndexer.create_embedding",
         lambda *args: None,
     )
 
@@ -307,7 +307,7 @@ def test_indexing_a_deleted_recipe_does_not_create_an_orphan(databases, monkeypa
     monkeypatch.setattr(RecipeEmbeddingIndexer, "create_embedding", CREATE_EMBEDDING)
 
     monkeypatch.setattr(
-        "persistence.recipe_embedding_indexer.ModellDownloader.download_model_if_not_exists",
+        "recipes.recipe_embedding_indexer.ModellDownloader.download_model_if_not_exists",
         lambda *args: None,
     )
 
@@ -356,7 +356,7 @@ def test_indexing_waits_for_delete_and_does_not_restore_deleted_recipe(
     monkeypatch.setattr(RecipeEmbeddingIndexer, "create_embedding", CREATE_EMBEDDING)
 
     monkeypatch.setattr(
-        "persistence.recipe_embedding_indexer.ModellDownloader.download_model_if_not_exists",
+        "recipes.recipe_embedding_indexer.ModellDownloader.download_model_if_not_exists",
         lambda *args: None,
     )
 

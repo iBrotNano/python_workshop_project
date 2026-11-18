@@ -1,6 +1,6 @@
 from contextlib import nullcontext
 from types import SimpleNamespace
-from persistence.recipe_embedding_indexer import RecipeEmbeddingIndexer
+from recipes.recipe_embedding_indexer import RecipeEmbeddingIndexer
 from persistence.sqlite_rag_factory import SQLiteRagFactory
 
 
@@ -43,24 +43,24 @@ def test_recipe_indexer_adds_only_missing_documents(monkeypatch):
     ]
 
     monkeypatch.setattr(
-        "persistence.recipe_embedding_indexer.RecipeRepository",
+        "recipes.recipe_embedding_indexer.RecipeRepository",
         lambda session: SimpleNamespace(get_all_with_ids=lambda: recipes),
     )
 
     monkeypatch.setattr(
-        "persistence.recipe_embedding_indexer.SQLiteRagFactory.create_for_recipe_embedding",
+        "recipes.recipe_embedding_indexer.SQLiteRagFactory.create_for_recipe_embedding",
         lambda factory: FakeRag(indexed_documents),
     )
 
     monkeypatch.setattr(
-        "persistence.recipe_embedding_indexer.ModellDownloader.download_model_if_not_exists",
+        "recipes.recipe_embedding_indexer.ModellDownloader.download_model_if_not_exists",
         lambda downloader, repo, filename: None,
     )
 
     closed_retrievers = []
 
     monkeypatch.setattr(
-        "persistence.recipe_embedding_indexer.retriever_manager",
+        "recipes.recipe_embedding_indexer.retriever_manager",
         SimpleNamespace(close=lambda: closed_retrievers.append(True)),
     )
 
@@ -98,22 +98,22 @@ def test_recipe_indexer_is_idempotent(monkeypatch):
     ]
 
     monkeypatch.setattr(
-        "persistence.recipe_embedding_indexer.RecipeRepository",
+        "recipes.recipe_embedding_indexer.RecipeRepository",
         lambda session: SimpleNamespace(get_all_with_ids=lambda: recipes),
     )
 
     monkeypatch.setattr(
-        "persistence.recipe_embedding_indexer.SQLiteRagFactory.create_for_recipe_embedding",
+        "recipes.recipe_embedding_indexer.SQLiteRagFactory.create_for_recipe_embedding",
         lambda factory: FakeRag(indexed_documents),
     )
 
     monkeypatch.setattr(
-        "persistence.recipe_embedding_indexer.ModellDownloader.download_model_if_not_exists",
+        "recipes.recipe_embedding_indexer.ModellDownloader.download_model_if_not_exists",
         lambda downloader, repo, filename: None,
     )
 
     monkeypatch.setattr(
-        "persistence.recipe_embedding_indexer.retriever_manager",
+        "recipes.recipe_embedding_indexer.retriever_manager",
         SimpleNamespace(close=lambda: None),
     )
 

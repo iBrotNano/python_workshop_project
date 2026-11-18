@@ -8,10 +8,10 @@ from recipes.recipe import Recipe
 from common.terminal.terminal import terminal
 from recipes.recipe_type import RecipeType
 from recipes.exporter import Exporter
+from recipes.recipe_embedding_indexer import RecipeEmbeddingIndexer
+from recipes.recipe_embedding_cleanup import RecipeEmbeddingCleanup
 from config.configuration import configuration
 from persistence.database_engine_factory import database_engine
-from persistence.recipe_embedding_indexer import RecipeEmbeddingIndexer
-from persistence.recipe_embedding_cleanup import RecipeEmbeddingCleanup
 from persistence.unit_of_work import UnitOfWork
 
 log = logging.getLogger(__name__)

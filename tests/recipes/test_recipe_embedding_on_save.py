@@ -48,7 +48,7 @@ def test_committed_new_recipes_are_indexed_once_after_commit(
         indexed.append((recipe_id, recipe.name))
 
     monkeypatch.setattr(
-        "persistence.recipe_embedding_indexer.RecipeEmbeddingIndexer.create_embedding",
+        "recipes.recipe_embedding_indexer.RecipeEmbeddingIndexer.create_embedding",
         create_embedding,
         raising=False,
     )
@@ -67,7 +67,7 @@ def test_rolled_back_recipe_and_duplicate_are_not_indexed(recipe_database, monke
     indexed = []
 
     monkeypatch.setattr(
-        "persistence.recipe_embedding_indexer.RecipeEmbeddingIndexer.create_embedding",
+        "recipes.recipe_embedding_indexer.RecipeEmbeddingIndexer.create_embedding",
         lambda indexer, recipe_id, recipe: indexed.append(recipe_id),
         raising=False,
     )
@@ -92,7 +92,7 @@ def test_failed_recipe_commit_never_creates_embedding(recipe_database, monkeypat
     indexed = []
 
     monkeypatch.setattr(
-        "persistence.recipe_embedding_indexer.RecipeEmbeddingIndexer.create_embedding",
+        "recipes.recipe_embedding_indexer.RecipeEmbeddingIndexer.create_embedding",
         lambda indexer, recipe_id, recipe: indexed.append(recipe_id),
         raising=False,
     )
@@ -127,7 +127,7 @@ def test_embedding_failure_keeps_recipe_and_attempts_other_recipes(
             raise RuntimeError("embedding failed")
 
     monkeypatch.setattr(
-        "persistence.recipe_embedding_indexer.RecipeEmbeddingIndexer.create_embedding",
+        "recipes.recipe_embedding_indexer.RecipeEmbeddingIndexer.create_embedding",
         create_embedding,
         raising=False,
     )
@@ -145,7 +145,7 @@ def test_embedding_failure_keeps_recipe_and_attempts_other_recipes(
 
 
 def test_single_recipe_failure_rolls_back_partial_document(monkeypatch, tmp_path):
-    from persistence.recipe_embedding_indexer import RecipeEmbeddingIndexer
+    from recipes.recipe_embedding_indexer import RecipeEmbeddingIndexer
 
     connection = sqlite3.connect(tmp_path / "sidecar.db")
     connection.row_factory = sqlite3.Row
@@ -164,17 +164,17 @@ def test_single_recipe_failure_rolls_back_partial_document(monkeypatch, tmp_path
             pass
 
     monkeypatch.setattr(
-        "persistence.recipe_embedding_indexer.SQLiteRagFactory.create_for_recipe_embedding",
+        "recipes.recipe_embedding_indexer.SQLiteRagFactory.create_for_recipe_embedding",
         lambda factory: FailingRag(),
     )
 
     monkeypatch.setattr(
-        "persistence.recipe_embedding_indexer.ModellDownloader.download_model_if_not_exists",
+        "recipes.recipe_embedding_indexer.ModellDownloader.download_model_if_not_exists",
         lambda *args: None,
     )
 
     monkeypatch.setattr(
-        "persistence.recipe_embedding_indexer.retriever_manager",
+        "recipes.recipe_embedding_indexer.retriever_manager",
         SimpleNamespace(close=lambda: None),
     )
 
@@ -199,7 +199,7 @@ def test_single_recipe_failure_rolls_back_partial_document(monkeypatch, tmp_path
 
 
 def test_existing_recipe_uri_is_not_overwritten(monkeypatch, tmp_path):
-    from persistence.recipe_embedding_indexer import RecipeEmbeddingIndexer
+    from recipes.recipe_embedding_indexer import RecipeEmbeddingIndexer
 
     connection = sqlite3.connect(tmp_path / "sidecar.db")
     connection.row_factory = sqlite3.Row
@@ -209,12 +209,12 @@ def test_existing_recipe_uri_is_not_overwritten(monkeypatch, tmp_path):
     rag = SimpleNamespace(_conn=connection, close=lambda: None)
 
     monkeypatch.setattr(
-        "persistence.recipe_embedding_indexer.SQLiteRagFactory.create_for_recipe_embedding",
+        "recipes.recipe_embedding_indexer.SQLiteRagFactory.create_for_recipe_embedding",
         lambda factory: rag,
     )
 
     monkeypatch.setattr(
-        "persistence.recipe_embedding_indexer.retriever_manager",
+        "recipes.recipe_embedding_indexer.retriever_manager",
         SimpleNamespace(close=lambda: None),
     )
 
@@ -236,7 +236,7 @@ def test_real_sidecar_rolls_back_document_when_chunk_insert_fails(
 ):
     from sqlite_rag import SQLiteRag
     from sqlite_rag.models.chunk import Chunk
-    from persistence.recipe_embedding_indexer import RecipeEmbeddingIndexer
+    from recipes.recipe_embedding_indexer import RecipeEmbeddingIndexer
 
     rag = SQLiteRag.create(
         str(tmp_path / "sidecar.db"), settings={"quantize_scan": False}
@@ -260,17 +260,17 @@ def test_real_sidecar_rolls_back_document_when_chunk_insert_fails(
     monkeypatch.setattr(rag, "close", lambda: None)
 
     monkeypatch.setattr(
-        "persistence.recipe_embedding_indexer.SQLiteRagFactory.create_for_recipe_embedding",
+        "recipes.recipe_embedding_indexer.SQLiteRagFactory.create_for_recipe_embedding",
         lambda factory: rag,
     )
 
     monkeypatch.setattr(
-        "persistence.recipe_embedding_indexer.ModellDownloader.download_model_if_not_exists",
+        "recipes.recipe_embedding_indexer.ModellDownloader.download_model_if_not_exists",
         lambda *args: None,
     )
 
     monkeypatch.setattr(
-        "persistence.recipe_embedding_indexer.retriever_manager",
+        "recipes.recipe_embedding_indexer.retriever_manager",
         SimpleNamespace(close=lambda: None),
     )
 
@@ -297,7 +297,7 @@ def test_real_sidecar_rolls_back_document_when_chunk_insert_fails(
         rag._conn.commit()
 
         monkeypatch.setattr(
-            "persistence.recipe_embedding_indexer.RecipeRepository",
+            "recipes.recipe_embedding_indexer.RecipeRepository",
             lambda session: SimpleNamespace(
                 get_all_with_ids=lambda: [(2, Recipe(name="New"))]
             ),
@@ -330,7 +330,7 @@ def test_real_sidecar_preserves_existing_vectors_and_ranks_new_recipe(
     monkeypatch.setattr("persistence.unit_of_work.configuration", config)
 
     monkeypatch.setattr(
-        "persistence.recipe_embedding_indexer.ModellDownloader.download_model_if_not_exists",
+        "recipes.recipe_embedding_indexer.ModellDownloader.download_model_if_not_exists",
         lambda *args: None,
     )
     sidecar = SQLiteRagFactory(config).recipe_database_path
@@ -440,7 +440,7 @@ def test_deleted_recipe_is_absent_from_real_retrieval_and_ranking(
     monkeypatch.setattr("persistence.unit_of_work.configuration", config)
 
     monkeypatch.setattr(
-        "persistence.recipe_embedding_indexer.ModellDownloader.download_model_if_not_exists",
+        "recipes.recipe_embedding_indexer.ModellDownloader.download_model_if_not_exists",
         lambda *args: None,
     )
 

@@ -7,9 +7,9 @@ from persistence.database_engine_factory import database_engine
 from persons.activity_level_repository import ActivityLevelRepository
 from persons.person_repository import PersonRepository
 from recipes.repository import RecipeRepository
+from recipes.recipe_embedding_indexer import RecipeEmbeddingIndexer
+from recipes.recipe_embedding_cleanup import RecipeEmbeddingCleanup
 from config.configuration import configuration
-from persistence.recipe_embedding_indexer import RecipeEmbeddingIndexer
-from persistence.recipe_embedding_cleanup import RecipeEmbeddingCleanup
 
 log = logging.getLogger(__name__)
 
