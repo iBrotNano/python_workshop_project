@@ -60,29 +60,29 @@ def test_compaction_propagates_database_lock_error(tmp_path):
 def test_compaction_cancellation_does_not_close_retriever_or_vacuum(monkeypatch):
     from types import SimpleNamespace
 
-    from persistence.command_line_handler import CommandLineHandler
+    from settings.command_line_handler import CommandLineHandler
 
     actions = []
     monkeypatch.setattr(
-        "persistence.command_line_handler.DatabaseMaintenance",
+        "settings.command_line_handler.DatabaseMaintenance",
         lambda engine: SimpleNamespace(
             statistics=lambda: {"database_bytes": 100, "free_bytes": 20},
             compact=lambda: actions.append("compact"),
         ),
     )
     monkeypatch.setattr(
-        "persistence.command_line_handler.retriever_manager",
+        "settings.command_line_handler.retriever_manager",
         SimpleNamespace(close=lambda: actions.append("close")),
     )
     monkeypatch.setattr(
-        "persistence.command_line_handler.terminal",
+        "settings.command_line_handler.terminal",
         SimpleNamespace(
             print_info=lambda message: None,
             safe_confirm=lambda *args, **kwargs: False,
         ),
     )
 
-    CommandLineHandler().compact()
+    CommandLineHandler()._compact_database()
 
     assert actions == []
 
@@ -91,23 +91,23 @@ def test_confirmed_compaction_closes_retriever_and_reports_result(monkeypatch):
     from contextlib import nullcontext
     from types import SimpleNamespace
 
-    from persistence.command_line_handler import CommandLineHandler
+    from settings.command_line_handler import CommandLineHandler
 
     actions = []
     messages = []
     monkeypatch.setattr(
-        "persistence.command_line_handler.DatabaseMaintenance",
+        "settings.command_line_handler.DatabaseMaintenance",
         lambda engine: SimpleNamespace(
             statistics=lambda: {"database_bytes": 100, "free_bytes": 20},
             compact=lambda: actions.append("compact"),
         ),
     )
     monkeypatch.setattr(
-        "persistence.command_line_handler.retriever_manager",
+        "settings.command_line_handler.retriever_manager",
         SimpleNamespace(close=lambda: actions.append("close")),
     )
     monkeypatch.setattr(
-        "persistence.command_line_handler.terminal",
+        "settings.command_line_handler.terminal",
         SimpleNamespace(
             print_info=messages.append,
             safe_confirm=lambda *args, **kwargs: True,
@@ -115,7 +115,7 @@ def test_confirmed_compaction_closes_retriever_and_reports_result(monkeypatch):
         ),
     )
 
-    CommandLineHandler().compact()
+    CommandLineHandler()._compact_database()
 
     assert actions == ["close", "compact"]
     assert "completed" in messages[-1]

@@ -388,21 +388,21 @@ def test_indexing_waits_for_delete_and_does_not_restore_deleted_recipe(
 
 
 def test_cleanup_menu_reports_failures(monkeypatch):
-    from recipes.command_line_handler import CommandLineHandler
+    from settings.command_line_handler import CommandLineHandler
 
     messages = []
 
     monkeypatch.setattr(
-        "recipes.command_line_handler.RecipeEmbeddingCleanup",
+        "settings.command_line_handler.RecipeEmbeddingCleanup",
         lambda *args: SimpleNamespace(
             cleanup=lambda: (_ for _ in ()).throw(RuntimeError("database unavailable"))
         ),
     )
 
     monkeypatch.setattr(
-        "recipes.command_line_handler.terminal.print_info", messages.append
+        "settings.command_line_handler.terminal.print_info", messages.append
     )
 
-    CommandLineHandler()._cleanup_embeddings()
+    CommandLineHandler()._cleanup_recipe_embeddings()
 
     assert messages == ["Recipe embedding cleanup failed: database unavailable"]

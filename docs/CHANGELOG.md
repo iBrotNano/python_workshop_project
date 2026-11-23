@@ -8,6 +8,7 @@
 - [#7](https://github.com/iBrotNano/python_workshop_project/issues/7): Update the Python version to 3.14.3 and ensure that the project is compatible with this version. This includes updating the environment files, testing the application with the new Python version, and updating the documentation to reflect the change. Additionally, a script to clean `__pycache__` directories has been added to the project template for better maintenance.
 - [#36](https://github.com/iBrotNano/python_workshop_project/issues/36): Refactor all code into classes. This includes creating classes for handling command line interactions, managing the meal plan, and any other relevant functionality. The refactoring should improve the organization of the code, enhance readability, and make it easier to maintain and extend in the future.
 - [#37](https://github.com/iBrotNano/python_workshop_project/issues/37): Implemented repositories to store all data into a SQLite database instead of YAML files.
+- [#53](https://github.com/iBrotNano/python_workshop_project/issues/53): Centralized database maintenance in a new **Settings → Database** menu and added a shared Rich progress display for database updates and recipe embedding tasks.
 
 ### Issues
 

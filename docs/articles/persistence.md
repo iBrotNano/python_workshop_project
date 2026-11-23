@@ -87,11 +87,11 @@ with UnitOfWork() as uow:
 
 ## Database maintenance
 
-After creating and quantizing embeddings, select **Compact the database** from the
-main menu when you want to reclaim space. Compaction is optional and is never run
-automatically. The prompt shows the database size and bytes on completely free
-pages; even with no free pages, partially filled pages may be repacked, so this
-number is not an exact prediction of the savings.
+After creating and quantizing embeddings, open **Settings → Database** and select
+**Compact the database** when you want to reclaim space. Compaction is optional
+and is never run automatically. The prompt shows the database size and bytes on
+completely free pages; even with no free pages, partially filled pages may be
+repacked, so this number is not an exact prediction of the savings.
 
 Back up the database and close other application instances and tools before
 compacting. SQLite needs exclusive access and may require up to twice the
@@ -108,17 +108,17 @@ results. Other sqlite-rag versions use the library's original search method.
 Search time still depends on the number of vectors, storage, and available
 memory; compaction alone is not a guarantee of faster searches.
 
-Stored recipes can be indexed from the recipe menu. Their embeddings are kept in
-a separate `data_recipes.db` sidecar database so recipe indexing does not modify
-the nutrition embeddings in `data.db`. Recipe documents use stable recipe IDs;
-running the indexing action again skips documents that are already present.
-Newly saved recipes are indexed automatically after their database transaction
-commits. If embedding creation fails, the recipe remains saved and the error is
-reported; use **Create embeddings for stored recipes** to retry missing documents.
-Existing recipe embeddings are not overwritten.
+Stored recipes can be indexed from **Settings → Database → Create embeddings for stored recipes**. Their embeddings are
+kept in a separate `data_recipes.db` sidecar database so recipe indexing does
+not modify the nutrition embeddings in `data.db`. Recipe documents use stable
+recipe IDs; running the indexing action again skips documents that are already
+present. Newly saved recipes are indexed automatically after their database
+transaction commits. If embedding creation fails, the recipe remains saved and
+the error is reported; use **Settings → Database → Create embeddings for stored recipes** to retry missing documents. Existing recipe embeddings
+are not overwritten.
 
-Under **Manage recipes**, use **Remove orphaned recipe embeddings** to clean up
-embeddings left by earlier deletions or changes made outside the application.
+From **Settings → Database**, use **Remove orphaned recipe embeddings** to clean
+up embeddings left by earlier deletions or changes made outside the application.
 Application recipe deletions normally remove their embeddings automatically. If
 cleanup fails, the recipe remains deleted and the application reports the
 failure; run the cleanup action again to retry. Embeddings associated with an

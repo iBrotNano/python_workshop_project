@@ -3,15 +3,10 @@ import questionary
 import nutrition.command_line_handler as nutrition_cli
 
 from rich.markdown import Markdown
-from rich.progress import BarColumn, MofNCompleteColumn, Progress, TextColumn
 from recipes.recipe import Recipe
 from common.terminal.terminal import terminal
 from recipes.recipe_type import RecipeType
 from recipes.exporter import Exporter
-from recipes.recipe_embedding_indexer import RecipeEmbeddingIndexer
-from recipes.recipe_embedding_cleanup import RecipeEmbeddingCleanup
-from config.configuration import configuration
-from persistence.database_engine_factory import database_engine
 from persistence.unit_of_work import UnitOfWork
 
 log = logging.getLogger(__name__)
@@ -26,8 +21,6 @@ class CommandLineHandler:
     ADD_RECIPE_COMMAND = "ADD_RECIPE"
     DELETE_RECIPE_COMMAND = "DELETE_RECIPE"
     VIEW_RECIPE_COMMAND = "VIEW_RECIPE"
-    CREATE_EMBEDDINGS_COMMAND = "CREATE_EMBEDDINGS"
-    CLEANUP_EMBEDDINGS_COMMAND = "CLEANUP_EMBEDDINGS"
 
     def show(self):
         """
@@ -54,12 +47,6 @@ class CommandLineHandler:
             if command == self.DELETE_RECIPE_COMMAND:
                 self._delete_recipe()
 
-            if command == self.CREATE_EMBEDDINGS_COMMAND:
-                self._create_embeddings()
-
-            if command == self.CLEANUP_EMBEDDINGS_COMMAND:
-                self._cleanup_embeddings()
-
     def _get_recipe_menu_selection(self):
         """
         Displays the menu and gets the user's selection.
@@ -83,14 +70,6 @@ class CommandLineHandler:
                 value=self.DELETE_RECIPE_COMMAND,
             ),
             questionary.Choice(
-                "Create embeddings for stored recipes",
-                value=self.CREATE_EMBEDDINGS_COMMAND,
-            ),
-            questionary.Choice(
-                "Remove orphaned recipe embeddings",
-                value=self.CLEANUP_EMBEDDINGS_COMMAND,
-            ),
-            questionary.Choice(
                 "Back to main menu",
                 value=self.CANCEL_COMMAND,
             ),
@@ -99,50 +78,6 @@ class CommandLineHandler:
         return questionary.select(
             "What do you want to do?", choices=choices, use_shortcuts=True
         ).ask()
-
-    def _create_embeddings(self):
-        """
-        Creates embeddings for stored recipes and displays indexing progress.
-        """
-        indexer = RecipeEmbeddingIndexer(configuration, database_engine)
-
-        with Progress(
-            TextColumn("{task.description}"),
-            BarColumn(),
-            MofNCompleteColumn(),
-            console=terminal.console,
-        ) as progress:
-            task_id = progress.add_task("Creating recipe embeddings", total=0)
-
-            result = indexer.create_embeddings(
-                lambda update: progress.update(
-                    task_id,
-                    description=update.description,
-                    total=update.total,
-                    completed=update.completed,
-                )
-            )
-
-        terminal.print_info(
-            f"Created embeddings for {result['created']} recipe(s); "
-            f"skipped {result['skipped']} already indexed recipe(s)."
-        )
-
-    def _cleanup_embeddings(self):
-        """
-        Removes orphaned recipe embeddings and reports the result.
-        """
-        try:
-            result = RecipeEmbeddingCleanup(configuration, database_engine).cleanup()
-        except Exception as error:
-            log.exception("Recipe embedding cleanup failed.")
-            terminal.print_info(f"Recipe embedding cleanup failed: {error}")
-            return
-
-        terminal.print_info(
-            f"Removed {result['removed']} orphaned recipe embedding(s); "
-            f"preserved {result['unrecognized']} unrecognized recipe document(s)."
-        )
 
     def _add_recipe(self):
         """
@@ -309,7 +244,8 @@ class CommandLineHandler:
                     if failed_embeddings:
                         terminal.print_info(
                             "The recipe embedding could not be created. "
-                            "Use 'Create embeddings for stored recipes' to retry."
+                            "Use 'Settings' > 'Database' > "
+                            "'Create embeddings for stored recipes' to retry."
                         )
                 else:
                     terminal.print_info(
@@ -363,7 +299,8 @@ class CommandLineHandler:
                 if uow.embedding_cleanup_failed:
                     terminal.print_info(
                         "The recipe embedding could not be removed. "
-                        "Use 'Remove orphaned recipe embeddings' to retry."
+                        "Use 'Settings' > 'Database' > "
+                        "'Remove orphaned recipe embeddings' to retry."
                     )
 
     def _view_recipe(self):

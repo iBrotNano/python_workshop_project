@@ -6,7 +6,7 @@ import nutrition.command_line_handler as nutrition_cli
 import recipes.command_line_handler as recipe_cli
 import meal_plan.command_line_handler as meal_plan_cli
 import persons.command_line_handler as persons_cli
-import persistence.command_line_handler as persistence_cli
+import settings.command_line_handler as settings_cli
 from prompt_toolkit.output.win32 import NoConsoleScreenBufferError
 
 from common.terminal.terminal import terminal
@@ -46,11 +46,8 @@ try:
             if command == main_menu.MANAGE_PERSONS_COMMAND:
                 persons_cli.CommandLineHandler().show()
 
-            if command == main_menu.UPDATE_DATABASE_COMMAND:
-                persistence_cli.CommandLineHandler().show()
-
-            if command == main_menu.COMPACT_DATABASE_COMMAND:
-                persistence_cli.CommandLineHandler().compact()
+            if command == main_menu.OPEN_SETTINGS_COMMAND:
+                settings_cli.CommandLineHandler().show()
 
             if command == main_menu.EXIT_COMMAND:
                 terminal.print("Goodbye! 👋")
